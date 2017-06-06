@@ -199,7 +199,7 @@ if (!isloggedin() || isguestuser()) {
     if ($PAGE->theme->settings->displaylogin == 'box') {
         // Login button.
 ?>
-        <form action="<?php p($wwwroot) ?>/login/index.php" method="post">
+        <form action="<?php p($wwwroot) ?>/my" method="post">
             <input type="text" name="username"
                     placeholder="<?php echo get_string('loginplaceholder', 'theme_adaptable'); ?>" size="10">
             <input type="password" name="password"
@@ -209,7 +209,7 @@ if (!isloggedin() || isguestuser()) {
 <?php
     } else if ($PAGE->theme->settings->displaylogin == 'button') {
 ?>
-        <form action="<?php p($wwwroot) ?>/login/index.php" method="post">
+        <form action="<?php p($wwwroot) ?>/my" method="post">
             <button class="btn-login" type="submit">
                 <?php echo get_string('logintextbutton', 'theme_adaptable'); ?>
             </button>
