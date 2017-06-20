@@ -18,7 +18,7 @@ class user_bulk_action_form extends moodleform {
             $actions[2] = get_string('messageselectadd');
         }
         if (has_capability('moodle/user:delete', $syscontext)) {
-            $actions[3] = get_string('delete');
+//            $actions[3] = get_string('delete');
         }
         $actions[4] = get_string('displayonpage');
         if (has_capability('moodle/user:update', $syscontext)) {
@@ -29,7 +29,7 @@ class user_bulk_action_form extends moodleform {
             //$actions[6] = get_string('enrolmultipleusers', 'admin');
         }
         if (has_capability('moodle/user:update', $syscontext)) {
-            $actions[7] = get_string('forcepasswordchange');
+//            $actions[7] = get_string('forcepasswordchange');
         }
         if (has_capability('moodle/cohort:assign', $syscontext)) {
             $actions[8] = get_string('bulkadd', 'core_cohort');
