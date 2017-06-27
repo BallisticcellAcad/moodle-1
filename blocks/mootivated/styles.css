@@ -1,0 +1,21 @@
+.block_mootivated .mootivated-avatar {
+    width: 512px;
+    height: auto;
+    max-width: 100%;
+    margin-bottom: 1em;
+}
+
+.block_mootivated .mootivated-wallet {
+    font-size: 150%;
+    font-weight: bold;
+    text-align: center;
+}
+
+.block_mootivated .mootivated-wallet img {
+    margin-right: .5em;
+}
+
+.dir-rtl .block_mootivated .mootivated-wallet img {
+    margin-right: 0;
+    margin-left: .5em;
+}

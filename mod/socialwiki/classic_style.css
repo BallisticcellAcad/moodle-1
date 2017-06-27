@@ -1,0 +1,177 @@
+/* This file is part of Moodle - http://moodle.org/
+
+ Moodle is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Moodle is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * The Classic Styling.
+ *
+ * @package mod_socialwiki
+ * @copyright 2015 NMAI-lab
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+h1, h2, h3, h4, h5, h6 {
+    text-align: left;
+}
+
+.socialwiki_wikicontent div:target h3 {
+    border-left: 2px solid #000;
+    padding-left: 5px;
+    margin-left: -7px;
+}
+
+.socialwiki_wikicontent .helpbtn {
+    float: right;
+    padding: 9px 28px;
+    font-size: 150%;
+}
+
+.socialwiki_wikicontent .s-label {
+    display: inline;
+    padding: .2em .6em .3em;
+    font-size: 75%;
+    font-weight: 500;
+    line-height: 1;
+    color: #ffffff;
+    background-color: #428bca;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+}
+
+.socialwiki_wikicontent .s-label[href]:hover,
+.socialwiki_wikicontent .s-label[href]:focus {
+    background-color: #3071a9;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.socialwiki_wikicontent .tabtree {
+    clear: both;
+    margin-bottom: 0;
+}
+
+.socialwiki_wikicontent .tabtree ul {
+    text-align: left;
+}
+
+.socialwiki_wikicontent .home_user {
+    text-align: left;
+    margin: -2px 0;
+    font-size: 24px;
+    line-height: 40px;
+}
+
+.socialwiki_wikicontent .home-picture .userpicture {
+    float: left;
+    margin: 8.9px 20px 0 0;
+}
+
+.socialwiki_wikicontent .home-picture.unknown-user a {
+    pointer-events: none;
+    cursor: default;
+}
+
+.socialwiki_wikicontent .nav {
+    margin: 1em 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.socialwiki_wikicontent .nav-tabs>li {
+    float: left;
+    margin-bottom: -1px;
+}
+
+.socialwiki_wikicontent .nav-tabs>li>a {
+    margin-right: 2px;
+    line-height: 1.428571429;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+}
+
+.socialwiki_wikicontent .nav-tabs>li>a:hover {
+    border-color: #eeeeee #eeeeee #dddddd;
+}
+
+.socialwiki_wikicontent .nav-tabs>li.active>a,
+.socialwiki_wikicontent .nav-tabs>li.active>a:hover,
+.socialwiki_wikicontent .nav-tabs>li.active>a:focus {
+    color: #555555;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    border-bottom-color: transparent;
+    cursor: default;
+}
+
+.socialwiki_wikicontent label {
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+.socialwiki_wikicontent img {
+    vertical-align: middle;
+}
+
+.socialwiki_wikicontent .header {
+    background: none;
+}
+
+.socialwiki_wikicontent .peer-table {
+    margin-top: 4px;
+}
+
+.socialwiki_wikicontent .peer-table td {
+    padding: 1px 10px 1px 0;
+}
+
+.socialwiki_wikicontent .peer-info {
+    display: inline-block;
+}
+
+.socialwiki_wikicontent .socialwiki-link {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.socialwiki_wikicontent .socialwiki-contributors {
+    text-align: right;
+}
+
+.socialwiki_wikicontent #socialwiki-like {
+    float: right;
+    color: gray;
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 40px;
+    margin-right: 8px;
+}
+
+.socialwiki_wikicontent #socialwiki-like.liked {
+    color: #0775db;
+}
+
+.socialwiki_wikicontent #socialwiki-like img {
+    margin-top: -10px;
+}
+
+.socialwiki_wikicontent .navigator {
+    float: right;
+}
+
+.socialwiki_wikicontent .navigator input[type="submit"] {
+    margin: 0 0 0 5px;
+}

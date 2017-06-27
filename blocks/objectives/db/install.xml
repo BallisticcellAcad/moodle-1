@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/objectives/db" VERSION="20110312" COMMENT="XMLDB file for Moodle blocks/objectives"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="block_objectives" COMMENT="Basic settings for an objectives block">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The course that this objectives block is on"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The text to display at the top of the block"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_objectives_timetable" COMMENT="Stores the timetable information for the objectives block">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="objectivesid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Id of the objectives block this timetable entry is for"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Id of the course group this timetable entry is for (0 for everyone)"/>
+        <FIELD NAME="day" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Day of the week that this lesson is on (0=Mon, 6=Sun)"/>
+        <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time (in seconds) from start of day that lesson begins"/>
+        <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time (in seconds) from the start of the day that the lesson ends"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_objectives_objectives" COMMENT="A list of the lesson objectives for a particular lesson">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="timetableid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the timetable entry that these objectives relate to"/>
+        <FIELD NAME="weekstart" TYPE="char" LENGTH="8" NOTNULL="false" SEQUENCE="false" COMMENT="Week start date (stored as YYYYMMDD)"/>
+        <FIELD NAME="objectives" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="List of lesson objectives, on separate lines, prepended with + for complete, - for incomplete"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="timetableid" TYPE="foreign" FIELDS="timetableid" REFTABLE="block_objectives_timetable" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="weekstart" UNIQUE="false" FIELDS="timetableid, weekstart"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

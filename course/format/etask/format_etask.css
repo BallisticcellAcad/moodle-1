@@ -1,0 +1,153 @@
+.course-content .eTaskGradeTable table {
+    margin: 5px;
+}
+.gradeSettings {
+    display: inline-block;
+}
+.gradeSettings ul.menu {
+    width: 300px;
+}
+.gradeSettings ul.menu li {
+    margin: 5px;
+}
+.course-content img.itemIco {
+    width: 16px;
+    height: 16px;
+}
+
+.course-content table.gradeTable {
+    display: block;
+    table-layout: fixed;
+}
+.course-content th.gradeItemHeader {
+    min-width: 50px;
+    height: 35px;
+    padding: 8px 5px;
+    white-space: nowrap;
+}
+.course-content td.userHeader {
+    min-width: 130px;
+    padding: 0 5px;
+    white-space: nowrap;
+}
+.course-content table .center {
+    text-align: center;
+}
+.course-content td a.gradeItemBody {
+    display: block;
+    width: 100%;
+}
+
+.course-content .submitted {
+    color: #8a6d3b;
+    background-color: #fcf8e3 !important;
+    border: 1px solid #faebcc;
+}
+.course-content .passed {
+    color: #3c763d;
+    background-color: #dff0d8 !important;
+    border: 1px solid #d6e9c6;
+}
+.course-content .failed {
+    color: #a94442;
+    background-color: #f2dede !important;
+    border: 1px solid #ebccd1;
+}
+
+.course-content .submitted a {
+    color: #8a6d3b;
+}
+.course-content .passed a {
+    color: #3c763d;
+}
+.course-content .failed a {
+    color: #a94442;
+}
+
+.course-content .legend {
+    text-align: right;
+    margin: 0;
+}
+.course-content .legend span {
+    padding: 8px;
+    margin: 5px;
+    border-radius: .25rem;
+}
+
+.course-content .eTaskGradeTable {
+    width: auto;
+    overflow-x: auto;
+}
+
+.eTaskGradeTable .pointer,
+.eTaskGradeTable .pointer:focus,
+.eTaskGradeTable .pointer:active {
+    cursor: pointer;
+}
+
+.eTaskGradeTable img.gradeItemDialog {
+    opacity: 0.5;
+}
+
+.tooltipContainer h5 {
+    margin-top: 5px;
+}
+.tooltipContainer progress {
+    margin: 5px 0 0 0;
+}
+
+.gradeTableForm .form-group .col-md-3 {
+    margin-top: 5px;
+}
+
+.course-content .gradeTableFooter {
+    border-bottom: 1px solid #f4f4f4;
+    margin-bottom: 1.3rem;
+    min-height: 55px;
+}
+
+.eTaskGradeTable nav {
+    text-align: center;
+}
+
+.eTaskGradeTable nav ul.pagination {
+    margin: 6px 0 0 0;
+    text-align: center;
+}
+
+.gradeItemTooltip {
+    width: 400px;
+    max-width: 700px;
+    white-space: nowrap;
+    padding: 0 0 10px 0;
+}
+
+.gradeTableForm form {
+    height: 34px;
+}
+
+.gradeTableForm form .fitemtitle, .gradeTableForm form .felement {
+    width: 80px !important;
+}
+
+.gradeTableForm form .fitemtitle {
+    margin: 0 5px !important;
+    text-align: left !important;
+}
+
+.gradeTableForm form .fitemtitle label {
+    font-weight: normal !important;
+}
+
+.gradeTableForm form.mform .fitem .felement {
+    padding: 0 !important;
+    margin-left: 120px;
+}
+
+table.gradeTableFooter {
+    width: 100%;
+}
+
+.block.eTaskGradeTable {
+    margin-bottom: 0;
+}

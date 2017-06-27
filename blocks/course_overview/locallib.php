@@ -164,7 +164,7 @@ function block_course_overview_get_max_user_courses($showallcourses = false) {
  * @return array list of sorted courses and count of courses.
  */
 function block_course_overview_get_sorted_courses($showallcourses = false) {
-    global $USER;
+    global $USER, $DB;
 
     $limit = block_course_overview_get_max_user_courses($showallcourses);
 
@@ -181,13 +181,25 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
         } else {
             $courses[$c->id]->lastaccess = 0;
         }
+	
+	//sve
+	if(!$showallcourses &&!empty($USER->profile['studentclass'])) {
+	    $category = $DB->get_record('course_categories',array('id'=>$c->id));
+	    if($category->name != $USER->profile['studentclass']) { //do not remove the last element
+//		unset($courses[$c->id]);//remove courses not for the class of the user
+	    }
+	}
+	//end-sve
     }
+
+    $allcourses = array_merge(array(), $courses);
 
     // Get remote courses.
     $remotecourses = array();
     if (is_enabled_auth('mnet')) {
         $remotecourses = get_my_remotecourses();
     }
+
     // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses
     foreach ($remotecourses as $id => $val) {
         $remoteid = $val->remoteid * -1;
@@ -206,9 +218,9 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
         }
 
         // Make sure user is still enroled.
-        if (isset($courses[$cid])) {
+        if (isset($courses[$cid]) && is_course_for_users_class($showallcourses, $courses[$cid]->category)) {
             $sortedcourses[$cid] = $courses[$cid];
-            $counter++;
+    	    $counter++;
         }
     }
     // Append unsorted courses if limit allows
@@ -216,7 +228,7 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
         if (($limit != 0) && ($counter >= $limit)) {
             break;
         }
-        if (!in_array($c->id, $order)) {
+        if (!in_array($c->id, $order) && is_course_for_users_class($showallcourses, $c->category)) {
             $sortedcourses[$c->id] = $c;
             $counter++;
         }
@@ -229,5 +241,25 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
             $sitecourses[$key] = $course;
         }
     }
+
     return array($sortedcourses, $sitecourses, count($courses));
 }
+
+//sve
+function is_course_for_users_class($showallcourses, $category_id) {
+    global $USER, $DB;
+
+    if($showallcourses) {
+	return true;
+    }
+    
+    if(!empty($USER->profile['studentclass'])) {
+        $category = $DB->get_record('course_categories',array('id'=>$category_id));
+        if($category->name == $USER->profile['studentclass']) { //do not remove the last element
+	    return true;
+	}
+    }
+
+    return false;
+}
+

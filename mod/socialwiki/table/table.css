@@ -1,0 +1,140 @@
+/* This file is part of Moodle - http://moodle.org/
+
+ Moodle is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Moodle is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * Socialwiki Table Style Sheet
+ *
+ * @package   mod_socialwiki
+ * @copyright 2015 NMAI-lab
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * DataTables features
+ */
+.socialwiki_wikicontent .dataTables_wrapper {
+    margin-top: -0.8em;
+    margin-bottom: 2em;
+}
+
+.socialwiki_wikicontent .dataTables_length {
+    width: 40%;
+    float: left;
+}
+
+.socialwiki_wikicontent .dataTables_filter {
+    float: right;
+}
+
+.socialwiki_wikicontent .dataTables_filter label {
+    margin: 0;
+}
+
+.socialwiki_wikicontent .dataTables_filter input {
+    margin-left: 0.5em;
+    margin-bottom: 0.2em;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * DataTables display
+ */
+.socialwiki_wikicontent table.datatable {
+    clear: both;
+    margin-bottom: 0;
+    height: 250px;
+    overflow: auto;
+    resize: vertical;
+}
+
+.jsenabled .socialwiki_wikicontent table.datatable {
+    height: auto;
+    resize: none;
+}
+
+.socialwiki_wikicontent .dataTables_scroll {
+    clear: both;
+}
+
+.socialwiki_wikicontent table.datatable thead th {
+    padding: 3px 16px 2px 6px;
+    border-bottom: 1px solid black;
+    font-weight: bold;
+    text-align: left;
+    outline: none;
+    cursor: pointer;
+    *cursor: hand;
+}
+
+.socialwiki_wikicontent table.datatable td {
+    padding: 3px 10px 2px 6px;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * DataTables sorting
+ */
+.socialwiki_wikicontent .sorting_asc {
+    background: url('../pix/table/sort_asc.png') no-repeat center right;
+}
+
+.socialwiki_wikicontent .sorting_desc {
+    background: url('../pix/table/sort_desc.png') no-repeat center right;
+}
+
+.socialwiki_wikicontent .sorting {
+    background: url('../pix/table/sort_both.png') no-repeat center right;
+}
+
+.socialwiki_wikicontent .sorting_asc_disabled {
+    background: url('../pix/table/sort_asc_disabled.png') no-repeat center right;
+}
+
+.socialwiki_wikicontent .sorting_desc_disabled {
+    background: url('../pix/table/sort_desc_disabled.png') no-repeat center right;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * DataTables row classes
+ */
+.socialwiki_wikicontent tr.odd {
+    background-color: #F7F7F9;
+}
+
+.socialwiki_wikicontent tr.even {
+    background-color: white;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Borders
+ */
+.socialwiki_wikicontent .dataTables_scrollBody {
+    -webkit-overflow-scrolling: touch;
+    resize: vertical;
+}
+
+.socialwiki_wikicontent table.dataTable tbody tr {
+    border-bottom: 1px solid #C9C9C9;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Sorting classes for columns
+ */
+.socialwiki_wikicontent tr.odd td.sorting_1 {
+    background-color: #ECECEE;
+}
+
+.socialwiki_wikicontent tr.even td.sorting_1 {
+    background-color: #F5F5F7;
+}
