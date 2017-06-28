@@ -181,15 +181,6 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
         } else {
             $courses[$c->id]->lastaccess = 0;
         }
-	
-	//sve
-	if(!$showallcourses &&!empty($USER->profile['studentclass'])) {
-	    $category = $DB->get_record('course_categories',array('id'=>$c->id));
-	    if($category->name != $USER->profile['studentclass']) { //do not remove the last element
-//		unset($courses[$c->id]);//remove courses not for the class of the user
-	    }
-	}
-	//end-sve
     }
 
     $allcourses = array_merge(array(), $courses);
