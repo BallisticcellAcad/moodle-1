@@ -122,7 +122,7 @@ class user_editadvanced_form extends moodleform {
 //        $mform->disabledIf('newpassword', 'createpassword', 'checked');
 //
 //        $mform->disabledIf('newpassword', 'auth', 'in', $cannotchangepass);
-//
+
 //        $mform->addElement('advcheckbox', 'preference_auth_forcepasswordchange', get_string('forcepasswordchange'));
 //        $mform->addHelpButton('preference_auth_forcepasswordchange', 'forcepasswordchange');
 //        $mform->disabledIf('preference_auth_forcepasswordchange', 'createpassword', 'checked');

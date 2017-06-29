@@ -25,6 +25,7 @@ class mod_quizoff_mod_form extends moodleform_mod {
         $mform->addElement('url', 'externalurl', get_string('externalurl', 'quizoff'), array('size'=>'60'), array('usefilepicker'=>true));
         $mform->setType('externalurl', PARAM_RAW_TRIMMED);
         $mform->addRule('externalurl', null, 'required', null, 'client');
+        $this->standard_grading_coursemodule_elements();
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
     }
