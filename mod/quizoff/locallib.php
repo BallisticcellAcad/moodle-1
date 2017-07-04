@@ -90,7 +90,8 @@ function get_token_by_user_id() {
             'content' => json_encode($post_data)
         )
     ));
-    $response = file_get_contents(JSON_SERVICES_URL, FALSE, $context);
+    
+    $response = file_get_contents(JSON_SERVICES_GET_TOKEN_BY_USER_UD_URL, FALSE, $context);
     
     if ($response === FALSE || $response == 0) {
         return '0';
