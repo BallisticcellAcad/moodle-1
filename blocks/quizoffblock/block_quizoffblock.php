@@ -24,20 +24,20 @@ class block_quizoffblock extends block_base {
         }
 
         $userId = $USER->id;
-        $k12 = K12_NAME;
-        $enrolK12Query = "SELECT COUNT(*) AS EnrollCount FROM mdl_user_enrolments WHERE userid=$userId AND enrolid IN(
-            SELECT id FROM mdl_enrol where enrol='manual' AND status=0 AND courseid IN(
-                    SELECT id FROM mdl_course WHERE category IN 
-                    (SELECT id FROM mdl_course_categories WHERE name='$k12')
-                    UNION 
-                    SELECT id FROM mdl_course WHERE category IN 
-                    (SELECT id FROM mdl_course_categories WHERE parent=(SELECT id FROM mdl_course_categories WHERE name='$k12'))
-            ) 
-        )";
+//        $k12 = K12_NAME;
+//        $enrolK12Query = "SELECT COUNT(*) AS EnrollCount FROM mdl_user_enrolments WHERE userid=$userId AND enrolid IN(
+//            SELECT id FROM mdl_enrol where enrol='manual' AND status=0 AND courseid IN(
+//                    SELECT id FROM mdl_course WHERE category IN 
+//                    (SELECT id FROM mdl_course_categories WHERE name='$k12')
+//                    UNION 
+//                    SELECT id FROM mdl_course WHERE category IN 
+//                    (SELECT id FROM mdl_course_categories WHERE parent=(SELECT id FROM mdl_course_categories WHERE name='$k12'))
+//            ) 
+//        )";
 
-        $enrolCount = $DB->get_field_sql($enrolK12Query);
+        //$enrolCount = $DB->get_field_sql($enrolK12Query);
 
-        $hasK12Enrollment = $enrolCount > 0;
+        //$hasK12Enrollment = $enrolCount > 0;
 
         $urlParam = QUIZOFF_GAME_URL;
         $token = get_token_by_user_id();
@@ -45,9 +45,8 @@ class block_quizoffblock extends block_base {
         $urlWithToken = str_replace('&', '&amp;', $urlParam . $tokenParam);
 
         $pageUrl = $CFG->wwwroot . QUIZOFF_STATIC_PAGE_URL . $urlWithToken;
-        $pageUrlWithToken = $CFG->wwwroot . QUIZOFF_STATIC_PAGE_URL . $urlWithToken;
 
-        $htmlText = "<div style='float: left; text-align: right; vertical-align: middle; padding-top: 50px; padding-right: 20px'>" . $this->GetButtonHtml("Играй с общи въпроси", $pageUrl);
+        $htmlText = "<div style='float: left; text-align: right; vertical-align: middle; padding-top: 110px; padding-right: 20px'>" . $this->GetButtonHtml("Играй", $pageUrl);
         $htmlText .= '<br/>';
 
         $rank = $DB->get_field_sql("SELECT total_user_rank_score FROM user_last WHERE userid=$userId");
@@ -66,9 +65,9 @@ class block_quizoffblock extends block_base {
                 . "background-image: url(\"$bgImageUrl\")";
         $rangHtml = "<div style='$rangCssStyle'><span>$rank</span></div>";
         
-        if ($hasK12Enrollment) {
-            $htmlText .= $this->GetButtonHtml("Играй с учебно съдържание", $pageUrlWithToken);
-        }
+//        if ($hasK12Enrollment) {
+//            $htmlText .= $this->GetButtonHtml("Играй с учебно съдържание", $pageUrlWithToken);
+//        }
 
         $htmlText .= "</div>" . $rangHtml;
 
