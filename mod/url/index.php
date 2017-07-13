@@ -40,20 +40,20 @@ $event->add_record_snapshot('course', $course);
 $event->trigger();
 
 $strurl       = get_string('modulename', 'url');
-$strurls      = get_string('modulenameplural', 'url');
+$strquizoffs      = get_string('modulenameplural', 'url');
 $strname         = get_string('name');
 $strintro        = get_string('moduleintro');
 $strlastmodified = get_string('lastmodified');
 
 $PAGE->set_url('/mod/url/index.php', array('id' => $course->id));
-$PAGE->set_title($course->shortname.': '.$strurls);
+$PAGE->set_title($course->shortname.': '.$strquizoffs);
 $PAGE->set_heading($course->fullname);
-$PAGE->navbar->add($strurls);
+$PAGE->navbar->add($strquizoffs);
 echo $OUTPUT->header();
-echo $OUTPUT->heading($strurls);
+echo $OUTPUT->heading($strquizoffs);
 
 if (!$urls = get_all_instances_in_course('url', $course)) {
-    notice(get_string('thereareno', 'moodle', $strurls), "$CFG->wwwroot/course/view.php?id=$course->id");
+    notice(get_string('thereareno', 'moodle', $strquizoffs), "$CFG->wwwroot/course/view.php?id=$course->id");
     exit;
 }
 

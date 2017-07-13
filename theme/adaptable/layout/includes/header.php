@@ -215,9 +215,9 @@ if (!isloggedin() || isguestuser()) {
             </button>
         </form>
         <div class="register-button"> 
-            <a href="http://academico.bg/">
-                <button class="btn-login">Sign Up
-                    <?php // echo get_string('registertextbutton', 'theme_adaptable'); ?>
+            <a href="http://academico.bg/account/?action=register">
+                <button class="btn-login">
+                    <?php echo get_string('registertextbutton', 'theme_adaptable'); ?>
                 </button>
             </a>
         </div>

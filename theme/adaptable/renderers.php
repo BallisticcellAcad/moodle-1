@@ -516,7 +516,7 @@ class theme_adaptable_core_renderer extends core_renderer {
     public function user_menu($user = null, $withlinks = null) {
         global $CFG;
         $usermenu = new custom_menu('', current_language());
-        $content .= $this->render_contacts_hed();
+        $content = $this->render_contacts_hed();
         $content .= $this->render_user_menu($usermenu);        
         return $content;
     }
@@ -902,7 +902,7 @@ EOT;
     protected function render_contacts_hed()
     {
         global $OUTPUT, $CFG;
-        $content = html_writer::start_tag('div', array('class' => 'cantacts-hed'));
+        $content = html_writer::start_tag('div', array('class' => 'contacts-hed'));
         $phoneIconAttributes = array(
                         'class' => 'phone-icon',
                         'src' => $CFG->wwwroot.'/theme/adaptable/pix/phone_icon.png'
@@ -913,7 +913,7 @@ EOT;
                         'src' => $CFG->wwwroot.'/theme/adaptable/pix/letter_icon.png'
                     );
                         
-        $content = html_writer::start_tag('div', array('class' => 'cantacts-hed'));
+        $content = html_writer::start_tag('div', array('class' => 'contacts-hed'));
         $content .= html_writer::empty_tag('img', $phoneIconAttributes);
         $content .= '<span class="phone-hed">0700 18 882</span>';
         $mailContent = html_writer::empty_tag('img', $mailIconAttributes);
@@ -971,6 +971,9 @@ EOT;
                                               new moodle_url('/message/index.php'), get_string('messages', 'message'), 9999);
                 }
 
+                if(!isset($messages)) {
+                    $messages = array();
+                }
                 // In Moodle 3.1 we display the messages in a pop-up.
                 foreach ($messages as $message) {
                     if (!isset($message->from) || !isset($message->from->id) || !isset($message->from->firstname)) {

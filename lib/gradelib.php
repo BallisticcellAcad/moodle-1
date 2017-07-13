@@ -68,6 +68,8 @@ function grade_update($source, $courseid, $itemtype, $itemmodule, $iteminstance,
 
     // grade item identification
     $params = compact('courseid', 'itemtype', 'itemmodule', 'iteminstance', 'itemnumber');
+    
+    
 
     if (is_null($courseid) or is_null($itemtype)) {
         debugging('Missing courseid or itemtype');
@@ -99,7 +101,6 @@ function grade_update($source, $courseid, $itemtype, $itemmodule, $iteminstance,
     }
 
 /// Create or update the grade_item if needed
-
     if (!$grade_item) {
         if ($itemdetails) {
             $itemdetails = (array)$itemdetails;
@@ -173,6 +174,7 @@ function grade_update($source, $courseid, $itemtype, $itemmodule, $iteminstance,
     }
 
     // no grade submitted
+    
     if (empty($grades)) {
         return GRADE_UPDATE_OK;
     }

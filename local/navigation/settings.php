@@ -15,24 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * local_envbar
+ * Settings Custom Navigation local plugin.
  *
- * @package    local_envbar
- * @copyright  2016 Brendan Heywood <brendan@catalyst-au.net>
+ * @package    local_navigation
+ * @author     Carlos Escobedo <http://www.twitter.com/carlosagile>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$tasks = array(
-    array(
-        'classname' => 'local_envbar\task\checkprod',
-        'blocking'  => 0,
-        'minute'    => '*',
-        'hour '     => '*',
-        'day'       => '*',
-        'dayofweek' => '*',
-        'month'     => '*'
-    ),
-);
+if ($hassiteconfig) {
+    $settings = new admin_settingpage('local_navigation', get_string('pluginname', 'local_navigation'));
+    $settings->add(new admin_setting_configcheckbox('local_navigation/enabled', get_string('activate', 'local_navigation'),
+        get_string('stractivate', 'local_navigation'), 0));
+    $settings->add(new admin_setting_configtextarea('local_navigation/menuitems',
+        get_string('items', 'local_navigation'), get_string('stritems', 'local_navigation'), '', PARAM_RAW));
 
+     $ADMIN->add('appearance', $settings);
+}

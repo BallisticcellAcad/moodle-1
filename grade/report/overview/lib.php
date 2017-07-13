@@ -176,6 +176,8 @@ class grade_report_overview extends grade_report {
         if ($studentcoursesonly && count($this->studentcourseids) == 0) {
             return false;
         }
+        
+        
 
         // Only show user's courses instead of all courses.
         if ($this->courses) {
@@ -245,8 +247,9 @@ class grade_report_overview extends grade_report {
                         $course_item->grademax = $course_grade->get_grade_max();
                     }
                 }
-
+                
                 $data = array($courselink, grade_format_gradevalue($finalgrade, $course_item, true));
+
 
                 if (!$this->showrank['any']) {
                     //nothing to do
@@ -263,13 +266,15 @@ class grade_report_overview extends grade_report {
 
                     $data[] = "$rank/$numusers";
 
+
                 } else {
                     // No grade, no rank.
                     // Or this course wants rank hidden.
                     $data[] = '-';
                 }
-
+                
                 $this->table->add_data($data);
+
             }
             return true;
 

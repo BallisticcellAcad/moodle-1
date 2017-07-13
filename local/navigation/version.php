@@ -15,22 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Environment bar settings.
+ * Add new custom options in Navigation Menu.
  *
- * @package   local_envbar
- * @author    Grigory Baleevskiy (grigory@catalyst-au.net)
- * @author    Nicholas Hoobin <nicholashoobin@catalyst-au.net>
- * @copyright Catalyst IT
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_navigation
+ * @author     Carlos Escobedo <http://www.twitter.com/carlosagile>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if ($hassiteconfig) {
+defined('MOODLE_INTERNAL') || die;
 
-    $externalpage = new admin_externalpage('local_envbar',
-        get_string('pluginname', 'local_envbar'),
-        new moodle_url('/local/envbar/index.php'));
-
-    $ADMIN->add('localplugins', $externalpage);
-
-    $settings = null;
-}
+$plugin->version   = 2016110101;
+$plugin->requires  = 2014111000;
+$plugin->component = 'local_navigation';
+$plugin->maturity = MATURITY_STABLE;
+$plugin->release = '1.3';

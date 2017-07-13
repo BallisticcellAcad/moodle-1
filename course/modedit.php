@@ -215,6 +215,8 @@ if (!empty($add)) {
             // do not set if mixed categories present
             $data->gradecat = $gradecat;
         }
+        
+        var_dump($gradecat);
     }
 
     $sectionname = get_section_name($course, $cw);

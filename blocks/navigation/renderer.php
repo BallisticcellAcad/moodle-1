@@ -68,7 +68,6 @@ class block_navigation_renderer extends plugin_renderer_base {
         if (count($items) === 0) {
             return '';
         }
-
         // Turn our navigation items into list items.
         $lis = array();
         // Set the number to be static for unique id's.

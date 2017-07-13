@@ -32,5 +32,6 @@ function scorm_openpopup(url,name,options,width,height) {
         windowobj.moveTo(0,0);
     }
     windowobj.focus();
+    debugger;
     return windowobj;
 }

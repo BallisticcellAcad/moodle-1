@@ -59,7 +59,7 @@ $string['colorvisible'] = 'Cor do botão da seção visível';
 $string['colorvisible_help'] = 'A seção visível é a seção selecionada. <br> Defina uma cor em hexadecimal.
 <i>Exemplo: #747fab</i><br>.Se quiser usar a cor padrão deixe em branco.';
 $string['editing'] = 'Os botões ficam desabilitados enquanto o modo de edição estiver ativado.';
-$string['sequential'] = 'Sequential';
+$string['sequential'] = 'Sequencial';
 $string['notsequentialdesc'] = 'Cada novo grupo o contador de seções volta para um.';
 $string['sequentialdesc'] = 'Contar as seções ignorando os agrupamentos.';
 $string['sectiontype'] = 'Estilo da listagem';

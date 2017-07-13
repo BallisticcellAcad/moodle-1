@@ -20,6 +20,14 @@
     height: 100%;
 }
 
+
+.path-mod-scorm .rsframe {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    display: none;
+}
+
 .ios #scormpage #scorm_content {
     -webkit-overflow-scrolling: touch;
     overflow: scroll;

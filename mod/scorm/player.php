@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 // This page prints a particular instance of aicc/scorm package.
-
+header("Access-Control-Allow-Origin: *");
 require_once('../../config.php');
 require_once($CFG->dirroot.'/mod/scorm/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
@@ -223,9 +223,11 @@ if (empty($scorm->popup) || $displaymode == 'popup') {
                     $scorm->course, get_string('finishscormlinkname', 'scorm'));
     echo $OUTPUT->box(get_string('finishscorm', 'scorm', $linkcourse), 'generalbox', 'altfinishlink');
 }
+
 echo html_writer::end_div(); // Toc tree ends.
 echo html_writer::end_div(); // Toc box ends.
 echo html_writer::tag('noscript', html_writer::div(get_string('noscriptnoscorm', 'scorm'), '', array('id' => 'noscript')));
+echo html_writer::script('', $CFG->wwwroot.'/mod/scorm/custom.js');
 
 if ($result->prerequisites) {
     if ($scorm->popup != 0 && $displaymode !== 'popup') {
@@ -234,7 +236,7 @@ if ($result->prerequisites) {
         if (!$name) {
             $name = 'DefaultPlayerWindow';
         }
-        $name = 'scorm_'.$name;
+        $name = 'scorm_'.$name;        
         echo html_writer::script('', $CFG->wwwroot.'/mod/scorm/player.js');
         $url = new moodle_url($PAGE->url, array('scoid' => $sco->id, 'display' => 'popup', 'mode' => $mode));
         echo html_writer::script(
@@ -242,12 +244,22 @@ if ($result->prerequisites) {
                                                        $name, $scorm->options,
                                                        $scorm->width, $scorm->height)));
         echo html_writer::tag('noscript', html_writer::tag('iframe', '', array('id' => 'main',
-                                'class' => 'scoframe', 'name' => 'main', 'src' => 'loadSCO.php?id='.$cm->id.$scoidstr.$modestr)));
+                                'class' => 'scoframe', 'name' => 'main', 'src' => 'loadSCO.php?id='.$cm->id.$scoidstr.$modestr, 
+                                'onload' => 'resizeIframe(this)')));
+       
     }
 } else {
     echo $OUTPUT->box(get_string('noprerequisites', 'scorm'));
 }
+
 echo html_writer::end_div(); // Scorm page ends.
+
+//echo html_writer::start_div('', array('id' => 'rosseta-content'));
+//echo html_writer::tag('input', '', array('id' => 'rosseta-exit',
+//                        'class' => 'hidden', 'type' => 'button', 'value' => 'Exit', 'onclick' => 'exitRS()'));
+//echo html_writer::tag('iframe', '', array('id' => 'rosseta-window', 'onload' => 'resizeIframe(this)',
+//                        'class' => 'rsframe', 'name' => 'rosseta-window'));
+echo html_writer::end_div(); // Rosseta content ends
 
 $scoes = scorm_get_toc_object($USER, $scorm, $currentorg, $sco->id, $mode, $attempt);
 $adlnav = scorm_get_adlnav_json($scoes['scoes']);
@@ -262,6 +274,7 @@ if (empty($scorm->popup) || $displaymode == 'popup') {
         'requires' => array('json'),
     );
     $scorm->nav = intval($scorm->nav);
+    
     $PAGE->requires->js_init_call('M.mod_scorm.init', array($scorm->nav, $scorm->navpositionleft, $scorm->navpositiontop,
                             $scorm->hidetoc, $collapsetocwinsize, $result->toctitle, $name, $sco->id, $adlnav), false, $jsmodule);
 }

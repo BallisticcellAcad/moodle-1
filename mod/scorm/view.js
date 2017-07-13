@@ -11,6 +11,7 @@ M.mod_scormform.init = function(Y) {
     var launch_url = M.cfg.wwwroot + "/mod/scorm/player.php?a=" + scorm + "&currentorg=" + currentorg + "&scoid=" + sco + "&sesskey=" + M.cfg.sesskey + "&display=popup";
     var course_url = scormplayerdata.courseurl;
     var winobj = null;
+    console.log(launch_url);
 
     poptions = poptions + ',resizable=yes'; // Added for IE (MDL-32506).
 
