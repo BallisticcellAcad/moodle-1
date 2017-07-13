@@ -581,6 +581,35 @@ echo $OUTPUT->doctype();
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
+                                                    <label for="inputGander" class="col-sm-2 control-label"><?php echo get_string('gander', 'theme_remui'); ?></label>
+                                                    <div class="col-sm-10">
+                                                        <?php
+                                                        $ganderField = $DB->get_record('user_info_field', array('shortname' => 'studentgender'));
+                                                        $ganders = explode(PHP_EOL, $ganderField->param1);
+                                                        $userGander = '';
+                                                        if ($otheruserFields) {
+                                                            foreach ($otheruserFields as $field) {
+                                                                if ($field->fieldid == $ganderField->id) {
+                                                                    $userGander = $field->data;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                        ?>
+                                                        <select class="form-control" id="select-gander">                                                            
+                                                            <?php
+                                                            foreach ($ganders as $gander) {
+                                                                if ($userGander && $gander === $userGander) {
+                                                                    echo "<option selected value=" . $gander . ">" . $gander . "</option>";
+                                                                } else {
+                                                                    echo "<option value=" . $gander . ">" . $gander . "</option>";
+                                                                }
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
                                                     <label for="inputDescription" class="col-sm-2 control-label"><?php echo get_string('description', 'theme_remui'); ?></label>
                                                     <div class="col-sm-10">
                                                         <textarea class="form-control" <?php echo $descriptiondisabled; ?> id="inputDescription" placeholder="Description"><?php echo strip_tags($otheruser->description); ?></textarea>

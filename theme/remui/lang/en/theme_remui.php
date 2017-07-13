@@ -478,6 +478,7 @@ $string['school'] = 'School';
 $string['selectschool'] = 'Select School';
 $string['class'] = 'Class';
 $string['birthdate'] = 'Birth date';
+$string['gander'] = 'Gander';
 $string['description'] = 'Description';
 
 $string['nocommoncourses'] = 'You have not been enrolled in any common courses with this user.';

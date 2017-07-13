@@ -787,7 +787,7 @@ class theme_controller
         $user->description = $description;
         $user->city = $cityname;
         $user->country = $country;
-        user_update_user($user);
+        user_update_user($user, false);
         profile_save_data($userFields);
         self::load_user_last($userFields);
     }

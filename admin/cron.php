@@ -77,5 +77,8 @@ if (!empty($CFG->cronremotepassword)) {
 // we do not want html markup in emulated CLI
 @ini_set('html_errors', 'off');
 
+// Update Grades
+//grade_update(110);
+
 // execute the cron
 cron_run();
