@@ -110,7 +110,6 @@ function quizoff_grade_item_update($quizoff, $grades = NULL) {
     if ($grades === 'reset') {
         $params['reset'] = true;
         $grades = NULL;
-    }
-    
+    }    
     return grade_update('mod/quizoff', $quizoff->course, 'mod', 'quizoff', $quizoff->id, 0, $grades, $params);
 }
