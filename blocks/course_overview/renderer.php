@@ -31,6 +31,77 @@ defined('MOODLE_INTERNAL') || die;
  */
 class block_course_overview_renderer extends plugin_renderer_base {
 
+    
+    public static function course_completion_progress($course, $userid = null) {
+        global $USER;
+        if (!isloggedin() || isguestuser()) {
+            return null; // Can't get completion progress for users who aren't logged in.
+        }
+        if (!$userid){
+            $userid = $USER->id;
+        } else {
+            $userid = $userid;
+        }
+        // Security check - are they enrolled on course.
+        $context = \context_course::instance($course->id);
+        if (!is_siteadmin() && !is_enrolled($context, null, '', true)) {
+            return null;
+        }
+
+        // return if not student
+        $roles = get_user_roles($context, $userid, false);
+        $keys = array_keys($roles);
+        if ($roles && ($roles[$keys[0]]->roleid != 5)) {
+          return null;  
+        }
+
+        $completioninfo = new \completion_info($course);
+        $trackcount = 0;
+        $compcount = 0;
+
+            if ($completioninfo->is_enabled()) {
+            $modinfo = get_fast_modinfo($course);
+            foreach ($modinfo->cms as $thismod) {
+                if (!is_siteadmin() && !$thismod->uservisible) {
+                    // Skip when mod is not user visible.
+                    continue;
+                }
+
+                $completioninfo->get_data($thismod, true, $userid);
+
+               // echo $completioninfo->userid;
+                if ($completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
+                    $trackcount++;
+                    $completiondata = $completioninfo->get_data($thismod, true, $userid);
+                /*    echo '<pre>';
+                    print_r($completiondata);
+                    echo '<pre>';*/
+                    if ($completiondata->completionstate == COMPLETION_COMPLETE ||
+                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                        $compcount++;
+                    }
+                }
+            }
+        }
+
+        $compobj = (object) array('complete' => $compcount, 'total' => $trackcount, 'progresshtml' => '');
+        if ($trackcount > 0) {
+                $progress = get_string('progresstotal', 'completion', $compobj);
+             // TODO - we should be putting our HTML in a renderer.
+                $progresspercent = ceil(($compcount / $trackcount) * 100);
+             /* $progressinfo = '<div class="completionstatus outoftotal">'.$progress.'<span class="pull-right">'.$progresspercent.'%</span></div>
+             <div class="completion-line" style="width:'.$progresspercent.'%"></div>
+             '; */
+            $progressinfo = '<div id="course-info">'.$progress.'</div><div class="progress" style="display:inline-block; width:100%">
+                <div class="progress-bar active" role="progressbar" aria-valuenow='.$progresspercent.' aria-valuemin="0" aria-valuemax="100" style="width:'.$progresspercent.'%">
+                    '.$progresspercent.'%<span class="sr-only">'.$progresspercent.'% Complete</span>
+                </div>
+             </div>';
+            $compobj->progresshtml = $progressinfo;
+        }
+        return $compobj;
+    }
+    
     /**
      * Construct contents of course_overview block
      *
@@ -84,12 +155,55 @@ class block_course_overview_renderer extends plugin_renderer_base {
         }
 
         foreach ($courses as $key => $course) {
+            $course_image_src = '';
+            $courseurl = '';
+            $progress = self::course_completion_progress($course);
             // If moving course, then don't show course which needs to be moved.
             if ($ismovingcourse && ($course->id == $movingcourseid)) {
                 continue;
             }
+            
+            if($course->id > 0) {
+                    // Create a course_in_list object to use the get_course_overviewfiles() method.
+                require_once($CFG->libdir . '/coursecatlib.php');
+                $course_list = new course_in_list($course);
+
+                foreach ($course_list->get_course_overviewfiles() as $file) {
+                    if ($file->is_valid_image()) {
+                        $imagepath = '/' . $file->get_contextid() .
+                                '/' . $file->get_component() .
+                                '/' . $file->get_filearea() .
+                                $file->get_filepath() .
+                                $file->get_filename();
+                        $imageurl = file_encode_url($CFG->wwwroot . '/pluginfile.php', $imagepath,
+                                false);
+
+                        $course_image_src = $imageurl;
+                        break;
+                    }
+                }
+            }
+            
+            
+
             $html .= $this->output->box_start('coursebox', "course-{$course->id}");
-            $html .= html_writer::start_tag('div', array('class' => 'course_title'));
+            $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
+            $html .= html_writer::start_tag('a', array('href' => $courseurl));
+            if(strlen($course_image_src) == 0) {
+                $course_image_src = '/blocks/course_overview/static_files/nopic.jpg';
+            }
+            $html .= html_writer::start_tag('div', array('class' => 'course-image',
+                                'style' => 'border-radius:14px 14px 0 0;min-height:300px;background-position:center;background-repeat:no-repeat;background-size:cover; background-image:url("'.$course_image_src.'"'));
+            
+            
+            $html .= html_writer::end_tag('div');
+            $html .= html_writer::end_tag('a');
+            $html .= html_writer::start_tag('div', array('class' => 'course_title', 'style' => 'border-radius:0 0 14px 14px;'));
+            if(isset($progress)) {
+                $html .= '<div class="progress-section">'.$progress->progresshtml.'</div>';
+            }         
+            
+            
             // If user is editing, then add move icons.
             if ($userediting && !$ismovingcourse) {
                 $moveicon = html_writer::empty_tag('img',
@@ -118,20 +232,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
                     format_string($course->shortname, true), $attributes) . ' (' . format_string($course->hostname) . ')', 2, 'title');
             }
             $html .= $this->output->box('', 'flush');
-            $html .= html_writer::end_tag('div');
-
-            if (!empty($config->showchildren) && ($course->id > 0)) {
-                // List children here.
-                if ($children = block_course_overview_get_child_shortnames($course->id)) {
-                    $html .= html_writer::tag('span', $children, array('class' => 'coursechildren'));
-                }
-            }
-
-            // If user is moving courses, then down't show overview.
-            if (isset($overviews[$course->id]) && !$ismovingcourse) {
-                $html .= $this->activity_display($course->id, $overviews[$course->id]);
-            }
-
+            
             if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE) {
                 // List category parent or categories path here.
                 $currentcategory = coursecat::get($course->category, IGNORE_MISSING);
@@ -149,6 +250,41 @@ class block_course_overview_renderer extends plugin_renderer_base {
                     $html .= html_writer::end_tag('div');
                 }
             }
+            
+            $html .= html_writer::end_tag('div');
+
+            if (!empty($config->showchildren) && ($course->id > 0)) {
+                // List children here.
+                if ($children = block_course_overview_get_child_shortnames($course->id)) {
+                    $html .= html_writer::tag('span', $children, array('class' => 'coursechildren'));
+                }
+            }
+
+            // If user is moving courses, then down't show overview.
+            if (isset($overviews[$course->id]) && !$ismovingcourse) {
+                $html .= $this->activity_display($course->id, $overviews[$course->id]);
+            }
+
+//            if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE) {
+//                // List category parent or categories path here.
+//                $currentcategory = coursecat::get($course->category, IGNORE_MISSING);
+//                if ($currentcategory !== null) {
+//                    $html .= html_writer::start_tag('div', array('class' => 'categorypath'));
+//                    if ($config->showcategories == BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH) {
+//                        foreach ($currentcategory->get_parents() as $categoryid) {
+//                            $category = coursecat::get($categoryid, IGNORE_MISSING);
+//                            if ($category !== null) {
+//                                $html .= $category->get_formatted_name().' / ';
+//                            }
+//                        }
+//                    }
+//                    $html .= $currentcategory->get_formatted_name();
+//                    $html .= html_writer::end_tag('div');
+//                }
+//            }
+            
+//            $html .= html_writer::end_tag('div');
+//            $html .= html_writer::end_tag('a');
 
             $html .= $this->output->box('', 'flush');
             $html .= $this->output->box_end();

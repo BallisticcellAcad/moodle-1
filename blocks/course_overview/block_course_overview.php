@@ -50,7 +50,7 @@ class block_course_overview extends block_base {
     public function get_content() {
         global $USER, $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/lib.php');
-
+        require_once($CFG->dirroot.'/blocks/course_overview/renderer.php'); 
         if($this->content !== NULL) {
             return $this->content;
         }
@@ -73,7 +73,8 @@ class block_course_overview extends block_base {
         $showallcourses = ($updatemynumber === self::SHOW_ALL_COURSES);
         list($sortedcourses, $sitecourses, $totalcourses) = block_course_overview_get_sorted_courses($showallcourses);
         $overviews = block_course_overview_get_overviews($sitecourses);
-        $renderer = $this->page->get_renderer('block_course_overview');
+        //$renderer = $this->page->get_renderer('block_course_overview');
+        $renderer = new block_course_overview_renderer($this->page);
         if (!empty($config->showwelcomearea)) {
             require_once($CFG->dirroot.'/message/lib.php');
             $msgcount = message_count_unread_messages();
