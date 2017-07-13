@@ -1,0 +1,16 @@
+[[setting:loginsettingpic]]
+
+.pagelayout-frontpage .content-wrapper h2 {
+	color: inherit;
+}
+
+.content-wrapper>.content {
+    min-height: 450px!important;
+}
+
+/**
+ * Custom CSS
+ * This is the very last piece of CSS loaded, so if something looks weird,
+ * try removing your custom CSS from the theme settings page.
+ */
+[[setting:customcss]]

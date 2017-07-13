@@ -1,0 +1,28 @@
+/* @group Back to Top */
+@white: #FFFFFF;
+.remui-back-to-top [class^="icon-"] {
+  font-size: 3em;
+}
+
+.remui-back-to-top {
+  position: fixed;
+  right: 15px;
+  bottom: .5%;
+  z-index: 1000;
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: white!important;
+  font-size: 12px;
+  line-height: 33px;
+  text-align: center;
+  background-color: @active-skin-color;
+  box-shadow: 0 0px 5px rgba(68, 68, 68, .64);
+  border: 2px solid white;
+
+  & a, & a:visited {
+    color: @white !important;
+  }
+}
+/* @end */

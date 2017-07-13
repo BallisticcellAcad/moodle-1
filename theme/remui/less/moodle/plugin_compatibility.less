@@ -1,0 +1,77 @@
+/**
+ * Support for various moodle plugins
+**/
+
+/* course contacts block */
+.block_course_contacts {
+    .header {
+        .title {
+            h2 {
+                &:before {
+                    content: "\f007";
+                }
+            }
+        }
+    }
+    .content {
+        .box {
+            h2 {
+                font-size: 1.75rem;
+            }
+            .no-border;
+            padding: 0 5px;
+            background: transparent;
+            .ccard {
+                margin: 5px 0 10px -4px;
+                padding: 5px;
+                hr {
+                    display: none;
+                }
+                .info .name {
+                    font-size: 1.1em;
+                }
+                .comms {
+                    margin-top: 5px;
+                }
+            }
+        }
+    }
+}
+
+/* grid format plugin - coruse */
+#gridshadebox {
+    #gridshadebox_overlay, #gridshadebox_content {
+        z-index: 1040;
+    }
+
+    #gridshadebox_content {
+        border: solid 3px #ddd;
+    }
+}
+
+#gridiconcontainer {
+    ul.gridicons {
+        li {
+            padding: 5px 10px 10px 10px;
+            
+            .gridicon_link .tooltip-arrow {
+                border-top-color: #222;
+            }
+
+            .gridicon_link .tooltip-inner {
+                background-color: #222;
+                color: #fff;
+                text-shadow: 1px 2px 3px #444;
+                max-width: 300px;
+                padding: 2px 10px;
+            }
+        }
+        
+        li.currentselected {
+            background-color: @active-skin-color;
+            .icon_content {
+                color: #fff;
+            }
+        }
+    }
+}

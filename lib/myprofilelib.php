@@ -79,7 +79,7 @@ function core_myprofile_navigation(core_user\output\myprofile\tree $tree, $user,
                 'returnto' => 'profile'));
             $node = new core_user\output\myprofile\node('contact', 'editprofile', get_string('editmyprofile'), null, $url,
                 null, null, 'editprofile');
-            $tree->add_node($node);
+//            $tree->add_node($node);
         } else if ((has_capability('moodle/user:editprofile', $usercontext) && !is_siteadmin($user))
                    || ($iscurrentuser && has_capability('moodle/user:editownprofile', $systemcontext))) {
             $userauthplugin = false;

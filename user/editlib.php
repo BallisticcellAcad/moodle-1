@@ -312,24 +312,35 @@ function useredit_shared_definition(&$mform, $editoroptions, $filemanageroptions
                 . get_string('emailchangecancel', 'auth') . '</a>';
         $mform->addElement('static', 'emailpending', get_string('email'), $notice);
     } else {
-        $mform->addElement('text', 'email', get_string('email'), 'maxlength="100" size="30" readonly=true');
+        $mform->addElement('text', 'email', get_string('email'), 'maxlength="100" size="30"');
         $mform->addRule('email', $strrequired, 'required', null, 'client');
         $mform->setType('email', PARAM_RAW_TRIMMED);
     }
 
-    $choices = array();
-    $choices['0'] = get_string('emaildisplayno');
-    $choices['1'] = get_string('emaildisplayyes');
-    $choices['2'] = get_string('emaildisplaycourse');
-    $mform->addElement('select', 'maildisplay', get_string('emaildisplay'), $choices);
-    $mform->setDefault('maildisplay', core_user::get_property_default('maildisplay'));
+//    $choices = array();
+//    $choices['0'] = get_string('emaildisplayno');
+//    $choices['1'] = get_string('emaildisplayyes');
+//    $choices['2'] = get_string('emaildisplaycourse');
+//    $mform->addElement('select', 'maildisplay', get_string('emaildisplay'), $choices, '');
+//    $mform->setDefault('maildisplay', core_user::get_property_default('maildisplay'));
+    $mform->addElement('hidden', 'maildisplay', 1);
+    $mform->setType('maildisplay', PARAM_INT);
 
-    $mform->addElement('text', 'city', get_string('city'), 'maxlength="120" size="21"');
-    $mform->setType('city', PARAM_TEXT);
-    if (!empty($CFG->defaultcity)) {
-        $mform->setDefault('city', $CFG->defaultcity);
-    }
+//    $mform->addElement('text', 'city', get_string('city'), 'maxlength="120" size="21"');
+//    $mform->setType('city', PARAM_TEXT);
+//    if (!empty($CFG->defaultcity)) {
+//        $mform->setDefault('city', $CFG->defaultcity);
+//    }
 
+    $sql = "SELECT * FROM Cities"; 
+    $citiesDb = $DB->get_recordset_sql($sql, NULL);
+    $cities = array('' => get_string('selectacity') . '...');
+    foreach ($citiesDb as $cityDb) {         
+        $city = array($cityDb->id => $cityDb->name);
+        $cities = $cities + $city;
+    }    
+    
+    $mform->addElement('select', 'city', get_string('selectacity'), $cities);
     $choices = get_string_manager()->get_list_of_countries();
     $choices = array('' => get_string('selectacountry') . '...') + $choices;
     $mform->addElement('select', 'country', get_string('selectacountry'), $choices);

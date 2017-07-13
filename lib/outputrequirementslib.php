@@ -1021,7 +1021,7 @@ class page_requirements_manager {
         }
 
         $js = 'require(["' . $component . '/' . $module . '"], function(amd) { amd.' . $func . '(' . $strparams . '); });';
-
+echo var_dump($js);
         $this->js_amd_inline($js);
     }
 
