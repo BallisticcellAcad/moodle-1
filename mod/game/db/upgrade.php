@@ -41,6 +41,34 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+
+/**
+ * Copies a string field to int field
+ *
+ * @param string $table the name of table
+ * @param string $from the name of source field
+ * @param string $to the name of destination field
+ */
+function mpgame_db_copy_string_to_int( $table, $from, $to) {
+    global $CFG, $DB;
+
+    $sql = "SELECT * FROM {$CFG->prefix}$table";
+    $recs = $DB->get_records_sql( $sql);
+    foreach ($recs as $rec) {
+        $val = intval( $rec->$from);
+        if ($rec->$to == $val) {
+            continue;
+        }
+        if ($val == 0) {
+            continue;
+        }
+        $updrec = new stdClass;
+        $updrec->id = $rec->id;
+        $updrec->$to = $val;
+        $DB->update_record( $table, $updrec);
+    }
+}
+
 /**
  * Upgrades database
  *
@@ -1556,24 +1584,7 @@ function xmldb_game_upgrade($oldversion) {
         $dbman->change_field_type($table, $field);
     }
 
-    if ($oldversion < ($ver = 2017061604)) {
-        $table = new xmldb_table('game_cross');
-        $field = new xmldb_field('usedcols', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        $field = new xmldb_field('cols', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
-        if ($dbman->field_exists($table, $field)) {
-            $sql = "UPDATE {$CFG->prefix}game_cross SET usedcols=cols";
-            $DB->execute( $sql);
-            $dbman->drop_field($table, $field);
-        } else {
-            $dbman->add_field($table, $field);
-        }
-    }
-
-    if ($oldversion < ($ver = 2017061604)) {
+    if ($oldversion < ($ver = 2017062801)) {
         $table = new xmldb_table('game_cross');
         $field = new xmldb_field('usedrows', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
         if (!$dbman->field_exists($table, $field)) {
@@ -1582,9 +1593,52 @@ function xmldb_game_upgrade($oldversion) {
 
         $field = new xmldb_field('rows', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
         if ($dbman->field_exists($table, $field)) {
-            $sql = "UPDATE {$CFG->prefix}game_cross SET usedrows=rows";
-            $DB->execute( $sql);
-            $dbman->drop_field($table, $field);
+            mpgame_db_copy_string_to_int( 'game_cross', 'rows', 'usedrows');
+        } else {
+            $dbman->add_field($table, $field);
+        }
+    }
+
+    if ($oldversion < ($ver = 2017062801)) {
+        $table = new xmldb_table('game_cross');
+        $field = new xmldb_field('usedcols', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('cols', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
+        if ($dbman->field_exists($table, $field)) {
+            mpgame_db_copy_string_to_int( 'game_cross', 'cols', 'usedcols');
+        } else {
+            $dbman->add_field($table, $field);
+        }
+    }
+
+    if ($oldversion < ($ver = 2017062801)) {
+        $table = new xmldb_table('game_snakes_database');
+        $field = new xmldb_field('usedrows', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('rows', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
+        if ($dbman->field_exists($table, $field)) {
+            mpgame_db_copy_string_to_int( 'game_snakes_database', 'rows', 'usedrows');
+        } else {
+            $dbman->add_field($table, $field);
+        }
+    }
+
+    if ($oldversion < ($ver = 2017062801)) {
+        $table = new xmldb_table('game_snakes_database');
+        $field = new xmldb_field('usedcols', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('cols', XMLDB_TYPE_INTEGER, '3', XMLDB_UNSIGNED, null, null, '0', 'id');
+        if ($dbman->field_exists($table, $field)) {
+            mpgame_db_copy_string_to_int( 'game_snakes_database', 'cols', 'usedcols');
         } else {
             $dbman->add_field($table, $field);
         }
@@ -1592,3 +1646,4 @@ function xmldb_game_upgrade($oldversion) {
 
     return true;
 }
+

@@ -1,3 +1,13 @@
+Changes in version 2017-06-27 (20170627)
+- Fix conversation of columns (cols,rows) from string to int
+
+Changes in version 2017-06-20 (20170620)
+- Fix conversation of columns (cols,rows) from string to int
+
+Changes in version 2017-06-19 (20170619)
+- Change field name game_snakes_database.cols => usedcols
+- Change field name game_snakes_database.rows => usedrows
+
 Changes in version 2017-06-10 (20170610)
 - Fix phpdocs problems
 
