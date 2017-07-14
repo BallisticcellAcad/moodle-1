@@ -337,7 +337,9 @@ echo $OUTPUT->doctype();
                                     <?php if (is_siteadmin() || $otheruser->id == $USER->id) { ?>
                                         <li><a href="#editavatar" data-toggle="tab"><?php echo get_string('editavatar', 'theme_remui'); ?></a></li>
                                     <?php } ?>
+                                    <?php if (is_siteadmin()) { ?>
                                     <li class = "pull-right"><a href="#advancedusersettings" data-toggle="tab"><i class="fa fa-gear fa-lg"></i></a></li>
+                                    <?php } ?>
                                 </ul>
                                 <div class="tab-content">
                                     <?php

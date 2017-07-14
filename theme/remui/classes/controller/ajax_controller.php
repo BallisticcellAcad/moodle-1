@@ -112,8 +112,10 @@ class ajax_controller extends controller_abstract
         $defaultdate = strtotime('1970-01-01');
         $userFields = new \stdClass();
         $userFields->id = $id;
+        $userFields->name = $fname . " " .$lname;
         $userFields->profile_field_studentregion = $regionname;
         $userFields->profile_field_studentmunicipality = $municipalityname;
+        $userFields->profile_field_studentcity = $cityname;
         $userFields->profile_field_studentschool = $schoolname;
         $userFields->profile_field_studentclass = $class;
         $userFields->profile_field_studentgender = $gander;

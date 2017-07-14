@@ -28742,17 +28742,21 @@ fieldset[disabled] a.block_comments .content .comment-area .fd a {
   display: block;
   width: 100%;
 }
-.block_course_overview .header .title h2:before {
+.block_course_overview .header .title h2:before,
+.block_course_overview_rs .header .title h2:before {
   content: "\f0c9";
 }
-.block_course_overview .content {
+.block_course_overview .content,
+.block_course_overview_rs .content {
   margin: 0;
 }
-.block_course_overview .content .course_list {
+.block_course_overview .content .course_list,
+.block_course_overview_rs .content .course_list{
   margin-right: -15px;
   margin-left: -15px;
 }
-.block_course_overview .content .course_list .coursebox {
+.block_course_overview .content .course_list .coursebox,
+.block_course_overview_rs .content .course_list .coursebox{
   position: relative;
   float: left;
   width: 100%;
@@ -28760,7 +28764,8 @@ fieldset[disabled] a.block_comments .content .comment-area .fd a {
   padding-right: 15px;
   padding-left: 15px;
 }
-.block_course_overview .content .course_list .coursebox .course_title {
+.block_course_overview .content .course_list .coursebox .course_title,
+.block_course_overview_rs .content .course_list .coursebox .course_title{
   position: relative;
   min-height: 70px;
   padding: 10px 10px 0 10px;
@@ -28774,29 +28779,34 @@ fieldset[disabled] a.block_comments .content .comment-area .fd a {
   color: #333;
 }
 @media (min-width: 768px) {
-  .block_course_overview .content .course_list .coursebox {
+  .block_course_overview .content .course_list .coursebox,
+  .block_course_overview_rs .content .course_list .coursebox{
     float: left;
     width: 50%;
   }
 }
 @media (min-width: 992px) {
-  .block_course_overview .content .course_list .coursebox {
+  .block_course_overview .content .course_list .coursebox,  
+  .block_course_overview_rs .content .course_list .coursebox{
     float: left;
     width: 33.33333333%;
   }
 }
 @media (min-width: 1200px) {
-  .block_course_overview .content .course_list .coursebox:nth-child(3n+1) {
+  .block_course_overview .content .course_list .coursebox:nth-child(3n+1),
+  .block_course_overview_rs .content .course_list .coursebox:nth-child(3n+1){
     clear: left;
   }
 }
 @media (min-width: 992px) and (max-width: 1199px) {
-  .block_course_overview .content .course_list .coursebox:nth-child(3n+1) {
+  .block_course_overview .content .course_list .coursebox:nth-child(3n+1),
+  .block_course_overview_rs .content .course_list .coursebox:nth-child(3n+1){
     clear: left;
   }
 }
 @media (min-width: 768px) and (max-width: 991px) {
-  .block_course_overview .content .course_list .coursebox:nth-child(2n+1) {
+  .block_course_overview .content .course_list .coursebox:nth-child(2n+1),
+  .block_course_overview_rs .content .course_list .coursebox:nth-child(2n+1){
     clear: left;
   }
 }

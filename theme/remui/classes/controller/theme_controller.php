@@ -1320,11 +1320,11 @@ class theme_controller
         $userlast = $DB->get_record_sql('SELECT * FROM user_last WHERE userid = ?', array($userData->id));
         if ($userlast) {            
             $sql = "UPDATE user_last SET regionId = {$userData->regionId}, municipalityId = {$userData->municipalityId}, cityId = {$userData->cityId}, "
-            . "schoolId = {$userData->schoolId} WHERE userid = {$userData->id}";
+            . "schoolId = {$userData->schoolId}, updated_at = now() WHERE userid = {$userData->id}";
             $DB->execute($sql);
         } else {
-            $sql = "INSERT INTO user_last (userid, regionId, municipalityId, cityId, schoolId) "
-            . "VALUES({$userData->id}, {$userData->regionId}, {$userData->municipalityId}, {$userData->cityId}, {$userData->schoolId})";
+            $sql = "INSERT INTO user_last (userid, student_name, regionId, municipalityId, cityId, schoolId, created_at, updated_at) "
+            . "VALUES({$userData->id}, '{$userData->name}', {$userData->regionId}, {$userData->municipalityId}, {$userData->cityId}, {$userData->schoolId}, now(), now())";
             $DB->execute($sql);
         }
     }
