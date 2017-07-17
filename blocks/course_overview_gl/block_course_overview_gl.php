@@ -17,11 +17,9 @@
 /**
  * Course overview block
  *
- * @package    block_course_overview
- * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    block_course_overview_gl
  */
-require_once($CFG->dirroot.'/blocks/course_overview/locallib.php');
+require_once($CFG->dirroot.'/blocks/course_overview_gl/locallib.php');
 
 /**
  * Course overview block
@@ -29,7 +27,7 @@ require_once($CFG->dirroot.'/blocks/course_overview/locallib.php');
  * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class block_course_overview extends block_base {
+class block_course_overview_gl extends block_base {
     /**
      * If this is passed as mynumber then showallcourses, irrespective of limit by user.
      */
@@ -39,23 +37,23 @@ class block_course_overview extends block_base {
      * Block initialization
      */
     public function init() {
-        $this->title   = get_string('pluginnamecustom', 'block_course_overview');
+        $this->title   = get_string('pluginnamecustom', 'block_course_overview_gl');
     }
 
     /**
-     * Return contents of course_overview block
+     * Return contents of course_overview_gl block
      *
      * @return stdClass contents of block
      */
     public function get_content() {
         global $USER, $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/lib.php');
-        require_once($CFG->dirroot.'/blocks/course_overview/renderer.php'); 
+        require_once($CFG->dirroot.'/blocks/course_overview_gl/renderer.php'); 
         if($this->content !== NULL) {
             return $this->content;
         }
 
-        $config = get_config('block_course_overview');
+        $config = get_config('block_course_overview_gl');
 
         $this->content = new stdClass();
         $this->content->text = '';
@@ -65,16 +63,16 @@ class block_course_overview extends block_base {
 
         $updatemynumber = optional_param('mynumber', -1, PARAM_INT);
         if ($updatemynumber >= 0 && optional_param('sesskey', '', PARAM_RAW) && confirm_sesskey()) {
-            block_course_overview_update_mynumber($updatemynumber);
+            block_course_overview_gl_update_mynumber($updatemynumber);
         }
 
         profile_load_custom_fields($USER);
 
         $showallcourses = ($updatemynumber === self::SHOW_ALL_COURSES);
-        list($sortedcourses, $sitecourses, $totalcourses) = block_course_overview_get_sorted_courses($showallcourses);
-        $overviews = block_course_overview_get_overviews($sitecourses);
-        //$renderer = $this->page->get_renderer('block_course_overview');
-        $renderer = new block_course_overview_renderer($this->page);
+        list($sortedcourses, $sitecourses, $totalcourses) = block_course_overview_gl_get_sorted_courses($showallcourses);
+        $overviews = block_course_overview_gl_get_overviews($sitecourses);
+        //$renderer = $this->page->get_renderer('block_course_overview_gl');
+        $renderer = new block_course_overview_gl_renderer($this->page);
         if (!empty($config->showwelcomearea)) {
             require_once($CFG->dirroot.'/message/lib.php');
             $msgcount = message_count_unread_messages();
@@ -90,9 +88,14 @@ class block_course_overview extends block_base {
             $this->content = NULL;
         } else {
             // For each course, build category cache.
-            $this->content->text .= $renderer->course_overview($sortedcourses, $overviews);
+            $this->content->text .= $renderer->course_overview_gl($sortedcourses, $overviews);
             $this->content->text .= $renderer->hidden_courses($totalcourses - count($sortedcourses));
         }
+        
+        //assign needed class to the main block, handled by our theme
+        $jquerySrcipt = "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js\"></script>";
+        $asignClass = $jquerySrcipt . "<script>$(document).ready(function() { $( \".block_course_overview_gl\").addClass(\"block_course_overview block_course_overview_gl\") });</script>";
+        $this->content->text .= $asignClass;
 
         return $this->content;
     }
@@ -122,7 +125,7 @@ class block_course_overview extends block_base {
      */
     public function hide_header() {
         // Hide header if welcome area is show.
-        $config = get_config('block_course_overview');
+        $config = get_config('block_course_overview_gl');
         return !empty($config->showwelcomearea);
     }
 }

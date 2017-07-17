@@ -15,24 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Lang strings for course_overview block
+ * Lang strings for course_overview_rs block
  *
- * @package    block_course_overview
+ * @package    block_course_overview_rs
  * @copyright  2012 Adam Olley <adam.olley@netspot.com.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot.'/blocks/course_overview/config.php');
+require_once($CFG->dirroot.'/blocks/course_overview_gl/config.php');
 
-$categoryName = K12_CATEGORY_NAME;
+$categoryName = GL_CATEGORY_NAME;
 
 $string['activityoverview'] = 'You have {$a}s that need attention';
 $string['alwaysshowall'] = 'Always show all';
 $string['collapseall'] = 'Collapse all course lists';
 $string['configotherexpanded'] = 'If enabled, other courses will be expanded by default unless overridden by user preferences.';
 $string['configpreservestates'] = 'If enabled, the collapsed/expanded states set by the user are stored and used on each load.';
-$string['course_overview:addinstance'] = "Add a new course overview $categoryName block";
-$string['course_overview:myaddinstance'] = "Add a new course overview $categoryName block to Dashboard";
+$string['course_overview_rs:addinstance'] = "Add a new course overview $categoryName block";
+$string['course_overview_rs:myaddinstance'] = "Add a new course overview $categoryName block to Dashboard";
 $string['defaultmaxcourses'] = 'Default maximum courses';
 $string['defaultmaxcoursesdesc'] = "Maximum courses which should be displayed on course overview $categoryName block, 0 will show all courses";
 $string['expandall'] = 'Expand all course lists';

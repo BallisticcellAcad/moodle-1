@@ -15,11 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * course_overview block rendrer
+ * course_overview_rs block rendrer
  *
- * @package    block_course_overview
- * @copyright  2012 Adam Olley <adam.olley@netspot.com.au>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    block_course_overview_rs
  */
 defined('MOODLE_INTERNAL') || die;
 
@@ -29,7 +27,7 @@ defined('MOODLE_INTERNAL') || die;
  * @copyright  2012 Adam Olley <adam.olley@netspot.com.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class block_course_overview_renderer extends plugin_renderer_base {
+class block_course_overview_rs_renderer extends plugin_renderer_base {
 
     
     public static function course_completion_progress($course, $userid = null) {
@@ -103,17 +101,18 @@ class block_course_overview_renderer extends plugin_renderer_base {
     }
     
     /**
-     * Construct contents of course_overview block
+     * Construct contents of course_overview_rs block
      *
      * @param array $courses list of courses in sorted order
      * @param array $overviews list of course overviews
-     * @return string html to be displayed in course_overview block
+     * @return string html to be displayed in course_overview_rs block
      */
-    public function course_overview($courses, $overviews) {
+    public function course_overview_rs($courses, $overviews) {
         $html = '';
-        $config = get_config('block_course_overview');
-        if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE) {
+        $config = get_config('block_course_overview_rs');
+        if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_RS_SHOWCATEGORIES_NONE) {
             global $CFG;
+
             require_once($CFG->libdir.'/coursecatlib.php');
         }
         $ismovingcourse = false;
@@ -123,7 +122,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
         // Intialise string/icon etc if user is editing and courses > 1
         if ($this->page->user_is_editing() && (count($courses) > 1)) {
             $userediting = true;
-            $this->page->requires->js_init_call('M.block_course_overview.add_handles');
+            $this->page->requires->js_init_call('M.block_course_overview_rs.add_handles');
 
             // Check if course is moving
             $ismovingcourse = optional_param('movecourse', FALSE, PARAM_BOOL);
@@ -140,15 +139,15 @@ class block_course_overview_renderer extends plugin_renderer_base {
             $a = new stdClass();
             $a->fullname = $courses[$movingcourseid]->fullname;
             $a->cancellink = html_writer::link($this->page->url, get_string('cancel'));
-            $html .= get_string('movingcourse', 'block_course_overview', $a);
+            $html .= get_string('movingcourse', 'block_course_overview_rs', $a);
             $html .= $this->output->box_end();
 
-            $moveurl = new moodle_url('/blocks/course_overview/move.php',
+            $moveurl = new moodle_url('/blocks/course_overview_rs/move.php',
                         array('sesskey' => sesskey(), 'moveto' => 0, 'courseid' => $movingcourseid));
             // Create move icon, so it can be used.
             $movetofirsticon = html_writer::empty_tag('img',
                     array('src' => $this->output->pix_url('movehere'),
-                        'alt' => get_string('movetofirst', 'block_course_overview', $courses[$movingcourseid]->fullname),
+                        'alt' => get_string('movetofirst', 'block_course_overview_rs', $courses[$movingcourseid]->fullname),
                         'title' => get_string('movehere')));
             $moveurl = html_writer::link($moveurl, $movetofirsticon);
             $html .= html_writer::tag('div', $moveurl, array('class' => 'movehere'));
@@ -164,8 +163,8 @@ class block_course_overview_renderer extends plugin_renderer_base {
             }
             
             if($course->id > 0) {
-                global $CFG;
                     // Create a course_in_list object to use the get_course_overviewfiles() method.
+                global $CFG;
                 require_once($CFG->libdir . '/coursecatlib.php');
                 $course_list = new course_in_list($course);
 
@@ -191,7 +190,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
             $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
             $html .= html_writer::start_tag('a', array('href' => $courseurl));
             if(strlen($course_image_src) == 0) {
-                $course_image_src = '/blocks/course_overview/static_files/nopic.jpg';
+                $course_image_src = '/blocks/course_overview_rs/static_files/nopic.jpg';
             }
             $html .= html_writer::start_tag('div', array('class' => 'course-image',
                                 'style' => 'border-radius:14px 14px 0 0;min-height:300px;background-position:center;background-repeat:no-repeat;background-size:cover; background-image:url("'.$course_image_src.'"'));
@@ -209,7 +208,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
             if ($userediting && !$ismovingcourse) {
                 $moveicon = html_writer::empty_tag('img',
                         array('src' => $this->pix_url('t/move')->out(false),
-                            'alt' => get_string('movecourse', 'block_course_overview', $course->fullname),
+                            'alt' => get_string('movecourse', 'block_course_overview_rs', $course->fullname),
                             'title' => get_string('move')));
                 $moveurl = new moodle_url($this->page->url, array('sesskey' => sesskey(), 'movecourse' => 1, 'courseid' => $course->id));
                 $moveurl = html_writer::link($moveurl, $moveicon);
@@ -234,12 +233,12 @@ class block_course_overview_renderer extends plugin_renderer_base {
             }
             $html .= $this->output->box('', 'flush');
             
-            if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE) {
+            if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_RS_SHOWCATEGORIES_NONE) {
                 // List category parent or categories path here.
                 $currentcategory = coursecat::get($course->category, IGNORE_MISSING);
                 if ($currentcategory !== null) {
                     $html .= html_writer::start_tag('div', array('class' => 'categorypath'));
-                    if ($config->showcategories == BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH) {
+                    if ($config->showcategories == BLOCKS_COURSE_OVERVIEW_RS_SHOWCATEGORIES_FULL_PATH) {
                         foreach ($currentcategory->get_parents() as $categoryid) {
                             $category = coursecat::get($categoryid, IGNORE_MISSING);
                             if ($category !== null) {
@@ -256,7 +255,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
 
             if (!empty($config->showchildren) && ($course->id > 0)) {
                 // List children here.
-                if ($children = block_course_overview_get_child_shortnames($course->id)) {
+                if ($children = block_course_overview_rs_get_child_shortnames($course->id)) {
                     $html .= html_writer::tag('span', $children, array('class' => 'coursechildren'));
                 }
             }
@@ -266,12 +265,12 @@ class block_course_overview_renderer extends plugin_renderer_base {
                 $html .= $this->activity_display($course->id, $overviews[$course->id]);
             }
 
-//            if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE) {
+//            if ($config->showcategories != BLOCKS_COURSE_OVERVIEW_RS_SHOWCATEGORIES_NONE) {
 //                // List category parent or categories path here.
 //                $currentcategory = coursecat::get($course->category, IGNORE_MISSING);
 //                if ($currentcategory !== null) {
 //                    $html .= html_writer::start_tag('div', array('class' => 'categorypath'));
-//                    if ($config->showcategories == BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH) {
+//                    if ($config->showcategories == BLOCKS_COURSE_OVERVIEW_RS_SHOWCATEGORIES_FULL_PATH) {
 //                        foreach ($currentcategory->get_parents() as $categoryid) {
 //                            $category = coursecat::get($categoryid, IGNORE_MISSING);
 //                            if ($category !== null) {
@@ -291,14 +290,14 @@ class block_course_overview_renderer extends plugin_renderer_base {
             $html .= $this->output->box_end();
             $courseordernumber++;
             if ($ismovingcourse) {
-                $moveurl = new moodle_url('/blocks/course_overview/move.php',
+                $moveurl = new moodle_url('/blocks/course_overview_rs/move.php',
                             array('sesskey' => sesskey(), 'moveto' => $courseordernumber, 'courseid' => $movingcourseid));
                 $a = new stdClass();
                 $a->movingcoursename = $courses[$movingcourseid]->fullname;
                 $a->currentcoursename = $course->fullname;
                 $movehereicon = html_writer::empty_tag('img',
                         array('src' => $this->output->pix_url('movehere'),
-                            'alt' => get_string('moveafterhere', 'block_course_overview', $a),
+                            'alt' => get_string('moveafterhere', 'block_course_overview_rs', $a),
                             'title' => get_string('movehere')));
                 $moveurl = html_writer::link($moveurl, $movehereicon);
                 $html .= html_writer::tag('div', $moveurl, array('class' => 'movehere'));
@@ -325,7 +324,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
             if (get_string_manager()->string_exists("activityoverview", $module)) {
                 $icontext .= get_string("activityoverview", $module);
             } else {
-                $icontext .= get_string("activityoverview", 'block_course_overview', $modulename);
+                $icontext .= get_string("activityoverview", 'block_course_overview_rs', $modulename);
             }
 
             // Add collapsible region with overview text in it.
@@ -346,13 +345,13 @@ class block_course_overview_renderer extends plugin_renderer_base {
     public function editing_bar_head($max = 0) {
         $output = $this->output->box_start('notice');
 
-        $options = array('0' => get_string('alwaysshowall', 'block_course_overview'));
+        $options = array('0' => get_string('alwaysshowall', 'block_course_overview_rs'));
         for ($i = 1; $i <= $max; $i++) {
             $options[$i] = $i;
         }
         $url = new moodle_url('/my/index.php', ['sesskey' => sesskey()]);
-        $select = new single_select($url, 'mynumber', $options, block_course_overview_get_max_user_courses(), array());
-        $select->set_label(get_string('numtodisplay', 'block_course_overview'));
+        $select = new single_select($url, 'mynumber', $options, block_course_overview_rs_get_max_user_courses(), array());
+        $select->set_label(get_string('numtodisplay', 'block_course_overview_rs'));
         $output .= $this->output->render($select);
 
         $output .= $this->output->box_end();
@@ -371,16 +370,16 @@ class block_course_overview_renderer extends plugin_renderer_base {
         }
         $output = $this->output->box_start('notice');
         $plural = $total > 1 ? 'plural' : '';
-        $config = get_config('block_course_overview');
+        $config = get_config('block_course_overview_rs');
         // Show view all course link to user if forcedefaultmaxcourses is not empty.
         if (!empty($config->forcedefaultmaxcourses)) {
-            $output .= get_string('hiddencoursecount'.$plural, 'block_course_overview', $total);
+            $output .= get_string('hiddencoursecount'.$plural, 'block_course_overview_rs', $total);
         } else {
             $a = new stdClass();
             $a->coursecount = $total;
-            $a->showalllink = html_writer::link(new moodle_url('/my/index.php', array('mynumber' => block_course_overview::SHOW_ALL_COURSES)),
+            $a->showalllink = html_writer::link(new moodle_url('/my/index.php', array('mynumber' => block_course_overview_rs::SHOW_ALL_COURSES)),
                     get_string('showallcourses'));
-            $output .= get_string('hiddencoursecountwithshowall'.$plural, 'block_course_overview', $a);
+            $output .= get_string('hiddencoursecountwithshowall'.$plural, 'block_course_overview_rs', $a);
         }
 
         $output .= $this->output->box_end();
@@ -440,7 +439,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
         $output .= '<div id="' . $id . '_caption" class="collapsibleregioncaption">';
         $output .= $caption . ' ';
         $output .= '</div><div id="' . $id . '_inner" class="collapsibleregioninner">';
-        $this->page->requires->js_init_call('M.block_course_overview.collapsible', array($id, $userpref, get_string('clicktohideshow')));
+        $this->page->requires->js_init_call('M.block_course_overview_rs.collapsible', array($id, $userpref, get_string('clicktohideshow')));
 
         return $output;
     }
@@ -469,20 +468,20 @@ class block_course_overview_renderer extends plugin_renderer_base {
         $output .= html_writer::tag('div', $picture, array('class' => 'profilepicture'));
 
         $output .= $this->output->box_start('welcome_message');
-        $output .= $this->output->heading(get_string('welcome', 'block_course_overview', $USER->firstname));
+        $output .= $this->output->heading(get_string('welcome', 'block_course_overview_rs', $USER->firstname));
 
         if (!empty($CFG->messaging)) {
             $plural = 's';
             if ($msgcount > 0) {
-                $output .= get_string('youhavemessages', 'block_course_overview', $msgcount);
+                $output .= get_string('youhavemessages', 'block_course_overview_rs', $msgcount);
                 if ($msgcount == 1) {
                     $plural = '';
                 }
             } else {
-                $output .= get_string('youhavenomessages', 'block_course_overview');
+                $output .= get_string('youhavenomessages', 'block_course_overview_rs');
             }
             $output .= html_writer::link(new moodle_url('/message/index.php'),
-                    get_string('message'.$plural, 'block_course_overview'));
+                    get_string('message'.$plural, 'block_course_overview_rs'));
         }
         $output .= $this->output->box_end();
         $output .= $this->output->box('', 'flush');
