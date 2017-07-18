@@ -77,7 +77,7 @@ function get_token_by_user_id() {
     $cache = cache::make_from_params(cache_store::MODE_SESSION, 'mod_quizoff', 'json');
     $cachedToken = $cache->get('token');
     
-    if(!empty($cachedToken)) {
+    if(!empty($cachedToken) && $cachedToken != 0) {
         return $cachedToken;
     }
 
