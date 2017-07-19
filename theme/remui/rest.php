@@ -39,7 +39,7 @@ $contextid = optional_param('contextid', $systemcontext->id, PARAM_INT);
 
 list($context, $course, $cm) = get_context_info_array($contextid);
 
-require_login($course, false, $cm, false, true);
+//require_login($course, false, $cm, false, true);
 // @var $PAGE moodle_page
 $PAGE->set_context($context);
 switch ($action) {

@@ -45,7 +45,7 @@ $reset          = optional_param('reset', null, PARAM_BOOL);
 $PAGE->set_url('/user/profile.php', array('id' => $userid));
 
 if (!empty($CFG->forceloginforprofiles)) {
-    require_login();
+//    require_login();
     if (isguestuser()) {
         $PAGE->set_context(context_system::instance());
         echo $OUTPUT->header();
@@ -56,7 +56,7 @@ if (!empty($CFG->forceloginforprofiles)) {
         die;
     }
 } else if (!empty($CFG->forcelogin)) {
-    require_login();
+//    require_login();
 }
 
 $userid = $userid ? $userid : $USER->id;       // Owner of the page.

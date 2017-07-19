@@ -38,7 +38,9 @@ $returnto = optional_param('returnto', null, PARAM_ALPHA);  // Code determining 
 $cancelemailchange = optional_param('cancelemailchange', 0, PARAM_INT);   // Course id (defaults to Site).
 
 $PAGE->set_url('/user/edit.php', array('course' => $course, 'id' => $userid));
+//$PAGE->set_url('/user/profile.php', array('id' => $userid));
 
+//redirect($CFG->wwwroot .'/user/profile.php?id='. $userid);
 if (!$course = $DB->get_record('course', array('id' => $course))) {
     print_error('invalidcourseid');
 }

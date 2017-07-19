@@ -55,7 +55,8 @@
             complete_user_login($user);
 
             if (user_not_fully_set_up($USER, true)) {
-                $urltogo = $CFG->wwwroot.'/user/edit.php?id='.$USER->id.'&amp;course='.SITEID;
+//                $urltogo = $CFG->wwwroot.'/user/edit.php?id='.$USER->id.'&amp;course='.SITEID;
+                $urltogo = $CFG->wwwroot.'/user/profile.php?id='.$USER->id;
                 // We don't delete $SESSION->wantsurl yet, so we get there later
 
             } else if (isset($SESSION->wantsurl) and (strpos($SESSION->wantsurl, $CFG->wwwroot) === 0)) {

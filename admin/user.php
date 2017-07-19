@@ -295,7 +295,7 @@
                 if (is_mnet_remote_user($user) or $user->id == $USER->id or is_siteadmin($user)) {
                     // no deleting of self, mnet accounts or admins allowed
                 } else {
-//                    $buttons[] = html_writer::link(new moodle_url($returnurl, array('delete'=>$user->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
+                    $buttons[] = html_writer::link(new moodle_url($returnurl, array('delete'=>$user->id, 'sesskey'=>sesskey())), html_writer::empty_tag('img', array('src'=>$OUTPUT->pix_url('t/delete'), 'alt'=>$strdelete, 'class'=>'iconsmall')), array('title'=>$strdelete));
                 }
             }
 
@@ -394,7 +394,7 @@
     }
     if (has_capability('moodle/user:create', $sitecontext)) {
         $url = new moodle_url($securewwwroot . '/user/editadvanced.php', array('id' => -1));
-//        echo $OUTPUT->single_button($url, get_string('addnewuser'), 'get');
+        echo $OUTPUT->single_button($url, get_string('addnewuser'), 'get');
     }
 
     echo $OUTPUT->footer();

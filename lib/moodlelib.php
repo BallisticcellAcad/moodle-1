@@ -2645,7 +2645,8 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
         if ($setwantsurltome) {
             $SESSION->wantsurl = qualified_me();
         }
-        redirect($CFG->wwwroot .'/user/edit.php?id='. $USER->id .'&amp;course='. SITEID);
+//        redirect($CFG->wwwroot .'/user/edit.php?id='. $USER->id .'&amp;course='. SITEID);
+        redirect($CFG->wwwroot .'/user/profile.php?id='. $USER->id);
     }
 
     // Make sure the USER has a sesskey set up. Used for CSRF protection.

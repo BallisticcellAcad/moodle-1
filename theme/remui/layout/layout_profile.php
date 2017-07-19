@@ -22,11 +22,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once('../config.php');
-require_once($CFG->libdir.'/gdlib.php');
-require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->dirroot.'/theme/remui/layout/partials/avatar.php');
-require_once($CFG->dirroot.'/user/profile/lib.php');
-require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->libdir . '/gdlib.php');
+require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->dirroot . '/theme/remui/layout/partials/avatar.php');
+require_once($CFG->dirroot . '/user/profile/lib.php');
+require_once($CFG->dirroot . '/user/lib.php');
 /* Default globals */
 global $CFG, $PAGE, $USER, $SITE, $COURSE, $DB;
 $hasrightsideblocks = $PAGE->blocks->region_has_content('side-post', $OUTPUT);
@@ -230,7 +230,7 @@ echo $OUTPUT->doctype();
                                         ?>
                                         <div id="user-interests" class="user-about-me">
                                             <hr>
-                                            <strong><i class="fa fa-pencil margin-r-5"></i> <?php echo get_string('interests', 'theme_remui'); ?></strong>
+                                            <strong><i class="fa fa-pencil margin-r-5"></i> <?php echo get_string('interests'); ?></strong>
                                             <?php
                                             if ($CFG->version / 1000000 < 2016) {
                                                 $interests = tag_get_tags('user', $otheruser->id);
@@ -267,7 +267,7 @@ echo $OUTPUT->doctype();
                                         ?>
                                         <div id="user-institution" class="user-about-me">
                                             <hr>
-                                            <strong><i class="fa fa-book margin-r-5"></i> <?php echo get_string('institution', 'theme_remui'); ?></strong>
+                                            <strong><i class="fa fa-book margin-r-5"></i> <?php echo get_string('institution'); ?></strong>
                                             <p class="text-muted">
                                                 <?php echo $otheruser->institution; ?>
                                             </p>
@@ -280,7 +280,7 @@ echo $OUTPUT->doctype();
                                         ?>
                                         <div id="user-location" class="user-about-me">
                                             <hr>
-                                            <strong><i class="fa fa-map-marker margin-r-5"></i> <?php echo get_string('location', 'theme_remui'); ?></strong>
+                                            <strong><i class="fa fa-map-marker margin-r-5"></i> <?php echo get_string('location'); ?></strong>
                                             <p class="text-muted">
                                                 <?php
                                                 echo $otheruser->city;
@@ -295,7 +295,7 @@ echo $OUTPUT->doctype();
                                         ?>
                                         <div id="user-location" class="user-about-me">
                                             <hr>
-                                            <strong><i class="fa fa-map-marker margin-r-5"></i> <?php echo get_string('location', 'theme_remui'); ?></strong>
+                                            <strong><i class="fa fa-map-marker margin-r-5"></i> <?php echo get_string('location'); ?></strong>
                                             <p class="text-muted">
                                                 <?php echo get_string($otheruser->country, 'countries'); ?>
                                             </p>
@@ -309,7 +309,7 @@ echo $OUTPUT->doctype();
                                         ?>
                                         <div id="user-description" class="user-about-me">
                                             <hr>
-                                            <strong><i class="fa fa-file-text-o margin-r-5"></i> <?php echo get_string('description', 'theme_remui'); ?></strong>
+                                            <strong><i class="fa fa-file-text-o margin-r-5"></i> <?php echo get_string('description'); ?></strong>
                                             <p class="text-muted"><?php echo $userdescription; ?></p>
                                         </div>
                                         <?php
@@ -319,26 +319,35 @@ echo $OUTPUT->doctype();
                             </div><!-- /.box -->
                         </div><!-- /.col -->
                         <div class="col-md-9">
-
+                            <?php
+                            $activeCourses = 'active';
+                            $activeProfile = '';
+                            $displayRequierdFields = 'none';
+                            if (user_not_fully_set_up($otheruser)) {
+                                $activeCourses = '';
+                                $activeProfile = 'active';
+                                $displayRequierdFields = '';
+                            }
+                            ?>
                             <div class="nav-tabs-custom">
                                 <ul class="nav nav-tabs">
                                     <!-- <li ><a href="#activity" data-toggle="tab">Activity</a></li> -->
                                     <?php if (is_siteadmin() && $otheruser->id != $USER->id) { ?>
-                                        <li class="active"><a href="#common_courses" data-toggle="tab"><?php echo get_string('user') . ' ' . get_string('courses'); ?></a></li>
+                                        <li class="<?php echo $activeCourses; ?>"><a href="#common_courses" data-toggle="tab"><?php echo get_string('user') . ' ' . get_string('courses'); ?></a></li>
                                     <?php } else if ($otheruser->id != $USER->id) { ?>
-                                        <li class="active"><a href="#common_courses" data-toggle="tab"><?php echo get_string('commoncourses', 'theme_remui'); ?></a></li>
+                                        <li class="<?php echo $activeCourses; ?>"><a href="#common_courses" data-toggle="tab"><?php echo get_string('courses'); ?></a></li>
                                     <?php } else { ?>
-                                        <li class="active"><a href="#courses" data-toggle="tab"><?php echo get_string('courses'); ?></a></li>
+                                        <li class="<?php echo $activeCourses; ?>"><a href="#courses" data-toggle="tab"><?php echo get_string('courses'); ?></a></li>
                                     <?php } ?>
                                     <li><a href="#badges" data-toggle="tab"><?php echo get_string('badges'); ?></a></li>
                                     <?php if (is_siteadmin() || $otheruser->id == $USER->id) { ?>
-                                        <li><a href="#editprofile" data-toggle="tab"><?php echo get_string('editprofile', 'theme_remui'); ?></a></li>
+                                        <li class="<?php echo $activeProfile; ?>"><a href="#editprofile" data-toggle="tab"><?php echo get_string('editmyprofile'); ?></a></li>
                                     <?php } ?>
                                     <?php if (is_siteadmin() || $otheruser->id == $USER->id) { ?>
                                         <li><a href="#editavatar" data-toggle="tab"><?php echo get_string('editavatar', 'theme_remui'); ?></a></li>
                                     <?php } ?>
                                     <?php if (is_siteadmin()) { ?>
-                                    <li class = "pull-right"><a href="#advancedusersettings" data-toggle="tab"><i class="fa fa-gear fa-lg"></i></a></li>
+                                        <li class = "pull-right"><a href="#advancedusersettings" data-toggle="tab"><i class="fa fa-gear fa-lg"></i></a></li>
                                     <?php } ?>
                                 </ul>
                                 <div class="tab-content">
@@ -384,27 +393,30 @@ echo $OUTPUT->doctype();
                                             }
                                         }
                                         ?>
-                                        <div class="tab-pane" id="editprofile">
+                                        <div class="<?php echo $activeProfile; ?> tab-pane" id="editprofile">
+                                            <div class="alert alert-danger" style="display:<?php echo $displayRequierdFields; ?>;" id="required-fields">
+                                                Моля попълнете всички задължителни полета, за да продължите!                                                
+                                            </div>
                                             <form class="form-horizontal">
                                                 <input type="hidden" value="<?php echo $otheruser->id; ?>" id="inputId">
                                                 <div class="form-group">
-                                                    <label for="inputfName" class="col-sm-2 control-label"><?php echo get_string('firstname', 'theme_remui'); ?><span class="text-red">*</span></label>
+                                                    <label for="inputfName" class="col-sm-2 control-label"><?php echo get_string('firstname'); ?><span class="text-red">*</span></label>
                                                     <div class="col-sm-10">
                                                         <input type="text" class="form-control" <?php echo $firstnamedisabled; ?> id="inputfName"
-                                                               placeholder="<?php echo get_string('firstname', 'theme_remui'); ?>"
+                                                               placeholder="<?php echo get_string('firstname'); ?>"
                                                                value="<?php echo $otheruser->firstname; ?>">
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="inputlName" class="col-sm-2 control-label"><?php echo get_string('surname', 'theme_remui'); ?><span class="text-red">*</span></label>
+                                                    <label for="inputlName" class="col-sm-2 control-label"><?php echo get_string('lastname'); ?><span class="text-red">*</span></label>
                                                     <div class="col-sm-10">
-                                                        <input type="text" class="form-control" <?php echo $lastnamedisabled; ?> id="inputlName" placeholder="Surname" value="<?php echo $otheruser->lastname; ?>">
+                                                        <input type="text" class="form-control" <?php echo $lastnamedisabled; ?> id="inputlName" placeholder="<?php echo get_string('lastname'); ?>" value="<?php echo $otheruser->lastname; ?>">
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="inputEmail" class="col-sm-2 control-label"><?php echo get_string('email', 'theme_remui'); ?><span class="text-red">*</span></label>
+                                                    <label for="inputEmail" class="col-sm-2 control-label"><?php echo get_string('email'); ?><span class="text-red">*</span></label>
                                                     <div class="col-sm-10">
-                                                        <input type="email" class="form-control" <?php echo $emaildisabled; ?> id="inputEmail" placeholder="Email" value="<?php echo $otheruser->email; ?>">
+                                                        <input type="email" readonly="true" class="form-control" <?php echo $emaildisabled; ?> id="inputEmail" placeholder="<?php echo get_string('email'); ?>" value="<?php echo $otheruser->email; ?>" style="max-width:400px">
                                                     </div>
                                                 </div>
                                                 <!--                      <div class="form-group">
@@ -414,7 +426,7 @@ echo $OUTPUT->doctype();
                                                                         </div>
                                                                       </div>-->
                                                 <div class="form-group">
-                                                    <label for="inputCountry" class="col-sm-2 control-label"><?php echo get_string('country', 'theme_remui'); ?></label>
+                                                    <label for="inputCountry" class="col-sm-2 control-label"><?php echo get_string('country'); ?></label>
                                                     <div class="col-sm-10">
                                                         <?php
                                                         $choices = get_string_manager()->get_list_of_countries();
@@ -479,7 +491,7 @@ echo $OUTPUT->doctype();
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="inputCity" class="col-sm-2 control-label"><?php echo get_string('citytown', 'theme_remui'); ?></label>
+                                                    <label for="inputCity" class="col-sm-2 control-label"><?php echo get_string('city'); ?></label>
                                                     <div class="col-sm-10">
                                                         <?php
                                                         $citiesDb = array();
@@ -561,24 +573,23 @@ echo $OUTPUT->doctype();
                                                     <label for="inputBirthdate" class="col-sm-2 control-label"><?php echo get_string('birthdate', 'theme_remui'); ?><span class="text-red">*</span></label>
                                                     <div class="col-sm-10">
                                                         <?php
-                                                            $birthdateField = $DB->get_record('user_info_field', array('shortname' => 'studentbirthdate'));
-                                                            $userBirthdateSec = '';
-                                                            $userBirthdate = '';
-                                                            if ($otheruserFields) {
-                                                                foreach ($otheruserFields as $field) {
-                                                                    if ($field->fieldid == $birthdateField->id) {
-                                                                        $userBirthdateSec = $field->data;
-                                                                        break;
-                                                                    }
+                                                        $birthdateField = $DB->get_record('user_info_field', array('shortname' => 'studentbirthdate'));
+                                                        $userBirthdateSec = '';
+                                                        $userBirthdate = '';
+                                                        if ($otheruserFields) {
+                                                            foreach ($otheruserFields as $field) {
+                                                                if ($field->fieldid == $birthdateField->id) {
+                                                                    $userBirthdateSec = $field->data;
+                                                                    break;
                                                                 }
                                                             }
-                                                            if ($userBirthdateSec) {
-                                                                $date = new DateTime('1970-01-02');
-                                                                $date->modify($userBirthdateSec . ' sec');
-                                                                $userBirthdate = $date->format('Y-m-d');
-                                                            }
-                                                            
-                                                            ?>
+                                                        }
+                                                        if ($userBirthdateSec) {
+                                                            $date = new DateTime('1970-01-02');
+                                                            $date->modify($userBirthdateSec . ' sec');
+                                                            $userBirthdate = $date->format('Y-m-d');
+                                                        }
+                                                        ?>
                                                         <input type="date" class="form-control" id="inputBirthdate" style="max-width:300px" value="<?php echo $userBirthdate; ?>">
                                                     </div>
                                                 </div>
@@ -612,15 +623,15 @@ echo $OUTPUT->doctype();
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="inputDescription" class="col-sm-2 control-label"><?php echo get_string('description', 'theme_remui'); ?></label>
+                                                    <label for="inputDescription" class="col-sm-2 control-label"><?php echo get_string('userdescription'); ?></label>
                                                     <div class="col-sm-10">
-                                                        <textarea class="form-control" <?php echo $descriptiondisabled; ?> id="inputDescription" placeholder="Description"><?php echo strip_tags($otheruser->description); ?></textarea>
+                                                        <textarea class="form-control" <?php echo $descriptiondisabled; ?> id="inputDescription" placeholder="<?php echo get_string('userdescription'); ?>"><?php echo strip_tags($otheruser->description); ?></textarea>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <label class="col-sm-2 control-label"></label>
                                                     <div class="col-sm-10">                                                       
-                                                       <a href="<?php echo $CFG->wwwroot . "/login/change_password.php?id=" . $otheruser->id; ?>"> <?php echo get_string('changepassword'); ?></a>
+                                                        <a href="<?php echo $CFG->wwwroot . "/login/change_password.php?id=" . $otheruser->id; ?>"> <?php echo get_string('changepassword'); ?></a>
                                                     </div>
                                                 </div>    
                                                 <div class="form-group">
@@ -643,22 +654,22 @@ echo $OUTPUT->doctype();
                                                 'context' => $coursecontext
                                             );
                                             $filemanagercontext = $editoroptions['context'];
-                                            $filemanageroptions = array('maxbytes'       => $CFG->maxbytes,
-                                                                         'subdirs'        => 0,
-                                                                         'maxfiles'       => 1,
-                                                                         'accepted_types' => 'web_image');
+                                            $filemanageroptions = array('maxbytes' => $CFG->maxbytes,
+                                                'subdirs' => 0,
+                                                'maxfiles' => 1,
+                                                'accepted_types' => 'web_image');
                                             file_prepare_draft_area($draftitemid, $filemanagercontext->id, 'user', 'newicon', 0, $filemanageroptions);
                                             $otheruser->imagefile = $draftitemid;
                                             // Create form.
-                                            $url = $CFG->wwwroot  . "/user/profile.php?id=" . $userid;
+                                            $url = $CFG->wwwroot . "/user/profile.php?id=" . $userid;
                                             $userform = new user_avatar_form($url, array(
                                                 'editoroptions' => $editoroptions,
                                                 'filemanageroptions' => $filemanageroptions,
                                                 'user' => $otheruser));
-                                            
+
                                             if ($usernew = $userform->get_data()) {
                                                 if (empty($USER->newadminuser)) {
-                                                   useredit_update_picture($usernew, $userform, $filemanageroptions);
+                                                    useredit_update_picture($usernew, $userform, $filemanageroptions);
                                                 }
                                             }
                                             $userform->display();
@@ -710,7 +721,7 @@ echo $OUTPUT->doctype();
                                                                         }
 
                                                                         if (!empty($course->str_long_grade) && trim($course->str_long_grade) != '-') {
-                                                                            echo '<br /> ' . get_string('grade', 'theme_remui') . ' :' . $course->str_long_grade . '  <a href="' . $gradelink . '">&nbsp; <i class="fa fa-arrow-right" aria-hidden="true"></i></a>';
+                                                                            echo '<br /> ' . get_string('grade') . ' :' . $course->str_long_grade . '  <a href="' . $gradelink . '">&nbsp; <i class="fa fa-arrow-right" aria-hidden="true"></i></a>';
                                                                         }
                                                                         $sitenoteslink = new moodle_url('/notes/index.php', array('course' => $course->courseid, 'user' => $otheruser->id));
                                                                         ?>
@@ -746,7 +757,7 @@ echo $OUTPUT->doctype();
                                         </div>
                                     <?php } else {
                                         ?>
-                                        <div class="active tab-pane" id="courses">
+                                        <div class="<?php echo $activeCourses; ?> tab-pane" id="courses">
                                             <div class="row">
                                                 <?php
                                                 $courses = enrol_get_all_users_courses($otheruser->id, $onlyactive = false, $fields = null, $sort = 'visible DESC,startdate ASC');
@@ -775,7 +786,7 @@ echo $OUTPUT->doctype();
                                                                     echo $course->progress->progresshtml;
                                                                 }
                                                                 if (!empty($course->str_long_grade) && trim($course->str_long_grade) != '-') {
-                                                                    echo '<br />' . get_string('grade', 'theme_remui') . ' :' . $course->str_long_grade . '  <a href="' . $gradelink . '">&nbsp; <i class="fa fa-arrow-right" aria-hidden="true"></i></a>';
+                                                                    echo '<br />' . get_string('grade') . ' :' . $course->str_long_grade . '  <a href="' . $gradelink . '">&nbsp; <i class="fa fa-arrow-right" aria-hidden="true"></i></a>';
                                                                 }
                                                                 ?>
                                                                 </h4>
@@ -884,7 +895,6 @@ function useredit_update_picture(stdClass $usernew, moodleform $userform, $filem
         // The user has chosen to delete the selected users picture.
         $fs->delete_area_files($context->id, 'user', 'icon'); // Drop all images in area.
         $newpicture = 0;
-
     } else {
         // Save newly uploaded file, this will avoid context mismatch for newly created users.
         file_save_draft_area_files($usernew->imagefile, $context->id, 'user', 'newicon', 0, $filemanageroptions);
@@ -900,7 +910,7 @@ function useredit_update_picture(stdClass $usernew, moodleform $userform, $filem
                 // There is a new image that has been uploaded.
                 // Process the new image and set the user to make use of it.
                 // NOTE: Uploaded images always take over Gravatar.
-                $newpicture = (int)process_new_icon($context, 'user', 'icon', 0, $iconfile);
+                $newpicture = (int) process_new_icon($context, 'user', 'icon', 0, $iconfile);
                 // Delete temporary file.
                 @unlink($iconfile);
                 // Remove uploaded file.

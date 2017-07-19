@@ -54,6 +54,11 @@ class user_editadvanced_form extends moodleform {
         $user = $this->_customdata['user'];
         $userid = $user->id;
 
+        $isReadonly = 'readonly';
+        if ($userid < 0) {
+            $isReadonly = '';
+        }
+
         // Accessibility: "Required" is bad legend text.
         $strgeneral  = get_string('general');
         $strrequired = get_string('required');
@@ -96,7 +101,7 @@ class user_editadvanced_form extends moodleform {
             }
         }
 
-        $mform->addElement('text', 'username', get_string('username'), 'size="20" readonly=true');
+        $mform->addElement('text', 'username', get_string('username'), 'size="20" ' . $isReadonly );
         $mform->addHelpButton('username', 'username', 'auth');
         $mform->setType('username', PARAM_RAW);
 
@@ -107,15 +112,15 @@ class user_editadvanced_form extends moodleform {
         $mform->addElement('selectgroups', 'auth', get_string('chooseauthmethod', 'auth'), $authoptions);
         $mform->addHelpButton('auth', 'chooseauthmethod', 'auth');
 
-        $mform->addElement('advcheckbox', 'suspended', get_string('suspended', 'auth'));
-        $mform->addHelpButton('suspended', 'suspended', 'auth');
+//        $mform->addElement('advcheckbox', 'suspended', get_string('suspended', 'auth'));
+//        $mform->addHelpButton('suspended', 'suspended', 'auth');
 
-        $mform->addElement('checkbox', 'createpassword', get_string('createpassword', 'auth'));
-        $mform->disabledIf('createpassword', 'auth', 'in', $cannotchangepass);
-
-        if (!empty($CFG->passwordpolicy)) {
-            $mform->addElement('static', 'passwordpolicyinfo', '', print_password_policy());
-        }
+//        $mform->addElement('checkbox', 'createpassword', get_string('createpassword', 'auth'));
+//        $mform->disabledIf('createpassword', 'auth', 'in', $cannotchangepass);
+//
+//        if (!empty($CFG->passwordpolicy)) {
+//            $mform->addElement('static', 'passwordpolicyinfo', '', print_password_policy());
+//        }
         $mform->addElement('passwordunmask', 'newpassword', get_string('newpassword'), 'size="20"');
         $mform->addHelpButton('newpassword', 'newpassword');
         $mform->setType('newpassword', core_user::get_property_type('password'));
@@ -131,7 +136,7 @@ class user_editadvanced_form extends moodleform {
         useredit_shared_definition($mform, $editoroptions, $filemanageroptions, $user);
 
         // Next the customisable profile fields.
-        profile_definition($mform, $userid);
+//        profile_definition($mform, $userid);
 
         if ($userid == -1) {
             $btnstring = get_string('createuser');

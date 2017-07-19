@@ -331,16 +331,7 @@ function useredit_shared_definition(&$mform, $editoroptions, $filemanageroptions
 //    if (!empty($CFG->defaultcity)) {
 //        $mform->setDefault('city', $CFG->defaultcity);
 //    }
-
-    $sql = "SELECT * FROM Cities"; 
-    $citiesDb = $DB->get_recordset_sql($sql, NULL);
-    $cities = array('' => get_string('selectacity') . '...');
-    foreach ($citiesDb as $cityDb) {         
-        $city = array($cityDb->id => $cityDb->name);
-        $cities = $cities + $city;
-    }    
-    
-    $mform->addElement('select', 'city', get_string('selectacity'), $cities);
+      
     $choices = get_string_manager()->get_list_of_countries();
     $choices = array('' => get_string('selectacountry') . '...') + $choices;
     $mform->addElement('select', 'country', get_string('selectacountry'), $choices);

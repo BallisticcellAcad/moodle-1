@@ -43,6 +43,7 @@ require_once($CFG->dirroot.'/grade/lib.php');
 require_once($CFG->dirroot.'/grade/report/user/lib.php');
 require_once($CFG->dirroot.'/mod/forum/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/grade/querylib.php');
 
 class theme_controller
