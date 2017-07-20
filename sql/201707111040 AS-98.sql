@@ -54,5 +54,3 @@ ADD COLUMN `schoolId` INT NULL AFTER `cityId`;
 
 
 
-
-// test gidhub jira integretion
