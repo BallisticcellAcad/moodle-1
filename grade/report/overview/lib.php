@@ -177,17 +177,60 @@ class grade_report_overview extends grade_report {
             return false;
         }
         
-        
+        $show_all = $_GET['show_all'];
+        $show_all_bool = $show_all !== NULL;
 
         // Only show user's courses instead of all courses.
         if ($this->courses) {
             $numusers = $this->get_numusers(false);
+            
+            if(!$show_all_bool) {
+                $sqlClass = "SELECT data FROM {user_info_field} uif
+                        join {user_info_data} uid on uid.fieldid = uif.id
+                        where shortname like 'studentclass' and userid = ?";
+                
+                $user_class_string = NULL;
+                $paramsClass = array($this->user->id);
+                $user_class = $DB->get_records_sql($sqlClass, $paramsClass);
+                foreach ($user_class as $id => $record) {
+                    $user_class_string = $record->data;
+                    break;
+                }
+                
+                var_dump($user_class_string);
+
+                $sql_K12_classes = "SELECT cc.* FROM moodle.mdl_course_categories cc
+                            join moodle.mdl_course_categories cc2 on cc.parent = cc2.id
+                            where cc2.name like 'K12'";
+
+                $k12_courses = $DB->get_records_sql($sql_K12_classes, NULL);  
+                
+                $k12_id = 0;
+                if(!is_null($k12_courses) && count($k12_courses) > 0) {
+                    foreach ($k12_courses as $id => $record) {
+                        $k12_id = $record->parent;
+                        break;
+                    }
+                }
+            }
+            
+            $hidden_courses_count = 0;
 
             foreach ($this->courses as $course) {
                 if (!$course->showgrades) {
                     continue;
                 }
+                
+                if(!$show_all_bool && $user_class_string) {
+                    $k12_category_course = $k12_courses[$course->category];
 
+                    if(!is_null($k12_category_course)) {
+                        if($k12_category_course->name != $user_class_string) {
+                            $hidden_courses_count++;
+                            continue;
+                        }
+                    }
+                }
                 // If we are only showing student courses and this course isn't part of the group, then move on.
                 if ($studentcoursesonly && !isset($this->studentcourseids[$course->id])) {
                     continue;
@@ -275,6 +318,15 @@ class grade_report_overview extends grade_report {
                 
                 $this->table->add_data($data);
 
+            }
+            
+            if(!$show_all_bool && count($this->studentcourseids) && $hidden_courses_count) {
+                $show_hidden_href = $_SERVER['REQUEST_URI']. '&show_all=1';
+                $show_hidden_courses = html_writer::start_tag('a', 
+                        array('href' =>  $show_hidden_href, 'class' => 'show-hidden-courses'));
+                $show_hidden_courses .= html_writer::span(get_string("showallhidden","grades"));  
+                $show_hidden_courses .=html_writer::end_tag('a');
+                $this->table->add_data(array($show_hidden_courses));
             }
             return true;
 
