@@ -197,7 +197,6 @@ class grade_report_overview extends grade_report {
                     break;
                 }
                 
-                var_dump($user_class_string);
 
                 $sql_K12_classes = "SELECT cc.* FROM moodle.mdl_course_categories cc
                             join moodle.mdl_course_categories cc2 on cc.parent = cc2.id
