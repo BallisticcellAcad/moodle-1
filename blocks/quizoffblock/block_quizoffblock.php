@@ -41,7 +41,7 @@ class block_quizoffblock extends block_base {
 
         $urlParam = QUIZOFF_GAME_URL;
         $token = get_token_by_user_id();
-        $tokenParam = "&token=" . $token;
+        $tokenParam = "?token=" . $token;
         $urlWithToken = str_replace('&', '&amp;', $urlParam . $tokenParam);
 
         $pageUrl = $CFG->wwwroot . QUIZOFF_STATIC_PAGE_URL . $urlWithToken;
