@@ -52,5 +52,5 @@ ADD COLUMN `municipalityId` INT NULL AFTER `regionId`,
 ADD COLUMN `cityId` INT NULL AFTER `municipalityId`,
 ADD COLUMN `schoolId` INT NULL AFTER `cityId`;
 
-
+-- test two tasks in coment
 
