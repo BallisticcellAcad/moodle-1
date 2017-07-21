@@ -107,6 +107,7 @@ class ajax_controller extends controller_abstract
         $schoolname = required_param('schoolname', PARAM_TEXT);
         $class = required_param('stdclass', PARAM_TEXT);
         $gander = required_param('gander', PARAM_TEXT);
+        $interests = required_param('interests', PARAM_TAGLIST);
         $birthdatestring = required_param('birthdate', PARAM_TEXT);
         $birthdate = strtotime($birthdatestring);
         $defaultdate = strtotime('1970-01-01');
@@ -124,6 +125,7 @@ class ajax_controller extends controller_abstract
         $userFields->cityId = $city;
         $userFields->schoolId = $school;
         $userFields->profile_field_studentbirthdate = $birthdate - $defaultdate;
+        $userFields->interests = $interests;
         theme_controller::save_user_profile_info($fname, $lname, $emailid, $description, $cityname, $country, $userFields);
         return json_encode($userFields);
     }

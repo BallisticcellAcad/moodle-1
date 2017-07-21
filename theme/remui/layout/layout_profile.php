@@ -33,22 +33,25 @@ $hasrightsideblocks = $PAGE->blocks->region_has_content('side-post', $OUTPUT);
 
 // Get current user info.
 if (isloggedin() && !isguestuser()) {
-    // $userfullname = fullname($USER);
+// $userfullname = fullname($USER);
     $userid = optional_param('id', 0, PARAM_INT);
+    $redirect = optional_param('redirect', null, PARAM_INT);
 
-    // Get other user's object from page url
+// Get other user's object from page url
     $otheruser = $DB->get_record('user', array('id' => $userid));
     $otheruserData = $DB->get_record_sql('SELECT * FROM user_last WHERE userId = ?', array($userid));
     $otheruserFields = $DB->get_records('user_info_data', array('userid' => $userid));
     $userfullname = fullname($otheruser);
+    $interests = false;
 
     $pageurl = $PAGE->url;
     $contact = $DB->get_record('message_contacts', array('userid' => $USER->id, 'contactid' => $otheruser->id));
     $userprofileurl = new moodle_url('/user/profile.php', array('id' => $USER->id));
     $userdashboardurl = new moodle_url('/my');
     $userlogouturl = new moodle_url('/login/logout.php', array('sesskey' => sesskey(), 'alt' => 'logout'));
+    $PAGE->set_url('/user/profile.php', array('id' => $userid));
 
-    // get user blog count
+// get user blog count
     if (!empty($CFG->enableblogs)) {
         include_once($CFG->dirroot . '/blog/locallib.php');
         $blogobj = new blog_listing();
@@ -63,14 +66,14 @@ if (isloggedin() && !isguestuser()) {
             $userbloglink = new moodle_url('/blog/index.php?userid=' . $otheruser->id);
         }
     }
-    // get user posts count
+// get user posts count
     include_once($CFG->dirroot . '/mod/forum/lib.php');
     $courses = forum_get_courses_user_posted_in($otheruser);
     $userpostcount = forum_get_posts_by_user($otheruser, $courses)->totalcount;
     $userposts = forum_get_posts_by_user($otheruser, $courses);
     $userpostlink = new moodle_url('/mod/forum/user.php?id=' . $otheruser->id);
 
-    // get user discussions count
+// get user discussions count
     $courses = forum_get_courses_user_posted_in($otheruser, 1);
     $userdiscussioncount = forum_get_posts_by_user($otheruser, $courses, 0, 1)->totalcount;
     $userdiscussionlink = new moodle_url('/mod/forum/user.php?id=' . $otheruser->id . '&mode=discussions');
@@ -324,9 +327,11 @@ echo $OUTPUT->doctype();
                             $activeProfile = '';
                             $displayRequierdFields = 'none';
                             if (user_not_fully_set_up($otheruser)) {
+
+                                $displayRequierdFields = '';
+                            } elseif ($redirect === 0) {
                                 $activeCourses = '';
                                 $activeProfile = 'active';
-                                $displayRequierdFields = '';
                             }
                             ?>
                             <div class="nav-tabs-custom">
@@ -416,7 +421,7 @@ echo $OUTPUT->doctype();
                                                 <div class="form-group">
                                                     <label for="inputEmail" class="col-sm-2 control-label"><?php echo get_string('email'); ?><span class="text-red">*</span></label>
                                                     <div class="col-sm-10">
-                                                        <input type="email" readonly="true" class="form-control" <?php echo $emaildisabled; ?> id="inputEmail" placeholder="<?php echo get_string('email'); ?>" value="<?php echo $otheruser->email; ?>" style="max-width:400px">
+                                                        <input type="email" readonly="true" class="form-control" <?php echo $emaildisabled; ?> id="inputEmail" placeholder="<?php echo get_string('email'); ?>" value="<?php echo $otheruser->email; ?>" style="max-width:300px">
                                                     </div>
                                                 </div>
                                                 <!--                      <div class="form-group">
@@ -431,7 +436,7 @@ echo $OUTPUT->doctype();
                                                         <?php
                                                         $choices = get_string_manager()->get_list_of_countries();
                                                         ?>
-                                                        <select class="form-control" <?php echo $countrydisabled; ?> id="select-country">
+                                                        <select class="form-control" <?php echo $countrydisabled; ?> id="select-country" disabled>
                                                             <option><?php echo get_string('selectcountry', 'theme_remui'); ?></option>
                                                             <?php
                                                             foreach ($choices as $key => $choice) {
@@ -455,6 +460,7 @@ echo $OUTPUT->doctype();
                                                         <select class="form-control" id="select-region">
                                                             <option><?php echo get_string('selectregion', 'theme_remui'); ?></option>
                                                             <?php
+                                                            
                                                             foreach ($regionsDb as $regionDb) {
                                                                 if ($otheruserData && $regionDb->id === $otheruserData->regionid) {
                                                                     echo "<option selected value=" . $regionDb->id . ">" . $regionDb->name . "</option>";
@@ -538,6 +544,9 @@ echo $OUTPUT->doctype();
                                                             }
                                                             ?>
                                                         </select>
+                                                        <div class="text-warning">
+                                                            Ако вашето училище не е намерено, моля, пишете на <a href="mailto:info@academico.bg">info@academico.bg</a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -620,6 +629,38 @@ echo $OUTPUT->doctype();
                                                             }
                                                             ?>
                                                         </select>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div id="fitem_id_interests" class="fitem fitem_fautocomplete">
+                                                        <label for="form_autocomplete_input"  class="col-sm-2 control-label"><?php echo get_string('interestslist'); ?></label>
+                                                        <div class="felement fautocomplete col-sm-10">
+                                                            <input type="hidden" name="interests" value="_qf__force_multiselect_submission">
+    <!--                                                            <select multiple="multiple" name="interests[]" id="id_interests" aria-hidden="true" style="display: none;">
+                                                            </select>-->
+                                                            <div class="form-autocomplete-selection form-autocomplete-multiple" id="form_autocomplete_selection" role="list" aria-atomic="true" tabindex="0" aria-multiselectable="true">
+                                                                <span class="accesshide">Selected items:</span>
+                                                                <?php
+                                                                if ($interests) {
+                                                                    foreach ($interests as $interest) {
+                                                                        ?>
+                                                                        <span role="listitem" data-value="<?php echo $interest->rawname; ?>" aria-selected="true" class="label label-info">
+                                                                            <span aria-hidden="true">× </span><?php echo $interest->rawname; ?>
+                                                                        </span>
+                                                                        <?php
+                                                                    }
+                                                                } else {
+                                                                    ?>
+                                                                    <span id="noselection"><?php echo get_string('noselection', 'theme_remui'); ?></span>
+                                                                    <?php
+                                                                }
+                                                                ?>
+
+                                                            </div>
+                                                            <input type="text" id="form_autocomplete_input" placeholder="<?php echo get_string('entertags', 'theme_remui'); ?>" role="textbox" aria-owns="form_autocomplete_selection" style="width:100%">
+                                                            <ul class="form-autocomplete-suggestions" id="form_autocomplete_suggestions" role="listbox" aria-hidden="true" style="display: none;">
+                                                            </ul>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -873,7 +914,7 @@ echo $OUTPUT->doctype();
             $this->page->requires->strings_for_js(array('addtocontacts', 'removefromcontacts', 'block', 'removeblock',
                 'actioncouldnotbeperformed', 'enterfirstname', 'enterlastname', 'enteremailid', 'enterproperemailid', 'enterbirthdate',
                 'selectcountry', 'selectmunicipality', 'selectregion', 'selectcity', 'selectschool', 'detailssavedsuccessfully',
-                'location', 'description'), 'theme_remui');
+                'location', 'description', 'noselection'), 'theme_remui');
             ?>
         </div> <!-- ./wrapper -->
     </body>

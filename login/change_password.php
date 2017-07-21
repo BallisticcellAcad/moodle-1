@@ -45,7 +45,8 @@ if ($return) {
     // this redirect prevents security warning because https can not POST to http pages
     if (empty($SESSION->wantsurl)
             or stripos(str_replace('https://', 'http://', $SESSION->wantsurl), str_replace('https://', 'http://', $CFG->wwwroot.'/login/change_password.php')) === 0) {
-        $returnto = "$CFG->wwwroot/user/preferences.php?userid=$USER->id&course=$id";
+//        $returnto = "$CFG->wwwroot/user/preferences.php?userid=$USER->id&course=$id";
+         $returnto = "$CFG->wwwroot/user/profile.php?id=$USER->id&redirect=0";
     } else {
         $returnto = $SESSION->wantsurl;
     }

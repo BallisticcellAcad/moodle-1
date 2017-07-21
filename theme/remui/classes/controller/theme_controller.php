@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of remUI Moodle theme.
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -28,26 +29,26 @@ namespace theme_remui\controller;
 use moodle_url;
 use coursecat;
 use coursecat_helper;
-
 use user_picture;
 use context_course;
 use context_system;
 use user_forums;
 
-require_once(__DIR__.'/../user_forums.php');
-require_once(__DIR__.'/../activity.php');
-require_once($CFG->dirroot.'/calendar/lib.php');
-require_once($CFG->libdir.'/completionlib.php');
-require_once($CFG->libdir.'/coursecatlib.php');
-require_once($CFG->dirroot.'/grade/lib.php');
-require_once($CFG->dirroot.'/grade/report/user/lib.php');
-require_once($CFG->dirroot.'/mod/forum/lib.php');
-require_once($CFG->dirroot.'/user/lib.php');
-require_once($CFG->dirroot.'/user/profile/lib.php');
-require_once($CFG->dirroot.'/grade/querylib.php');
+require_once(__DIR__ . '/../user_forums.php');
+require_once(__DIR__ . '/../activity.php');
+require_once($CFG->dirroot . '/calendar/lib.php');
+require_once($CFG->libdir . '/completionlib.php');
+require_once($CFG->libdir . '/coursecatlib.php');
+require_once($CFG->dirroot . '/grade/lib.php');
+require_once($CFG->dirroot . '/grade/report/user/lib.php');
+require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once($CFG->dirroot . '/user/lib.php');
+require_once($CFG->dirroot . '/user/profile/lib.php');
+require_once($CFG->dirroot . '/grade/querylib.php');
+require_once($CFG->dirroot . '/tag/classes/tag.php');
 
-class theme_controller
-{
+class theme_controller {
+
     /**
      * This function is used to get the data for either slider or static at a time.
      *
@@ -57,50 +58,50 @@ class theme_controller
         global $PAGE, $OUTPUT;
         $sliderdata = array();
         $sliderdata['isslider'] = false;
-        $sliderdata['isvideo']  = false;
-        if ( \theme_remui\toolbox::get_setting('sliderautoplay') == '1') {
-            $sliderdata['slideinterval'] =  \theme_remui\toolbox::get_setting('slideinterval');
+        $sliderdata['isvideo'] = false;
+        if (\theme_remui\toolbox::get_setting('sliderautoplay') == '1') {
+            $sliderdata['slideinterval'] = \theme_remui\toolbox::get_setting('slideinterval');
         } else {
             $sliderdata['slideinterval'] = "false";
         };
-        $numberofsliders =  \theme_remui\toolbox::get_setting('slidercount');
+        $numberofsliders = \theme_remui\toolbox::get_setting('slidercount');
         // Get the content details either static or slider.
-        $frontpagecontenttype =  \theme_remui\toolbox::get_setting('frontpageimagecontent');
+        $frontpagecontenttype = \theme_remui\toolbox::get_setting('frontpageimagecontent');
 
         if ($frontpagecontenttype) { // Dynamic image slider.
             $sliderdata['isslider'] = true;
             if ($numberofsliders >= 1) {
                 for ($count = 1; $count <= $numberofsliders; $count++) {
-                    $sliderimageurl = \theme_remui\toolbox::setting_file_url('slideimage'.$count, 'slideimage'.$count);
+                    $sliderimageurl = \theme_remui\toolbox::setting_file_url('slideimage' . $count, 'slideimage' . $count);
                     if ($sliderimageurl == "" || $sliderimageurl == null) {
                         $sliderimageurl = \theme_remui\toolbox::pix_url('slide', 'theme');
                     }
-                    $sliderimagetext =  \theme_remui\toolbox::get_setting('slidertext'.$count);
-                    $sliderimagelink =  \theme_remui\toolbox::get_setting('sliderurl'.$count);
-                    $sliderbuttontext =  \theme_remui\toolbox::get_setting('sliderbuttontext'.$count);
+                    $sliderimagetext = \theme_remui\toolbox::get_setting('slidertext' . $count);
+                    $sliderimagelink = \theme_remui\toolbox::get_setting('sliderurl' . $count);
+                    $sliderbuttontext = \theme_remui\toolbox::get_setting('sliderbuttontext' . $count);
                     if ($count == 1) {
                         $active = true;
                     } else {
                         $active = false;
                     }
                     $sliderdata['slides'][] = array(
-                    'img' => $sliderimageurl,
-                    'img_txt' => $sliderimagetext,
-                    'btn_link' => $sliderimagelink,
-                    'btn_txt' => $sliderbuttontext,
-                    'active' => $active,
-                    'img_count' => $count - 1);
+                        'img' => $sliderimageurl,
+                        'img_txt' => $sliderimagetext,
+                        'btn_link' => $sliderimagelink,
+                        'btn_txt' => $sliderbuttontext,
+                        'active' => $active,
+                        'img_count' => $count - 1);
                 }
             }
         } else if (!$frontpagecontenttype) { // Static data.
             // Get the static front page settings
-            $sliderdata['addtxt'] =  \theme_remui\toolbox::get_setting('addtext');
-            $sliderdata['addlink'] =  \theme_remui\toolbox::get_setting('addlink');
-            $contenttype =  \theme_remui\toolbox::get_setting('contenttype');
+            $sliderdata['addtxt'] = \theme_remui\toolbox::get_setting('addtext');
+            $sliderdata['addlink'] = \theme_remui\toolbox::get_setting('addlink');
+            $contenttype = \theme_remui\toolbox::get_setting('contenttype');
             if (!$contenttype) {
                 $sliderdata['isvideo'] = true;
-                $sliderdata['video'] =  \theme_remui\toolbox::get_setting('video');
-                $sliderdata['videoalignment'] =  \theme_remui\toolbox::get_setting('frontpagevideoalignment');
+                $sliderdata['video'] = \theme_remui\toolbox::get_setting('video');
+                $sliderdata['videoalignment'] = \theme_remui\toolbox::get_setting('frontpagevideoalignment');
             } else if ($contenttype) {
                 $staticimage = \theme_remui\toolbox::setting_file_url('staticimage', 'staticimage');
                 if ($staticimage == "" || $staticimage == null) {
@@ -113,27 +114,28 @@ class theme_controller
         return $sliderdata;
     }
 
-    /* This function will get the featured coursce .*/
-    public static function get_courses($search=null, $category=null, $limitfrom=0, $limitto=0) {
-        
+    /* This function will get the featured coursce . */
+
+    public static function get_courses($search = null, $category = null, $limitfrom = 0, $limitto = 0) {
+
         global $DB, $CFG;
 
-        require_once($CFG->libdir. '/coursecatlib.php');
+        require_once($CFG->libdir . '/coursecatlib.php');
 
         $coursedetailsarray = array();
         $where = '';
-        if ( !empty($search)) {
-                 $where .= " AND fullname like '%$search%' ";
+        if (!empty($search)) {
+            $where .= " AND fullname like '%$search%' ";
         }
         if (!empty($category)) {
-                $where .= " AND category ='$category' ";
+            $where .= " AND category ='$category' ";
         }
         if ($where == '') {
             $course = $DB->get_records_sql('SELECT c.* FROM {course} c where id != ? ', array(1), $limitfrom, $limitto);
         } else {
             $course = $DB->get_records_sql("SELECT c.* FROM {course} c where id != ? $where", array(1), $limitfrom, $limitto);
         }
-            $count = 0;
+        $count = 0;
         foreach ($course as $key => $coursevalue) {
 
             $chelper = new coursecat_helper();
@@ -141,79 +143,74 @@ class theme_controller
 
             $key = ""; // Just used for removing error
             $coursedetailsarray[$count]["courseid"] = $coursevalue->id;
-            $coursedetailsarray[$count]["courselink"] = $CFG->wwwroot."/course/view.php?id=".$coursevalue->id;
-            $coursedetailsarray[$count]["enroledusers"] = $CFG->wwwroot."/enrol/users.php?id=".$coursevalue->id;
-            $coursedetailsarray[$count]["editcourse"] = $CFG->wwwroot."/course/edit.php?id=".$coursevalue->id;
-            $coursedetailsarray[$count]["grader"] = $CFG->wwwroot."/grade/report/grader/index.php?id=".$coursevalue->id;
-            $coursedetailsarray[$count]["activity"] = $CFG->wwwroot."/report/outline/index.php?id=".$coursevalue->id;
+            $coursedetailsarray[$count]["courselink"] = $CFG->wwwroot . "/course/view.php?id=" . $coursevalue->id;
+            $coursedetailsarray[$count]["enroledusers"] = $CFG->wwwroot . "/enrol/users.php?id=" . $coursevalue->id;
+            $coursedetailsarray[$count]["editcourse"] = $CFG->wwwroot . "/course/edit.php?id=" . $coursevalue->id;
+            $coursedetailsarray[$count]["grader"] = $CFG->wwwroot . "/grade/report/grader/index.php?id=" . $coursevalue->id;
+            $coursedetailsarray[$count]["activity"] = $CFG->wwwroot . "/report/outline/index.php?id=" . $coursevalue->id;
             $coursedetailsarray[$count]["coursename"] = $coursevalue->fullname;
-            $coursesummary = strip_tags($chelper->get_course_formatted_summary($course,
-                    array('overflowdiv' => false, 'noclean' => false, 'para' => false)));
-            $summarystring = strlen($coursesummary) > 100 ? substr($coursesummary, 0, 100)."..." : $coursesummary;
+            $coursesummary = strip_tags($chelper->get_course_formatted_summary($course, array('overflowdiv' => false, 'noclean' => false, 'para' => false)));
+            $summarystring = strlen($coursesummary) > 100 ? substr($coursesummary, 0, 100) . "..." : $coursesummary;
             $coursedetailsarray[$count]["coursesummary"] = $summarystring;
             $coursedetailsarray[$count]["coursestartdate"] = $coursevalue->startdate;
-            
+
             $course1 = get_course($coursevalue->id);
             if ($course1 instanceof \stdClass) {
-                    $course1 = new \course_in_list($course1);
+                $course1 = new \course_in_list($course1);
             }
             foreach ($course1->get_course_overviewfiles() as $file) {
                 $isimage = $file->is_valid_image();
-                $courseimage = file_encode_url("$CFG->wwwroot/pluginfile.php",
-                                          '/'. $file->get_contextid(). '/'. $file->get_component(). '/'.
-                                          $file->get_filearea(). $file->get_filepath(). $file->get_filename(), !$isimage);
+                $courseimage = file_encode_url("$CFG->wwwroot/pluginfile.php", '/' . $file->get_contextid() . '/' . $file->get_component() . '/' .
+                        $file->get_filearea() . $file->get_filepath() . $file->get_filename(), !$isimage);
                 if (!$isimage) {
-                    $courseimage = $CFG->wwwroot."/theme/remui/data/nopic.jpg";
+                    $courseimage = $CFG->wwwroot . "/theme/remui/data/nopic.jpg";
                 }
-
             }
             if (!empty($courseimage)) {
                 $coursedetailsarray[$count]["courseimage"] = $courseimage;
             } else {
-                $coursedetailsarray[$count]["courseimage"] = $CFG->wwwroot."/theme/remui/data/nopic.jpg";
+                $coursedetailsarray[$count]["courseimage"] = $CFG->wwwroot . "/theme/remui/data/nopic.jpg";
             }
             $courseimage = '';
 
             $count++;
         }
-         return $coursedetailsarray;
+        return $coursedetailsarray;
     }
 
     function eexternal_format_text($text, $textformat, $contextid, $component, $filearea, $itemid, $options = null) {
-    global $CFG;
+        global $CFG;
 
-    // Get settings (singleton).
-    $settings = external_settings::get_instance();
+        // Get settings (singleton).
+        $settings = external_settings::get_instance();
 
-    if ($settings->get_fileurl()) {
-        require_once($CFG->libdir . "/filelib.php");
-        $text = file_rewrite_pluginfile_urls($text, $settings->get_file(), $contextid, $component, $filearea, $itemid);
-    }
-
-    if (!$settings->get_raw()) {
-        $options = (array)$options;
-
-        // If context is passed in options, check that is the same to show a debug message.
-        if (isset($options['context'])) {
-            if ((is_object($options['context']) && $options['context']->id != $contextid)
-                    || (!is_object($options['context']) && $options['context'] != $contextid)) {
-                debugging('Different contexts found in external_format_text parameters. $options[\'context\'] not allowed.
-                    Using $contextid parameter...', DEBUG_DEVELOPER);
-            }
+        if ($settings->get_fileurl()) {
+            require_once($CFG->libdir . "/filelib.php");
+            $text = file_rewrite_pluginfile_urls($text, $settings->get_file(), $contextid, $component, $filearea, $itemid);
         }
 
-        $options['filter'] = isset($options['filter']) && !$options['filter'] ? false : $settings->get_filter();
-        $options['para'] = isset($options['para']) ? $options['para'] : false;
-        $options['context'] = context::instance_by_id($contextid);
-        $options['allowid'] = isset($options['allowid']) ? $options['allowid'] : true;
+        if (!$settings->get_raw()) {
+            $options = (array) $options;
 
-        $text = format_text($text, $textformat, $options);
-        $textformat = FORMAT_HTML; // Once converted to html (from markdown, plain... lets inform consumer this is already HTML).
+            // If context is passed in options, check that is the same to show a debug message.
+            if (isset($options['context'])) {
+                if ((is_object($options['context']) && $options['context']->id != $contextid) || (!is_object($options['context']) && $options['context'] != $contextid)) {
+                    debugging('Different contexts found in external_format_text parameters. $options[\'context\'] not allowed.
+                    Using $contextid parameter...', DEBUG_DEVELOPER);
+                }
+            }
+
+            $options['filter'] = isset($options['filter']) && !$options['filter'] ? false : $settings->get_filter();
+            $options['para'] = isset($options['para']) ? $options['para'] : false;
+            $options['context'] = context::instance_by_id($contextid);
+            $options['allowid'] = isset($options['allowid']) ? $options['allowid'] : true;
+
+            $text = format_text($text, $textformat, $options);
+            $textformat = FORMAT_HTML; // Once converted to html (from markdown, plain... lets inform consumer this is already HTML).
+        }
+
+        return array($text, $textformat);
     }
-
-    return array($text, $textformat);
-}
-
 
     // get any partial
     public static function get_partial_element($elementname) {
@@ -239,14 +236,15 @@ class theme_controller
         $user = $DB->get_record('user', array('id' => $userid));
         $userimg = new user_picture($user);
         $userimg->size = $imgsize;
-        return  $userimg->get_url($PAGE);
+        return $userimg->get_url($PAGE);
     }
 
     public static function get_time_format($time) {
         if ($time >= 31536000) {
-            return intval($time / 31536000) . " " .  get_string('years', 'theme_remui');
+            return intval($time / 31536000) . " " . get_string('years', 'theme_remui');
         } else if ($time >= 2592000) {
-            return intval($time / 2592000) . " " . get_string('months', 'theme_remui');;
+            return intval($time / 2592000) . " " . get_string('months', 'theme_remui');
+            ;
         } else if ($time >= 86400) {
             return intval($time / 86400) . " " . get_string('days', 'theme_remui');
         } else if ($time >= 3600) {
@@ -259,9 +257,9 @@ class theme_controller
     public static function get_events() {
         global $CFG;
 
-        require_once($CFG->dirroot.'/calendar/lib.php');
+        require_once($CFG->dirroot . '/calendar/lib.php');
 
-        $filtercourse    = array();
+        $filtercourse = array();
         // Being displayed at site level. This will cause the filter to fall back to auto-detecting
         // the list of courses it will be grabbing events from.
         $filtercourse = calendar_get_default_courses();
@@ -301,7 +299,7 @@ class theme_controller
 
         if ($user->description && !isset($hiddenfields['description'])) {
             if (!empty($CFG->profilesforenrolledusersonly) && !$currentuser &&
-                !$DB->record_exists('role_assignments', array('userid' => $user->id))) {
+                    !$DB->record_exists('role_assignments', array('userid' => $user->id))) {
                 $userdescription = get_string('profilenotshown', 'moodle');
             } else {
                 $user->description = file_rewrite_pluginfile_urls($user->description, 'pluginfile.php', $context->id, 'user', 'profile', null);
@@ -313,7 +311,7 @@ class theme_controller
 
     // Get the recently added users
     public static function get_recent_user() {
-        global  $DB;
+        global $DB;
         $userdata = array();
         $limitfrom = 0;
         $limitto = 8;
@@ -322,16 +320,16 @@ class theme_controller
         foreach ($users as $value) {
             $date = date('d/m/Y', $value->timecreated);
             if ($date == date('d/m/Y')) {
-                     $date = 'Today';
+                $date = 'Today';
             } else if ($date == date('d/m/Y', time() - (24 * 60 * 60))) {
-                 $date = 'Yesterday';
+                $date = 'Yesterday';
             } else {
                 $date = date('jS F Y', $value->timecreated);
             }
-             $userdata[$count]['img'] = self::get_user_image_link($value->id, 100);
-             $userdata[$count]['name'] = $value->firstname .' '.$value->lastname;
-             $userdata[$count]['register_date'] = $date;
-             $userdata[$count]['id'] = $value->id;
+            $userdata[$count]['img'] = self::get_user_image_link($value->id, 100);
+            $userdata[$count]['name'] = $value->firstname . ' ' . $value->lastname;
+            $userdata[$count]['register_date'] = $date;
+            $userdata[$count]['id'] = $value->id;
             // echo $userpic;
             // echo $value->id ;
             // echo $value->email ;
@@ -396,7 +394,6 @@ class theme_controller
         $events = self::upcoming_deadlines($USER->id);
 
         return $events;
-
     }
 
     /**
@@ -465,7 +462,7 @@ class theme_controller
      * @param bool $todayonly true if only the next 24 hours to be returned
      * @return array
      */
-    private static function get_upcoming_deadlines($userorid, $courses, $maxevents, $todayonly=false) {
+    private static function get_upcoming_deadlines($userorid, $courses, $maxevents, $todayonly = false) {
 
         $user = self::get_user($userorid);
         if (!$user) {
@@ -524,7 +521,7 @@ class theme_controller
 
     // Returns count of newly registered users
     public static function get_new_members_count($time) {
-        global  $DB;
+        global $DB;
         $userscount = $DB->get_records_sql("SELECT COUNT(*) FROM {user} WHERE timecreated >= ?", array($time));
         $key = array_keys($userscount);
 
@@ -614,9 +611,9 @@ class theme_controller
     }
 
     public static function get_course_firstimage($courseid) {
-        $fs      = get_file_storage();
+        $fs = get_file_storage();
         $context = \context_course::instance($courseid);
-        $files   = $fs->get_area_files($context->id, 'course', 'summary', false, 'filename', false);
+        $files = $fs->get_area_files($context->id, 'course', 'summary', false, 'filename', false);
 
         if (count($files) > 0) {
             foreach ($files as $file) {
@@ -680,7 +677,7 @@ class theme_controller
         if (!isloggedin() || isguestuser()) {
             return null; // Can't get completion progress for users who aren't logged in.
         }
-        if (!$userid){
+        if (!$userid) {
             $userid = $USER->id;
         } else {
             $userid = $userid;
@@ -695,14 +692,14 @@ class theme_controller
         $roles = get_user_roles($context, $userid, false);
         $keys = array_keys($roles);
         if ($roles && ($roles[$keys[0]]->roleid != 5)) {
-          return null;  
+            return null;
         }
 
         $completioninfo = new \completion_info($course);
         $trackcount = 0;
         $compcount = 0;
 
-            if ($completioninfo->is_enabled()) {
+        if ($completioninfo->is_enabled()) {
             $modinfo = get_fast_modinfo($course);
             foreach ($modinfo->cms as $thismod) {
                 if (!is_siteadmin() && !$thismod->uservisible) {
@@ -712,15 +709,15 @@ class theme_controller
 
                 $completioninfo->get_data($thismod, true, $userid);
 
-               // echo $completioninfo->userid;
+                // echo $completioninfo->userid;
                 if ($completioninfo->is_enabled($thismod) != COMPLETION_TRACKING_NONE) {
                     $trackcount++;
                     $completiondata = $completioninfo->get_data($thismod, true, $userid);
-                /*    echo '<pre>';
-                    print_r($completiondata);
-                    echo '<pre>';*/
+                    /*    echo '<pre>';
+                      print_r($completiondata);
+                      echo '<pre>'; */
                     if ($completiondata->completionstate == COMPLETION_COMPLETE ||
-                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                            $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
                         $compcount++;
                     }
                 }
@@ -729,15 +726,15 @@ class theme_controller
 
         $compobj = (object) array('complete' => $compcount, 'total' => $trackcount, 'progresshtml' => '');
         if ($trackcount > 0) {
-                $progress = get_string('progresstotal', 'completion', $compobj);
-             // TODO - we should be putting our HTML in a renderer.
-                $progresspercent = ceil(($compcount / $trackcount) * 100);
-             /* $progressinfo = '<div class="completionstatus outoftotal">'.$progress.'<span class="pull-right">'.$progresspercent.'%</span></div>
-             <div class="completion-line" style="width:'.$progresspercent.'%"></div>
-             '; */
-            $progressinfo = '<div id="course-info">'.$progress.'</div><div class="progress" style="display:inline-block; width:100%">
-                <div class="progress-bar active" role="progressbar" aria-valuenow='.$progresspercent.' aria-valuemin="0" aria-valuemax="100" style="width:'.$progresspercent.'%">
-                    '.$progresspercent.'%<span class="sr-only">'.$progresspercent.'% Complete</span>
+            $progress = get_string('progresstotal', 'completion', $compobj);
+            // TODO - we should be putting our HTML in a renderer.
+            $progresspercent = ceil(($compcount / $trackcount) * 100);
+            /* $progressinfo = '<div class="completionstatus outoftotal">'.$progress.'<span class="pull-right">'.$progresspercent.'%</span></div>
+              <div class="completion-line" style="width:'.$progresspercent.'%"></div>
+              '; */
+            $progressinfo = '<div id="course-info">' . $progress . '</div><div class="progress" style="display:inline-block; width:100%">
+                <div class="progress-bar active" role="progressbar" aria-valuenow=' . $progresspercent . ' aria-valuemin="0" aria-valuemax="100" style="width:' . $progresspercent . '%">
+                    ' . $progresspercent . '%<span class="sr-only">' . $progresspercent . '% Complete</span>
                 </div>
              </div>';
             $compobj->progresshtml = $progressinfo;
@@ -751,16 +748,16 @@ class theme_controller
      * @param $courseids
      * @return bool | array
      */
-    public static function courseinfo($courseids, $userid = null ) {
+    public static function courseinfo($courseids, $userid = null) {
         global $DB, $USER;
-        if (!$userid){
+        if (!$userid) {
             $userid = $USER->id;
         }
         $courseinfo = array();
         foreach ($courseids as $courseid) {
             $course = $DB->get_record('course', array('id' => $courseid));
             $grades = grade_get_course_grade($userid, $courseid);
-            /* echo '<pre>'; print_r($grades);echo '</pre>';*/
+            /* echo '<pre>'; print_r($grades);echo '</pre>'; */
             //echo $grades->grade;
             $context = \context_course::instance($courseid);
 
@@ -768,12 +765,12 @@ class theme_controller
                 // Skip this course, don't have permission to view.
                 continue;
             }
-            
+
             $courseinfo[$courseid] = (object) array(
-                'courseid' => $courseid,
-                'coursename' => $course->fullname,
-                'progress' => self::course_completion_progress($course,$userid),
-                'str_long_grade' => $grades->str_long_grade
+                        'courseid' => $courseid,
+                        'coursename' => $course->fullname,
+                        'progress' => self::course_completion_progress($course, $userid),
+                        'str_long_grade' => $grades->str_long_grade
             );
         }
         return $courseinfo;
@@ -789,6 +786,7 @@ class theme_controller
         $user->city = $cityname;
         $user->country = $country;
         user_update_user($user, false);
+        self::useredit_update_interests($user, $userFields->interests);
         profile_save_data($userFields);
         self::load_user_last($userFields);
     }
@@ -804,7 +802,6 @@ class theme_controller
 
         $grades = self::events_graded();
         return $grades;
-
     }
 
     public static function grading() {
@@ -830,7 +827,7 @@ class theme_controller
         $courseids = array_keys($courses);
         $courseids[] = SITEID;
         list ($coursesql, $params) = $DB->get_in_or_equal($courseids);
-        $coursesql = 'AND gi.courseid '.$coursesql;
+        $coursesql = 'AND gi.courseid ' . $coursesql;
 
         $onemonthago = time() - (DAYSECS * 31);
         $showfrom = $onemonthago;
@@ -877,7 +874,7 @@ class theme_controller
         $grading = [];
         foreach ($mods as $mod) {
             $class = '\theme_remui\activity';
-            $method = $mod.'_ungraded';
+            $method = $mod . '_ungraded';
             if (method_exists($class, $method)) {
                 $grading = array_merge($grading, call_user_func([$class, $method], $courseids));
             }
@@ -937,7 +934,7 @@ class theme_controller
                 return 1;
             }
         } else if ($lefttime < $righttime) {
-            return  -1;
+            return -1;
         } else {
             return 1;
         }
@@ -957,7 +954,7 @@ class theme_controller
         foreach ($courselist as $course) {
             $context = context_course::instance($course->id);
             $query = "select count(u.id) as count from  {role_assignments} as a, {user} as u where contextid=" . $context->id . " and roleid=5 and a.userid=u.id;";
-            $count = $DB->get_records_sql( $query );
+            $count = $DB->get_records_sql($query);
             $count = key($count);
             $totalcount += $count;
             $courselist[$course->id]->count = $count;
@@ -973,7 +970,7 @@ class theme_controller
         }
     }
 
-    public static function get_quiz_participation_data($courseid ,$limit = 8) {
+    public static function get_quiz_participation_data($courseid, $limit = 8) {
         global $DB;
         $sqlq = ("SELECT COUNT(DISTINCT u.id)
             FROM {course} c
@@ -1019,13 +1016,12 @@ class theme_controller
      * @param string $filearea file area
      * @return array $blog returns array of blog data.
      */
-
     public static function get_recent_blog($start = 0, $blogcount = 10) {
         Global $CFG, $OUTPUT;
         $blog = array();
-        require_once($CFG->dirroot.'/blog/locallib.php');
+        require_once($CFG->dirroot . '/blog/locallib.php');
         $bloglisting = new \blog_listing();
-        require_once($CFG->libdir.'/filelib.php');
+        require_once($CFG->libdir . '/filelib.php');
         $syscontext = \context_system::instance();
         $fs = get_file_storage();
         $blogentries = $bloglisting->get_entries($start, $blogcount);
@@ -1041,7 +1037,7 @@ class theme_controller
                 }
                 $attachments[] = new \blog_entry_attachment($file, $blogentry->id);
                 foreach ($attachments as $attachment) {
-                              // Image attachments don't get printed as links.
+                    // Image attachments don't get printed as links.
                     if (file_mimetype_in_typegroup($attachment->file->get_mimetype(), 'web_image')) {
                         $attrs = array('src' => $attachment->url, 'alt' => '');
                         break;
@@ -1055,7 +1051,7 @@ class theme_controller
             // 'imagesrc' =>  $attrs['src'],
             // 'imagealt' => $attrs['alt']);
             $coursesummary = strip_tags($blogentry->summary);
-            $summarystring = strlen($coursesummary) > 100 ? substr($coursesummary, 0, 100)."..." : $coursesummary;
+            $summarystring = strlen($coursesummary) > 100 ? substr($coursesummary, 0, 100) . "..." : $coursesummary;
             $blog[$blogentry->id]['id'] = $blogentry->id;
             $blog[$blogentry->id]['summary'] = $summarystring;
             $blog[$blogentry->id]['subject'] = $blogentry->subject;
@@ -1094,8 +1090,8 @@ class theme_controller
     public static function recent_forum_activity($userorid = false, $limit = 10, $since = null) {
         global $CFG, $DB;
 
-        if (file_exists($CFG->dirroot.'/mod/hsuforum')) {
-            require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
+        if (file_exists($CFG->dirroot . '/mod/hsuforum')) {
+            require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
         }
 
         $user = self::get_user($userorid);
@@ -1132,14 +1128,12 @@ class theme_controller
         if (!empty($forumids)) {
             list($finsql, $finparams) = $DB->get_in_or_equal($forumids, SQL_PARAMS_NAMED, 'fina');
             $params = $finparams;
-            $params = array_merge($params,
-                                 [
-                                     'sepgps1a' => SEPARATEGROUPS,
-                                     'sepgps2a' => SEPARATEGROUPS,
-                                     'user1a'   => $user->id,
-                                     'user2a'   => $user->id
-
-                                 ]
+            $params = array_merge($params, [
+                'sepgps1a' => SEPARATEGROUPS,
+                'sepgps2a' => SEPARATEGROUPS,
+                'user1a' => $user->id,
+                'user2a' => $user->id
+                    ]
             );
 
             $fgpsql = '';
@@ -1148,13 +1142,13 @@ class theme_controller
                 // user has the ability to access all groups.
                 // This will be used in SQL later on to ensure they can see things in any groups.
                 list($fgpsql, $fgpparams) = $DB->get_in_or_equal($forumidsallgroups, SQL_PARAMS_NAMED, 'allgpsa');
-                $fgpsql = ' OR f1.id '.$fgpsql;
+                $fgpsql = ' OR f1.id ' . $fgpsql;
                 $params = array_merge($params, $fgpparams);
             }
 
             $params['user2a'] = $user->id;
 
-            $sqls[] = "(SELECT ".$DB->sql_concat("'F'", 'fp1.id')." AS id, 'forum' AS type, fp1.id AS postid,
+            $sqls[] = "(SELECT " . $DB->sql_concat("'F'", 'fp1.id') . " AS id, 'forum' AS type, fp1.id AS postid,
                                fd1.forum, fp1.discussion, fp1.parent, fp1.userid, fp1.modified, fp1.subject,
                                fp1.message, 0 AS reveal, cm1.id AS cmid,
                                0 AS forumanonymous, f1.course, f1.name AS forumname,
@@ -1185,15 +1179,14 @@ class theme_controller
         if (!empty($hsuforumids)) {
             list($afinsql, $afinparams) = $DB->get_in_or_equal($hsuforumids, SQL_PARAMS_NAMED, 'finb');
             $params = array_merge($params, $afinparams);
-            $params = array_merge($params,
-                                  [
-                                      'sepgps1b' => SEPARATEGROUPS,
-                                      'sepgps2b' => SEPARATEGROUPS,
-                                      'user1b'   => $user->id,
-                                      'user2b'   => $user->id,
-                                      'user3b'   => $user->id,
-                                      'user4b'   => $user->id
-                                  ]
+            $params = array_merge($params, [
+                'sepgps1b' => SEPARATEGROUPS,
+                'sepgps2b' => SEPARATEGROUPS,
+                'user1b' => $user->id,
+                'user2b' => $user->id,
+                'user3b' => $user->id,
+                'user4b' => $user->id
+                    ]
             );
 
             $afgpsql = '';
@@ -1202,11 +1195,11 @@ class theme_controller
                 // user has the ability to access all groups.
                 // This will be used in SQL later on to ensure they can see things in any groups.
                 list($afgpsql, $afgpparams) = $DB->get_in_or_equal($hsuforumidsallgroups, SQL_PARAMS_NAMED, 'allgpsb');
-                $afgpsql = ' OR f2.id '.$afgpsql;
+                $afgpsql = ' OR f2.id ' . $afgpsql;
                 $params = array_merge($params, $afgpparams);
             }
 
-            $sqls[] = "(SELECT ".$DB->sql_concat("'A'", 'fp2.id')." AS id, 'hsuforum' AS type, fp2.id AS postid,
+            $sqls[] = "(SELECT " . $DB->sql_concat("'A'", 'fp2.id') . " AS id, 'hsuforum' AS type, fp2.id AS postid,
                                fd2.forum, fp2.discussion, fp2.parent, fp2.userid, fp2.modified, fp2.subject,
                                fp2.message, fp2.reveal, cm2.id AS cmid,
                                f2.anonymous AS forumanonymous, f2.course, f2.name AS forumname,
@@ -1234,9 +1227,9 @@ class theme_controller
                          ";
         }
 
-        $sql = '-- remui sql'. "\n".implode ("\n".' UNION ALL '."\n", $sqls);
-        if (count($sqls)>1) {
-            $sql .= "\n".' ORDER BY modified DESC';
+        $sql = '-- remui sql' . "\n" . implode("\n" . ' UNION ALL ' . "\n", $sqls);
+        if (count($sqls) > 1) {
+            $sql .= "\n" . ' ORDER BY modified DESC';
         }
         $posts = $DB->get_records_sql($sql, $params, 0, $limit);
 
@@ -1244,43 +1237,43 @@ class theme_controller
 
         if (!empty($posts)) {
             foreach ($posts as $post) {
-                $postuser = (object)[
-                    'id' => $post->userid,
-                    'firstnamephonetic' => $post->firstnamephonetic,
-                    'lastnamephonetic' => $post->lastnamephonetic,
-                    'middlename' => $post->middlename,
-                    'alternatename' => $post->alternatename,
-                    'firstname' => $post->firstname,
-                    'lastname' => $post->lastname,
-                    'picture' => $post->picture,
-                    'imagealt' => $post->imagealt,
-                    'email' => $post->email
+                $postuser = (object) [
+                            'id' => $post->userid,
+                            'firstnamephonetic' => $post->firstnamephonetic,
+                            'lastnamephonetic' => $post->lastnamephonetic,
+                            'middlename' => $post->middlename,
+                            'alternatename' => $post->alternatename,
+                            'firstname' => $post->firstname,
+                            'lastname' => $post->lastname,
+                            'picture' => $post->picture,
+                            'imagealt' => $post->imagealt,
+                            'email' => $post->email
                 ];
 
                 if ($post->type === 'hsuforum') {
-                    $postuser = hsuforum_anonymize_user($postuser, (object)array(
-                        'id' => $post->forum,
-                        'course' => $post->course,
-                        'anonymous' => $post->forumanonymous
-                    ), $post);
+                    $postuser = hsuforum_anonymize_user($postuser, (object) array(
+                                'id' => $post->forum,
+                                'course' => $post->course,
+                                'anonymous' => $post->forumanonymous
+                            ), $post);
                 }
 
-                $activities[] = (object)[
-                    'type' => $post->type,
-                    'cmid' => $post->cmid,
-                    'name' => $post->subject,
-                    'courseshortname' => $post->courseshortname,
-                    'coursefullname' => $post->coursefullname,
-                    'forumname' => $post->forumname,
-                    'sectionnum' => null,
-                    'timestamp' => $post->modified,
-                    'content' => (object)[
-                        'id' => $post->postid,
-                        'discussion' => $post->discussion,
-                        'subject' => $post->subject,
-                        'parent' => $post->parent
-                    ],
-                    'user' => $postuser
+                $activities[] = (object) [
+                            'type' => $post->type,
+                            'cmid' => $post->cmid,
+                            'name' => $post->subject,
+                            'courseshortname' => $post->courseshortname,
+                            'coursefullname' => $post->coursefullname,
+                            'forumname' => $post->forumname,
+                            'sectionnum' => null,
+                            'timestamp' => $post->modified,
+                            'content' => (object) [
+                                'id' => $post->postid,
+                                'discussion' => $post->discussion,
+                                'subject' => $post->subject,
+                                'parent' => $post->parent
+                            ],
+                            'user' => $postuser
                 ];
             }
         }
@@ -1315,19 +1308,23 @@ class theme_controller
         }
         return $sql;
     }
-    
-    private static function load_user_last($userData){   
+
+    private static function load_user_last($userData) {
         global $DB;
         $userlast = $DB->get_record_sql('SELECT * FROM user_last WHERE userid = ?', array($userData->id));
-        if ($userlast) {            
+        if ($userlast) {
             $sql = "UPDATE user_last SET regionId = {$userData->regionId}, municipalityId = {$userData->municipalityId}, cityId = {$userData->cityId}, "
-            . "schoolId = {$userData->schoolId}, updated_at = now() WHERE userid = {$userData->id}";
+                    . "schoolId = {$userData->schoolId}, updated_at = now() WHERE userid = {$userData->id}";
             $DB->execute($sql);
         } else {
             $sql = "INSERT INTO user_last (userid, student_name, regionId, municipalityId, cityId, schoolId, created_at, updated_at) "
-            . "VALUES({$userData->id}, '{$userData->name}', {$userData->regionId}, {$userData->municipalityId}, {$userData->cityId}, {$userData->schoolId}, now(), now())";
+                    . "VALUES({$userData->id}, '{$userData->name}', {$userData->regionId}, {$userData->municipalityId}, {$userData->cityId}, {$userData->schoolId}, now(), now())";
             $DB->execute($sql);
         }
+    }
+
+    private static function useredit_update_interests($user, $interests) {
+        \core_tag_tag::set_item_tags('core', 'user', $user->id, \context_user::instance($user->id), $interests);
     }
 
 }

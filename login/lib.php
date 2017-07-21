@@ -286,7 +286,8 @@ function core_login_get_return_url() {
     global $CFG, $SESSION, $USER;
     // Prepare redirection.
     if (user_not_fully_set_up($USER, true)) {
-        $urltogo = $CFG->wwwroot.'/user/edit.php';
+//        $urltogo = $CFG->wwwroot.'/user/edit.php';
+          $urltogo = $CFG->wwwroot.'/user/profile.php?id=' . $USER->id;
         // We don't delete $SESSION->wantsurl yet, so we get there later.
 
     } else if (isset($SESSION->wantsurl) and (strpos($SESSION->wantsurl, $CFG->wwwroot) === 0
