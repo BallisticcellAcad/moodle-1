@@ -480,6 +480,8 @@ $string['class'] = 'Клас';
 $string['birthdate'] = 'Дата на раждане';
 $string['gander'] = 'Пол';
 $string['description'] = 'Описание';
+$string['entertags'] = 'Въведете таг...';
+$string['noselection'] = 'Няма избрани';
 
 $string['nocommoncourses'] = 'Не сте записан в общи курсове с този потребител.';
 $string['notenrolledanycourse'] = 'Не сте записан за никакви курсове.';
@@ -501,6 +503,7 @@ $string['detailssavedsuccessfully'] = 'Данните бяха запазени 
 
 /* Header */
 
+$string['startsignup'] = 'Регистрация';
 $string['startedsince'] = 'Започнат от';
 $string['startingin'] = 'Започва след';
 

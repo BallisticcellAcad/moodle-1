@@ -442,7 +442,8 @@ $isregistration = $DB->get_record('config', array('name' => 'registerauth'));
         <?php if ($isregistration->value == 'email') {
                 ?>
           <li>
-            <a href=" <?php echo $CFG->wwwroot.'/login/signup.php'; ?>"><i class="fa fa-user"></i>&nbsp;<?php  echo get_string('startsignup'); ?></a>
+<!--            <a href=" <?php echo $CFG->wwwroot.'/login/signup.php'; ?>"><i class="fa fa-user"></i>&nbsp;<?php  echo get_string('startsignup'); ?></a>-->
+              <a href=" <?php echo 'http://academico.bg/index.php/account/?action=register'; ?>"><i class="fa fa-user"></i>&nbsp;<?php  echo get_string('startsignup', 'theme_remui'); ?></a>
           </li>
             <?php }
 } ?>

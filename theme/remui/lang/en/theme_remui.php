@@ -503,6 +503,7 @@ $string['detailssavedsuccessfully'] = 'Details Saved Successfully!';
 
 /* Header */
 
+$string['startsignup'] = 'Sign Up';
 $string['startedsince'] = 'Started since ';
 $string['startingin'] = 'Starting in ';
 
