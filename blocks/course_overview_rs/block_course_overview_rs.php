@@ -86,6 +86,7 @@ class block_course_overview_rs extends block_base {
 
         if (empty($sortedcourses) && $totalcourses == 0) {
             $this->content = NULL;
+	    return NULL;
         } else {
             // For each course, build category cache.
             $this->content->text .= $renderer->course_overview_rs($sortedcourses, $overviews);
