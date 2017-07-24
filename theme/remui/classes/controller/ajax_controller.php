@@ -155,6 +155,7 @@ class ajax_controller extends controller_abstract
         global $DB;
         $municipalityId = required_param('municipalityId', PARAM_INT);
         $sql = "SELECT * FROM Cities WHERE municipalityId = " . $municipalityId;
+        $sql .= " AND ID IN (SELECT DISTINCT cityId FROM schools)";
         $cities = $DB->get_records_sql($sql);
 
         return json_encode($cities);

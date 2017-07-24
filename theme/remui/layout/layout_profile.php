@@ -504,6 +504,7 @@ echo $OUTPUT->doctype();
                                                         if ($otheruserData && $otheruserData->municipalityid > 0) {
 
                                                             $sql = "SELECT * FROM Cities WHERE municipalityId = " . $otheruserData->municipalityid;
+							    $sql .= " AND ID IN (SELECT DISTINCT cityId FROM schools)";
                                                             $citiesDb = $DB->get_recordset_sql($sql, NULL);
                                                         }
                                                         ?>
