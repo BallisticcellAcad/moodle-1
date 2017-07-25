@@ -83,7 +83,7 @@ $string['choosereadme'] = '
                 <div class="iconcircle">
                     <i class="fa fa-link"></i>
                 </div>
-lkj                <div class="iconbox-content">
+                  <div class="iconbox-content">
                     <h4>API Интеграция</h4>
                 </div>
             </div>

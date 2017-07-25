@@ -327,9 +327,10 @@ echo $OUTPUT->doctype();
                             $activeProfile = '';
                             $displayRequierdFields = 'none';
                             if (user_not_fully_set_up($otheruser)) {
-
+                                $activeCourses = '';
+                                $activeProfile = 'active';
                                 $displayRequierdFields = '';
-                            } elseif ($redirect === 0) {
+                            } else if ($redirect === 0) {
                                 $activeCourses = '';
                                 $activeProfile = 'active';
                             }
