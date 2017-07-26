@@ -92,8 +92,8 @@ class ajax_controller extends controller_abstract
     public function save_user_profile_settings_action()
     {
         $id = required_param('id', PARAM_INT);
-        $fname = required_param('fname', PARAM_ALPHAEXT);
-        $lname = required_param('lname', PARAM_ALPHAEXT);
+        $fname = required_param('fname', PARAM_TEXT);
+        $lname = required_param('lname', PARAM_TEXT);
         $emailid = required_param('emailid', PARAM_EMAIL);
         $description = required_param('description', PARAM_TEXT);
         $city = required_param('city', PARAM_INT);
@@ -107,7 +107,7 @@ class ajax_controller extends controller_abstract
         $schoolname = required_param('schoolname', PARAM_TEXT);
         $class = required_param('stdclass', PARAM_TEXT);
         $gander = required_param('gander', PARAM_TEXT);
-        $interests = optional_param('interests', PARAM_TAGLIST);
+        $interests = optional_param('interests', null, PARAM_TAGLIST);
         $birthdatestring = required_param('birthdate', PARAM_TEXT);
         $birthdate = strtotime($birthdatestring);
         $defaultdate = strtotime('1970-01-01');
