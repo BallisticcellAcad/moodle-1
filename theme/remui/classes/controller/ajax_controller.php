@@ -107,7 +107,7 @@ class ajax_controller extends controller_abstract
         $schoolname = required_param('schoolname', PARAM_TEXT);
         $class = required_param('stdclass', PARAM_TEXT);
         $gander = required_param('gander', PARAM_TEXT);
-        //$interests = required_param('interests', PARAM_TAGLIST);
+        $interests = optional_param('interests', PARAM_TAGLIST);
         $birthdatestring = required_param('birthdate', PARAM_TEXT);
         $birthdate = strtotime($birthdatestring);
         $defaultdate = strtotime('1970-01-01');
