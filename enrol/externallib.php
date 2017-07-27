@@ -325,11 +325,17 @@ class core_enrol_external extends external_api {
                 external_format_text($course->summary, $course->summaryformat, $context->id, 'course', 'summary', null);
             $course->fullname = external_format_string($course->fullname, $context->id);
             $course->shortname = external_format_string($course->shortname, $context->id);
+            
+            $progress = null;
+            if ($course->enablecompletion) {
+                $progress = \core_completion\progress::get_course_progress_percentage($course);
+            }
 
             $result[] = array('id' => $course->id, 'shortname' => $course->shortname, 'fullname' => $course->fullname,
                 'idnumber' => $course->idnumber, 'visible' => $course->visible, 'enrolledusercount' => $enrolledusercount,
                 'summary' => $course->summary, 'summaryformat' => $course->summaryformat, 'format' => $course->format,
-                'showgrades' => $course->showgrades, 'lang' => $course->lang, 'enablecompletion' => $course->enablecompletion
+                'showgrades' => $course->showgrades, 'lang' => $course->lang, 'enablecompletion' => $course->enablecompletion,
+                'progress' => $progress
                 );
         }
 
@@ -357,7 +363,8 @@ class core_enrol_external extends external_api {
                     'showgrades' => new external_value(PARAM_BOOL, 'true if grades are shown, otherwise false', VALUE_OPTIONAL),
                     'lang'      => new external_value(PARAM_LANG, 'forced course language', VALUE_OPTIONAL),
                     'enablecompletion' => new external_value(PARAM_BOOL, 'true if completion is enabled, otherwise false',
-                                                                VALUE_OPTIONAL)
+                                                                VALUE_OPTIONAL),
+                    'progress' => new external_value(PARAM_FLOAT, 'Progress percentage', VALUE_OPTIONAL)
                 )
             )
         );
