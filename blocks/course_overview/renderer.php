@@ -154,7 +154,7 @@ class block_course_overview_renderer extends plugin_renderer_base {
             $html .= html_writer::tag('div', $moveurl, array('class' => 'movehere'));
         }
 
-        foreach ($courses as $key => $course) {
+        foreach ($courses as $key => $course) {            
             $course_image_src = '';
             $courseurl = '';
             $progress = self::course_completion_progress($course);
@@ -164,7 +164,6 @@ class block_course_overview_renderer extends plugin_renderer_base {
             }
             
             if($course->id > 0) {
-                global $CFG;
                     // Create a course_in_list object to use the get_course_overviewfiles() method.
                 require_once($CFG->libdir . '/coursecatlib.php');
                 $course_list = new course_in_list($course);
