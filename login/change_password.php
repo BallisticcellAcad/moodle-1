@@ -45,8 +45,7 @@ if ($return) {
     // this redirect prevents security warning because https can not POST to http pages
     if (empty($SESSION->wantsurl)
             or stripos(str_replace('https://', 'http://', $SESSION->wantsurl), str_replace('https://', 'http://', $CFG->wwwroot.'/login/change_password.php')) === 0) {
-//        $returnto = "$CFG->wwwroot/user/preferences.php?userid=$USER->id&course=$id";
-         $returnto = "$CFG->wwwroot/user/profile.php?id=$USER->id&redirect=0";
+        $returnto = "$CFG->wwwroot/user/preferences.php?userid=$USER->id&course=$id";
     } else {
         $returnto = $SESSION->wantsurl;
     }
@@ -110,7 +109,7 @@ $navlinks = array();
 $navlinks[] = array('name' => $strparticipants, 'link' => "$CFG->wwwroot/user/index.php?id=$course->id", 'type' => 'misc');
 
 if ($mform->is_cancelled()) {
-    redirect($CFG->wwwroot.'/user/preferences.php?userid='.$USER->id.'&amp;course='.$course->id);
+    redirect($CFG->wwwroot.'/user/profile.php?id='.$USER->id.'&amp;showprofile=1');
 } else if ($data = $mform->get_data()) {
 
     if (!$userauth->user_update_password($USER, $data->newpassword1)) {

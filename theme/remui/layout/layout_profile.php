@@ -403,6 +403,29 @@ echo $OUTPUT->doctype();
                                             <div class="alert alert-danger" style="display:<?php echo $displayRequierdFields; ?>;" id="required-fields">
                                                 Моля попълнете всички задължителни полета, за да продължите!                                                
                                             </div>
+                                            <script src="http://code.jquery.com/jquery-3.2.1.slim.min.js"
+                                                    integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+                                                    crossorigin="anonymous">
+                                            </script>
+                                            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js" type="text/javascript"></script>
+                                            <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script>
+                                            <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="Stylesheet" type="text/css" />
+                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+                                            <script>
+                                                $(window).bind("load",function(){
+                                                    if (!Modernizr.inputtypes.date) {
+                                                        console.log("NO DATE");
+                                                        $('#inputBirthdate').datepicker({
+                                                            dateFormat: 'yy-mm-dd'
+                                                        });
+                                                    }
+                                                    
+                                                    if(location.href.indexOf('showprofile=1') !== -1) {
+                                                        setTimeout(function(){
+                                                            $('.nav-tabs').find("[href='#editprofile']")[0].click()},
+                                                            100);
+                                                }});
+                                            </script>
                                             <form class="form-horizontal">
                                                 <input type="hidden" value="<?php echo $otheruser->id; ?>" id="inputId">
                                                 <div class="form-group">
