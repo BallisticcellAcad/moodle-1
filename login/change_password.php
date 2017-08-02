@@ -45,7 +45,7 @@ if ($return) {
     // this redirect prevents security warning because https can not POST to http pages
     if (empty($SESSION->wantsurl)
             or stripos(str_replace('https://', 'http://', $SESSION->wantsurl), str_replace('https://', 'http://', $CFG->wwwroot.'/login/change_password.php')) === 0) {
-        $returnto = "$CFG->wwwroot/user/preferences.php?userid=$USER->id&course=$id";
+        redirect($CFG->wwwroot.'/user/profile.php?id='.$USER->id.'&amp;showprofile=1');
     } else {
         $returnto = $SESSION->wantsurl;
     }
@@ -53,6 +53,16 @@ if ($return) {
 
     redirect($returnto);
 }
+М
+
+//TODO: find real solution
+$user_id = $id;
+$id = 1;
+//var_dump($user_id);
+//$TARGET_USER = $DB->get_record('user', array('id'=>$user_id, 'deleted'=>false));
+//if(!$TARGET_USER) {
+//    $TARGET_USER = $USER;
+//}
 
 $strparticipants = get_string('participants');
 
