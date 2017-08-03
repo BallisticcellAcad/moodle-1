@@ -1,3 +1,30 @@
+(function(e, s) {
+    e.src = s;
+    e.onload = function() {
+        jQuery.noConflict();
+        console.log('jQuery injected');
+	jQuery('.gradeparent').on('DOMSubtreeModified', function(){
+	jQuery('.table-wrap-remui').on('scroll', function(){
+		var scrollPostion = jQuery('.table-wrap-remui').scrollLeft();
+		jQuery('tr .user.c0, tr #studentheader.c0, tr .topleft.c0').each(function(key, value){
+			var currentElement = jQuery(value);
+			var currentBackground = currentElement.css('background-color');
+			if(currentBackground == 'rgba(0, 0, 0, 0)'){
+				currentBackground = currentElement.parent().css('background-color');
+			}
+			currentElement.css({'position':'relative', 'z-index': 1000, 'left': scrollPostion + 'px', 'background': currentBackground});
+			
+		});
+	});
+});
+    };
+    document.head.appendChild(e);
+})(document.createElement('script'), '//code.jquery.com/jquery-latest.min.js')
+
+
+
+
+
 /**
  * Grader report namespace
  */
