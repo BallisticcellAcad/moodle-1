@@ -366,16 +366,17 @@ $isregistration = $DB->get_record('config', array('name' => 'registerauth'));
                 </p>
               </li>
               <!-- Menu Body -->
-              <li class="user-body">
+              <li class="user-body">                
                 <div class="col-xs-4 text-center">
                   <a href="<?php echo $userdashboardurl ?>"><?php echo get_string('myhome');?></a>
                 </div>
+                  <div class="col-xs-4 text-center">&nbsp;</div>
                 <div class="col-xs-4 text-center">
                   <a href="<?php echo $coursearchive ?>"><?php echo get_string('courses');?></a>
                 </div>
-                <div class="col-xs-4 text-center">
+<!--                <div class="col-xs-4 text-center">
                   <a href="<?php echo $preferences ?>"><?php echo get_string('preferences');?></a>
-                </div>
+                </div>-->
               </li>
               <!-- Menu Footer-->
               <li class="user-footer">

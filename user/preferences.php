@@ -25,6 +25,8 @@
 require_once(__DIR__ . '/../config.php');
 require_once($CFG->libdir . '/navigationlib.php');
 
+throw new moodle_exception('Not allowed');//Sve: AS-165
+
 require_login(null, false);
 if (isguestuser()) {
     throw new require_login_exception('Guests are not allowed here.');
