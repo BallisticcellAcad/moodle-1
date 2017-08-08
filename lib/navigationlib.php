@@ -1119,20 +1119,7 @@ class global_navigation extends navigation_node {
         $this->rootnodes['users'] = $this->add(get_string('users'), null, self::TYPE_ROOTNODE, null, 'users');
         
         
-        $this->rootnodes['site']->isactive = false;
-        //Adds grade
-//        $gradeUrl = new moodle_url('/grade/report/overview/index.php');
-//        if(self::getCourse() > 1){
-//            $gradeUrl = new moodle_url('/grade/report/user/index.php',  array('id' => self::getCourse()));
-//        }
-//        $gradesString = get_string('grades');
-//        var_dump($gradesString);
-//        //TODO: Find where to add localization
-//        if(empty($gradesString)) {
-//            $gradesString = 'Оценки';
-//        }
-//        $this->rootnodes['grades'] = $this->add($gradesString, $gradeUrl, self::TYPE_ROOTNODE, null, 'grades');
-//        $this->rootnodes['grades']->isactive = true;        
+        $this->rootnodes['site']->isactive = false;  
         $this->rootnodes['myprofile']->hidden = false;
 
         
