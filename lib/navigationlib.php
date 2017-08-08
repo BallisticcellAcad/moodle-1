@@ -1063,6 +1063,11 @@ class global_navigation extends navigation_node {
         $this->useridtouseforparentchecks = $userid;
     }
 
+    
+    function getCourse(){
+        global $COURSE;
+        return $COURSE->id;
+    }
 
     /**
      * Initialises the navigation object.
@@ -1112,6 +1117,25 @@ class global_navigation extends navigation_node {
         $this->rootnodes['mycourses'] = $this->add(get_string('mycourses'), null, self::TYPE_ROOTNODE, null, 'mycourses');
         $this->rootnodes['courses'] = $this->add(get_string('courses'), new moodle_url('/course/index.php'), self::TYPE_ROOTNODE, null, 'courses');
         $this->rootnodes['users'] = $this->add(get_string('users'), null, self::TYPE_ROOTNODE, null, 'users');
+        
+        
+        $this->rootnodes['site']->isactive = false;
+        //Adds grade
+//        $gradeUrl = new moodle_url('/grade/report/overview/index.php');
+//        if(self::getCourse() > 1){
+//            $gradeUrl = new moodle_url('/grade/report/user/index.php',  array('id' => self::getCourse()));
+//        }
+//        $gradesString = get_string('grades');
+//        var_dump($gradesString);
+//        //TODO: Find where to add localization
+//        if(empty($gradesString)) {
+//            $gradesString = 'Оценки';
+//        }
+//        $this->rootnodes['grades'] = $this->add($gradesString, $gradeUrl, self::TYPE_ROOTNODE, null, 'grades');
+//        $this->rootnodes['grades']->isactive = true;        
+        $this->rootnodes['myprofile']->hidden = false;
+
+        
 
         // We always load the frontpage course to ensure it is available without
         // JavaScript enabled.
@@ -1138,12 +1162,20 @@ class global_navigation extends navigation_node {
 
         // Load the users enrolled courses if they are viewing the My Moodle page AND the admin has not
         // set that they wish to keep the My Courses branch collapsed by default.
-        if (!empty($CFG->navexpandmycourses) && $this->page->pagelayout === 'mydashboard'){
-            $this->rootnodes['mycourses']->forceopen = true;
-            $this->load_courses_enrolled();
-        } else {
-            $this->rootnodes['mycourses']->collapse = true;
-            $this->rootnodes['mycourses']->make_inactive();
+//        if (!empty($CFG->navexpandmycourses) && $this->page->pagelayout === 'mydashboard'){
+//            $this->rootnodes['mycourses']->forceopen = true;
+//            $this->load_courses_enrolled();
+//        } else {
+//            $this->rootnodes['mycourses']->collapse = true;
+//            $this->rootnodes['mycourses']->make_inactive();
+//        }        
+        
+        //Ballistic Edits
+        $this->rootnodes['mycourses']->classes = array("my-courses-tree");
+        $this->rootnodes['mycourses']->forceopen = true;
+        
+        foreach ($this->rootnodes['mycourses']->children as $child){
+            $child->classes = array("my-course-child");
         }
 
         $canviewcourseprofile = true;
@@ -2425,7 +2457,9 @@ class global_navigation extends navigation_node {
             $parent = $this;
             $url = null;
             if (empty($CFG->usesitenameforsitepages)) {
-                $coursename = get_string('sitepages');
+                //$coursename = get_string('sitepages');
+                //Hide side pages
+                $coursename = '';
             }
         } else if ($coursetype == self::COURSE_CURRENT) {
             $parent = $this->rootnodes['currentcourse'];

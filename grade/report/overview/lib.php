@@ -320,7 +320,12 @@ class grade_report_overview extends grade_report {
             }
             
             if(!$show_all_bool && count($this->studentcourseids) && $hidden_courses_count) {
-                $show_hidden_href = $_SERVER['REQUEST_URI']. '&show_all=1';
+                $show_hidden_href = '';
+                if(strrpos($_SERVER['REQUEST_URI'], '?')) {
+                    $show_hidden_href = $_SERVER['REQUEST_URI']. '&show_all=1';
+                } else {
+                    $show_hidden_href = $_SERVER['REQUEST_URI']. '?show_all=1';
+                }
                 $show_hidden_courses = html_writer::start_tag('a', 
                         array('href' =>  $show_hidden_href, 'class' => 'show-hidden-courses'));
                 $show_hidden_courses .= html_writer::span(get_string("showallhidden","grades"));  
