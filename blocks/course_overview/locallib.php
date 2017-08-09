@@ -26,6 +26,8 @@ define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_NONE', '0');
 define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_ONLY_PARENT_NAME', '1');
 define('BLOCKS_COURSE_OVERVIEW_SHOWCATEGORIES_FULL_PATH', '2');
 
+require_once($CFG->dirroot.'/blocks/course_overview/config.php');
+
 /**
  * Display overview for courses
  *
@@ -176,6 +178,11 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
     }
 
     foreach ($courses as $c) {
+        if(!is_course_for_k12($c->category)) {
+            unset($courses[$c->id]);
+            continue;
+        }
+        
         if (isset($USER->lastcourseaccess[$c->id])) {
             $courses[$c->id]->lastaccess = $USER->lastcourseaccess[$c->id];
         } else {
@@ -183,8 +190,7 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
         }
     }
 
-    $allcourses = array_merge(array(), $courses);
-
+    
     // Get remote courses.
     $remotecourses = array();
     if (is_enabled_auth('mnet')) {
@@ -202,7 +208,6 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
 
     $sortedcourses = array();
     $counter = 0;
-    $categoryK12 = $DB->get_record('course_categories',array('idnumber'=>K12_NAME));
     // Get courses in sort order into list.
     foreach ($order as $key => $cid) {
         if (($counter >= $limit) && ($limit != 0)) {
@@ -210,7 +215,7 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
         }
 
         // Make sure user is still enroled.
-        if (isset($courses[$cid]) && is_course_for_users_class($showallcourses, $courses[$cid]->category, $categoryK12->id)) {
+        if (isset($courses[$cid]) && is_course_for_users_class($showallcourses, $courses[$cid]->category, $cid)) {
             $sortedcourses[$cid] = $courses[$cid];
     	    $counter++;
         }
@@ -220,7 +225,7 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
         if (($limit != 0) && ($counter >= $limit)) {
             break;
         }
-        if (!in_array($c->id, $order) && is_course_for_users_class($showallcourses, $c->category, $categoryK12->id)) {
+        if (!in_array($c->id, $order) && is_course_for_users_class($showallcourses, $c->category, $c->id)) {
             $sortedcourses[$c->id] = $c;
             $counter++;
         }
@@ -238,23 +243,50 @@ function block_course_overview_get_sorted_courses($showallcourses = false) {
 }
 
 //sve
-function is_course_for_users_class($showallcourses, $category_id, $categoryK12_id) {
+function is_course_for_users_class($showallcourses, $category_id, $courseId) {
     global $USER, $DB;
     
-    if($showallcourses) {
+    $context = get_context_instance(CONTEXT_COURSE, $courseId, true);
+    $roles = get_user_roles($context, $USER->id, true);
+    $role = array_shift($roles);
+    $roleName = $role->shortname;
+
+    //for teachers do not limit by class, only by enrolement
+    if($showallcourses || $roleName == TEACHER_ROLE_NAME) {
 	return true;
     }
-    $category = $DB->get_record('course_categories',array('id'=>$category_id));
+    
+    //this is valid only for students
+    if($roleName != STUDENT_ROLE_NAME) {
+        return false;
+    }
     
     if(!empty(trim($USER->profile['studentclass']))) {
+        $category = $DB->get_record('course_categories',array('id'=>$category_id));
         if($category->name == $USER->profile['studentclass']) { //do not remove the last element
 	    return true;
 	}
-    }    
-    else if(empty(trim($USER->profile['studentclass'])) && $category->parent == $categoryK12_id) {
-        return true;
     }
 
     return false;
 }
 
+function is_course_for_k12($category_id) {
+    global $DB;
+
+    $category = $DB->get_record('course_categories', array('id' => $category_id));
+    
+    if($category->idnumber != K12_NAME) {
+        if($category->parent < 1) {
+            return false;
+        }
+        
+        $parentCategory = $DB->get_record('course_categories', array('id' => $category->parent));
+        
+        if($parentCategory->idnumber != K12_CATEGORY_NAME) {
+            return false;
+        }
+    }
+
+    return true;
+}

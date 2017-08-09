@@ -245,6 +245,6 @@ function is_course_for_gl($category_id) {
 
     $category = $DB->get_record('course_categories', array('id' => $category_id));
     
-    return $category->name == GL_CATEGORY_NAME;
+    return $category->idnumber == GL_CATEGORY_NAME;
 }
 

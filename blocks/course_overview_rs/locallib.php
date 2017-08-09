@@ -245,14 +245,14 @@ function is_course_for_rs($category_id) {
 
     $category = $DB->get_record('course_categories', array('id' => $category_id));
     
-    if($category->name != RS_CATEGORY_NAME) {
+    if($category->idnumber != RS_CATEGORY_NAME) {
         if($category->parent < 1) {
             return false;
         }
         
         $parentCategory = $DB->get_record('course_categories', array('id' => $category->parent));
         
-        if($parentCategory-> name != RS_CATEGORY_NAME) {
+        if($parentCategory->idnumber != RS_CATEGORY_NAME) {
             return false;
         }
     }
