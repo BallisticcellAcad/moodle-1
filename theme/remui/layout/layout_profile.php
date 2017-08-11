@@ -44,6 +44,92 @@ if (isloggedin() && !isguestuser()) {
     $userfullname = fullname($otheruser);
     $interests = false;
 
+    if (!$otheruserData && $otheruserFields) {
+        $otheruserFieldsData = $DB->get_records('user_info_field');
+        $studentschoolId = 0;
+        $studentregionId = 0;
+        $studentmunicipalityId = 0;
+        $studentcity = $otheruser->city;
+        
+        foreach ($otheruserFieldsData as $of_data) {
+            if ($of_data->shortname == 'studentschool') {
+                $studentschoolId = $of_data->id;
+            } else if ($of_data->shortname == 'studentregion') {
+                $studentregionId = $of_data->id;
+            }
+            else if ($of_data->shortname == 'studentmunicipality') {
+                $studentmunicipalityId = $of_data->id;
+            }
+            else if ($of_data->shortname == 'studentschool') {
+                $studentschoolId = $of_data->id;
+            }
+        }
+        
+        $studentmunicipalityName = '';
+        $studentschoolName = '';
+        $studentregionName = '';
+        
+        foreach ($otheruserFields as $ot_field) {
+            if ($ot_field->fieldid == $studentschoolId) {
+                $studentschoolName = $ot_field->data; 
+            } else if ($ot_field->fieldid == $studentregionId) {
+                $studentregionName = $ot_field->data; 
+            } else if ($ot_field->fieldid == $studentmunicipalityId) {
+                $studentmunicipalityName = $ot_field->data; 
+            }
+        }
+        
+        $sql_schools_and_regions = "SELECT s.id as id, r.id as regionId, r.Name as regionName,
+                m.id as minicipalityId, m.Name as minicipalityName,
+                c.id as cityId, c.Name as cityName,
+                s.id as schoolId, s.Name as schoolName
+            FROM Regions r
+            join Municipalities m on r.id = m.regionId
+            join Cities c on m.id = c.municipalityId
+            join schools s on c.id = s.cityId
+            where r.Name = ?;";
+        
+        $sql_schools_and_regions_result = $DB->get_records_sql($sql_schools_and_regions, array($studentregionName));
+        
+	$targetRegionId = 0;
+        $targetMinicipalityId = 0;
+        $targetCityId = 0;
+        $targetSchoolId = 0;
+        
+        var_dump($studentcity);
+        foreach ($sql_schools_and_regions_result as $row_to_check) {
+            if ($targetRegionId > 0 && $targetMinicipalityId > 0 && $targetCityId > 0 && $targetSchoolId > 0) {
+                break;
+            }
+            
+            if($targetRegionId == 0 && $row_to_check->regionname == $studentregionName) {
+                $targetRegionId = $row_to_check->regionid;
+            }
+            
+            if($targetMinicipalityId == 0 && $row_to_check->minicipalityname == $studentmunicipalityName) {
+                $targetMinicipalityId = $row_to_check->minicipalityid;
+            }
+            
+            $strippedSchoolName = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', $row_to_check->schoolname);
+            if($targetSchoolId == 0 && $strippedSchoolName == $studentschoolName) {
+                $targetSchoolId = $row_to_check->schoolid;
+            }
+            
+            if($targetCityId == 0 && $row_to_check->cityname == $studentcity) {
+                $targetCityId = $row_to_check->cityid;
+            }            
+        }
+        
+        $sqlInsertUserLastData = "INSERT INTO user_last (userid, student_name, picture, total_user_rank_score,"
+                . " created_at, updated_at, regionId, municipalityId, cityId, schoolId) "
+                . "Values(" . $otheruser->id . ",'" . $otheruser->firstname ." ".$otheruser->lastname ."',"
+                . "0, 0, NOW(), NOW(), ".$targetRegionId.", ".$targetMinicipalityId.", ".$targetCityId.", ".$targetSchoolId. ")";
+        
+        var_dump($sqlInsertUserLastData);
+        $DB->execute($sqlInsertUserLastData, null);
+        $otheruserData = $DB->get_record_sql('SELECT * FROM user_last WHERE userId = ?', array($userid));
+    }
+    
     $pageurl = $PAGE->url;
     $contact = $DB->get_record('message_contacts', array('userid' => $USER->id, 'contactid' => $otheruser->id));
     $userprofileurl = new moodle_url('/user/profile.php', array('id' => $USER->id));
@@ -479,12 +565,13 @@ echo $OUTPUT->doctype();
                                                     <div class="col-sm-10">
                                                         <?php
                                                         $sql = "SELECT * FROM Regions";
+                                                        $sql .= " ORDER BY name";
                                                         $regionsDb = $DB->get_recordset_sql($sql, NULL);
                                                         ?>
                                                         <select class="form-control" id="select-region">
                                                             <option><?php echo get_string('selectregion', 'theme_remui'); ?></option>
                                                             <?php
-                                                            
+                                                            var_dump($otheruserData);
                                                             foreach ($regionsDb as $regionDb) {
                                                                 if ($otheruserData && $regionDb->id === $otheruserData->regionid) {
                                                                     echo "<option selected value=" . $regionDb->id . ">" . $regionDb->name . "</option>";
@@ -503,6 +590,7 @@ echo $OUTPUT->doctype();
                                                         $municipalityDb = array();
                                                         if ($otheruserData && $otheruserData->regionid > 0) {
                                                             $sql = "SELECT * FROM Municipalities WHERE regionId = " . $otheruserData->regionid;
+                                                            $sql .= " ORDER BY name";
                                                             $municipalityDb = $DB->get_recordset_sql($sql, NULL);
                                                         }
                                                         ?>
@@ -529,6 +617,7 @@ echo $OUTPUT->doctype();
 
                                                             $sql = "SELECT * FROM Cities WHERE municipalityId = " . $otheruserData->municipalityid;
 							    $sql .= " AND ID IN (SELECT DISTINCT cityId FROM schools)";
+                                                            $sql .= " ORDER BY name";
                                                             $citiesDb = $DB->get_recordset_sql($sql, NULL);
                                                         }
                                                         ?>
@@ -554,6 +643,7 @@ echo $OUTPUT->doctype();
                                                         if ($otheruserData && $otheruserData->cityid > 0) {
 
                                                             $sql = "SELECT * FROM schools WHERE cityId = " . $otheruserData->cityid;
+                                                            $sql .= " ORDER BY name";
                                                             $schoolsDb = $DB->get_recordset_sql($sql, NULL);
                                                         }
                                                         ?>
