@@ -26,27 +26,35 @@
 
 .que.ddimageortext .group1, form.mform fieldset#id_previewareaheader .group1 {
     background-color: #FFFFFF;
+    color: black;
 }
 .que.ddimageortext .group2, form.mform fieldset#id_previewareaheader .group2 {
     background-color: #B0C4DE;
+    color: black;
 }
 .que.ddimageortext .group3, form.mform fieldset#id_previewareaheader .group3 {
     background-color: #DCDCDC;
+    color: black;
 }
 .que.ddimageortext .group4, form.mform fieldset#id_previewareaheader .group4 {
     background-color: #D8BFD8;
+    color: black;
 }
 .que.ddimageortext .group5, form.mform fieldset#id_previewareaheader .group5 {
     background-color: #87CEFA;
+    color: black;
 }
 .que.ddimageortext .group6, form.mform fieldset#id_previewareaheader .group6 {
     background-color: #DAA520;
+    color: black;
 }
 .que.ddimageortext .group7, form.mform fieldset#id_previewareaheader .group7 {
     background-color: #FFD700;
+    color: black;
 }
 .que.ddimageortext .group8, form.mform fieldset#id_previewareaheader .group8 {
     background-color: #F0E68C;
+    color: black;
 }
 .que.ddimageortext .drag, form.mform fieldset#id_previewareaheader .drag {
     border: 1px solid black;

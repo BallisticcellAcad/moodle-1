@@ -45,6 +45,7 @@
 
 .que.ddwtos .notreadonly .drag {
     cursor: move;
+    color: black;
 }
 .que.ddwtos .readonly .drag {
     cursor: default;
