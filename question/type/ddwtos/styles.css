@@ -49,6 +49,7 @@
 }
 .que.ddwtos .readonly .drag {
     cursor: default;
+    color: black;
 }
 
 .que.ddwtos span.incorrect {
