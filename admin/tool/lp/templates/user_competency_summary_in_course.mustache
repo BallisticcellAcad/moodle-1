@@ -47,12 +47,12 @@
         <dt>{{#str}}activities, tool_lp{{/str}}</dt>
         <dd data-region="coursecompetencyactivities">
         <p>
-        <ul class="inline">
+        <ul class="inline section">
         {{#coursemodules}}
-            <li><a href="{{url}}"><img src="{{iconurl}}"> {{name}} </a></li>
+            <li class="activity"><a href="{{url}}"><img class="iconlarge" src="{{iconurl}}"> {{name}} </a></li>
         {{/coursemodules}}
         {{^coursemodules}}
-            <li><span class="alert">{{#str}}noactivities, tool_lp{{/str}}</span></li>
+            <li class="activity"><span class="alert">{{#str}}noactivities, tool_lp{{/str}}</span></li>
         {{/coursemodules}}
         </ul>
         </p>
