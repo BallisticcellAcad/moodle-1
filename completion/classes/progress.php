@@ -10,7 +10,7 @@ namespace core_completion;
 
 defined('MOODLE_INTERNAL') || die();
 
-equire_once("$CFG->libdir/completionlib.php");
+require_once("$CFG->libdir/completionlib.php");
 
 class progress {
     /**
