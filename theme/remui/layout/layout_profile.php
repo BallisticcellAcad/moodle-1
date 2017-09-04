@@ -119,7 +119,7 @@ if (isloggedin() && !isguestuser()) {
     "_", $row_to_check->schoolname);
             
             
-            if($targetSchoolId == 0 && $strippedSchoolName == $strippedStudentschoolName) {
+            if($targetSchoolId == 0 && strtolower($strippedSchoolName) == strtolower($strippedStudentschoolName)) {
                 $targetSchoolId = $row_to_check->schoolid;
             }
             
