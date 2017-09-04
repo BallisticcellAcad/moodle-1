@@ -89,14 +89,18 @@ if (isloggedin() && !isguestuser()) {
             join schools s on c.id = s.cityId
             where r.Name = ?;";
         
-        $sql_schools_and_regions_result = $DB->get_records_sql($sql_schools_and_regions, array($studentregionName));
+        $sql_schools_and_regions_result = $DB->get_records_sql($sql_schools_and_regions, array($studentregionName));        
         
 	$targetRegionId = 0;
         $targetMinicipalityId = 0;
         $targetCityId = 0;
         $targetSchoolId = 0;
         
-        var_dump($studentcity);
+        $strippedStudentschoolName = preg_replace(
+    "/(\t|\n|\v|\f|\r| |\xC2\x85|\xc2\xa0|\xe1\xa0\x8e|\xe2\x80[\x80-\x8D]|\xe2\x80\xa8|\xe2\x80\xa9|\xe2\x80\xaF|\xe2\x81\x9f|\xe2\x81\xa0|\xe3\x80\x80|\xef\xbb\xbf)+/",
+    "_", $studentschoolName);
+        var_dump($strippedStudentschoolName);
+        
         foreach ($sql_schools_and_regions_result as $row_to_check) {
             if ($targetRegionId > 0 && $targetMinicipalityId > 0 && $targetCityId > 0 && $targetSchoolId > 0) {
                 break;
@@ -110,8 +114,12 @@ if (isloggedin() && !isguestuser()) {
                 $targetMinicipalityId = $row_to_check->minicipalityid;
             }
             
-            $strippedSchoolName = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', $row_to_check->schoolname);
-            if($targetSchoolId == 0 && $strippedSchoolName == $studentschoolName) {
+            $strippedSchoolName = preg_replace(
+    "/(\t|\n|\v|\f|\r| |\xC2\x85|\xc2\xa0|\xe1\xa0\x8e|\xe2\x80[\x80-\x8D]|\xe2\x80\xa8|\xe2\x80\xa9|\xe2\x80\xaF|\xe2\x81\x9f|\xe2\x81\xa0|\xe3\x80\x80|\xef\xbb\xbf)+/",
+    "_", $row_to_check->schoolname);
+            
+            
+            if($targetSchoolId == 0 && $strippedSchoolName == $strippedStudentschoolName) {
                 $targetSchoolId = $row_to_check->schoolid;
             }
             
@@ -125,7 +133,6 @@ if (isloggedin() && !isguestuser()) {
                 . "Values(" . $otheruser->id . ",'" . $otheruser->firstname ." ".$otheruser->lastname ."',"
                 . "0, 0, NOW(), NOW(), ".$targetRegionId.", ".$targetMinicipalityId.", ".$targetCityId.", ".$targetSchoolId. ")";
         
-        var_dump($sqlInsertUserLastData);
         $DB->execute($sqlInsertUserLastData, null);
         $otheruserData = $DB->get_record_sql('SELECT * FROM user_last WHERE userId = ?', array($userid));
     }
