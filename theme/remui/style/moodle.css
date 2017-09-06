@@ -28725,7 +28725,7 @@ fieldset[disabled] a.block_comments .content .comment-area .fd a {
   text-align: center;
 }
 .block_badges .content .badges li img {
-  width: 100%;
+  width: auto;
   height: auto;
 }
 .block_badges .content .badges li .badge-name {
