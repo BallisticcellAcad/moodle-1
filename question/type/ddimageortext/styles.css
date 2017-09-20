@@ -126,3 +126,7 @@ body#page-question-type-ddimageortext div[id^=fitem_id_][id*=draglabel_] {
     border: 1px solid #BBB;
     border-top: 0;
 }
+
+.ddarea .dragitem .markertext{
+    color: black;
+}
