@@ -33,10 +33,15 @@ $confirm = optional_param('confirm', false, PARAM_BOOL);
 admin_externalpage_setup('local_mootivated_school');
 
 $url = new moodle_url('/local/mootivated/school.php', ['id' => $id]);
-$school = new \local_mootivated\school($id);
+$usessections = \local_mootivated\helper::uses_sections();
+if ($usessections) {
+    $school = new \local_mootivated\school($id);
+} else {
+    $school = \local_mootivated\helper::get_global_school();
+}
 $message = null;
 
-if ($delete) {
+if ($usessections && $delete) {
     if ($confirm) {
         require_sesskey();
         $school->delete();
@@ -46,7 +51,7 @@ if ($delete) {
 } else {
 
     // Initialise the form.
-    $form = new \local_mootivated\form\school($url->out(false), ['school' => $school]);
+    $form = new \local_mootivated\form\school($url->out(false), ['school' => $school, 'usessections' => $usessections]);
     if ($school) {
         $form->set_data($school->get_record());
     }
@@ -55,10 +60,18 @@ if ($delete) {
     if ($data = $form->get_data()) {
         $school->set_from_record($data);
         $school->save();
-        if (!$id) {
-            redirect(new moodle_url($url, ['id' => $school->get_id()]), get_string('schoolcreated', 'local_mootivated'));
+
+        if ($usessections) {
+            $message = get_string('schoolsaved', 'local_mootivated');
+            if (!$id) {
+                $message = get_string('schoolcreated', 'local_mootivated');
+            }
+        } else {
+            $message = get_string('settingssaved', 'local_mootivated');
         }
-        $message = get_string('schoolsaved', 'local_mootivated');
+
+        $type = defined('core\output\notification::NOTIFY_SUCCESS') ? \core\output\notification::NOTIFY_SUCCESS : null;
+        redirect(new moodle_url($url, ['id' => $school->get_id()]), $message, null, $type);
 
     } else if ($form->is_cancelled()) {
         // Redirect to the main admin page.
@@ -76,7 +89,7 @@ if ($message) {
 echo $output->heading(get_string('mootivatedsettings', 'local_mootivated'));
 echo $output->admin_navigation('school_' . $school->get_id());
 
-if ($delete) {
+if ($usessections && $delete) {
     $confirmbutton = new single_button(new moodle_url($url, ['delete' => 1, 'id' => $id, 'sesskey' => sesskey(), 'confirm' => 1]),
         get_string('yes'), 'get');
     echo $output->confirm(get_string('confirmdeleteschool', 'local_mootivated'), $confirmbutton, new moodle_url($url));

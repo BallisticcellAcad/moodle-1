@@ -38,7 +38,7 @@ $PAGE->set_heading(get_string('myavatar', 'block_mootivated'));
 $PAGE->navigation->override_active_url(new moodle_url('/user/profile.php', ['id' => $USER->id]));
 $PAGE->navbar->add(get_string('myavatar', 'block_mootivated'));
 
-$manager = new block_mootivated\manager($USER, $PAGE->context);
+$manager = new block_mootivated\manager($USER, $PAGE->context, local_mootivated\helper::get_school_resolver());
 $manager->require_view();
 
 $renderer = $PAGE->get_renderer('block_mootivated');

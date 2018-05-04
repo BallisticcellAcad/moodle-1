@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/mootivated/db" VERSION="20170519" COMMENT="XMLDB file for Moodle local/mootivated"
+<XMLDB PATH="local/mootivated/db" VERSION="20180323" COMMENT="XMLDB file for Moodle local/mootivated"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -34,6 +34,8 @@
         <FIELD NAME="timeframeformaxactions" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="600" SEQUENCE="false" COMMENT="Time frame for max actions."/>
         <FIELD NAME="timebetweensameactions" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="3600" SEQUENCE="false" COMMENT="The min time between same actions."/>
         <FIELD NAME="rewardmethod" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="modcompletionrules" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="coursecompletionreward" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="30" SEQUENCE="false" COMMENT="The coins to earn for course completion"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

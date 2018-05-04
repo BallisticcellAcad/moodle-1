@@ -60,20 +60,21 @@ Y.namespace('M.block_xp').Notification = Y.extend(NOTIFICATION, M.core.dialogue,
     display: function() {
         var footerTpl,
             content,
-            tpl;
+            tpl,
+            html;
 
-        tpl = Y.Handlebars.compile(
-            '<div class="{{CSS.WRAP}}">' +
-                '<div class="{{CSS.HEADLINE}}">' +
-                    '{{headline}}' +
-                '</div>' +
-                '<div class="{{CSS.BADGE}}">' +
-                    '{{{badge}}}' +
-                '</div>' +
-                '<div class="{{CSS.CONTENT}}">' +
-                    '{{{message}}}' +
-                '</div>' +
-            '</div>');
+        html = '<div class="{{CSS.WRAP}}">';
+        html += ' <div class="{{CSS.HEADLINE}}">';
+        html += '  {{headline}}';
+        html += ' </div>';
+        html += ' <div class="{{CSS.BADGE}}">';
+        html += '  {{{badge}}}';
+        html += ' </div>';
+        html += ' <div class="{{CSS.CONTENT}}">';
+        html += '  {{{message}}}';
+        html += ' </div>';
+        html += '</div>';
+        tpl = Y.Handlebars.compile(html);
 
         // Set the header.
         this.getStdModNode(Y.WidgetStdMod.HEADER).prepend(Y.Node.create('<h1>' + this.get('title') + '</h1>'));
@@ -90,7 +91,7 @@ Y.namespace('M.block_xp').Notification = Y.extend(NOTIFICATION, M.core.dialogue,
         this.setStdModContent(Y.WidgetStdMod.BODY, content, Y.WidgetStdMod.REPLACE);
 
         // Set the footer.
-        footerTpl = Y.Handlebars.compile('<button>{{close}}</button>');
+        footerTpl = Y.Handlebars.compile('<button class="btn btn-default">{{close}}</button>');
         content = Y.Node.create(
             footerTpl({
                 close: M.util.get_string('coolthanks', COMPONENT)

@@ -103,6 +103,66 @@ class page_helper {
         return [$title, $subtitle, $returnurl];
     }
 
+    public static function setup_for_trade(moodle_url $url, manager $manager, $trade = null, $subtitle = '') {
+        global $PAGE;
+
+        $context = $manager->get_context();
+        $heading = $context->get_context_name();
+        $title = get_string('trade', 'block_stash');
+
+        $PAGE->set_context($context);
+        $PAGE->set_pagelayout('course');
+        $PAGE->set_title($title);
+        $PAGE->set_heading($heading);
+        $PAGE->set_url($url);
+
+        $returnurl = new moodle_url('/blocks/stash/trade.php', ['courseid' => $manager->get_courseid()]);
+
+        $PAGE->navbar->add(get_string('stash', 'block_stash'));
+        $PAGE->navbar->add($title, $returnurl);
+
+        if (!empty($trade)) {
+            $PAGE->navbar->add($trade->get_name());  // Items don't have URLs yet.
+            if (!empty($subtitle)) {
+                $PAGE->navbar->add($subtitle, $url);
+            }
+        } else if (!empty($subtitle)) {
+            $PAGE->navbar->add($subtitle, $url);
+        }
+
+        return [$title, $subtitle, $returnurl];
+    }
+
+    public static function setup_for_trade_item(moodle_url $url, manager $manager, $tradename = null, $subtitle = '') {
+        global $PAGE;
+
+        $context = $manager->get_context();
+        $heading = $context->get_context_name();
+        $title = get_string('tradeitem', 'block_stash');
+
+        $PAGE->set_context($context);
+        $PAGE->set_pagelayout('course');
+        $PAGE->set_title($title);
+        $PAGE->set_heading($heading);
+        $PAGE->set_url($url);
+
+        $returnurl = new moodle_url('/blocks/stash/trade.php', ['courseid' => $manager->get_courseid()]);
+
+        $PAGE->navbar->add(get_string('stash', 'block_stash'));
+        $PAGE->navbar->add($title, $returnurl);
+
+        if (!empty($tradename)) {
+            $PAGE->navbar->add($tradename);  // Items don't have URLs yet.
+            if (!empty($subtitle)) {
+                $PAGE->navbar->add($subtitle, $url);
+            }
+        } else if (!empty($subtitle)) {
+            $PAGE->navbar->add($subtitle, $url);
+        }
+
+        return [$title, $subtitle, $returnurl];
+    }
+
     public static function setup_for_report(moodle_url $url, manager $manager, $user = null, $subtitle = '') {
         global $PAGE;
 

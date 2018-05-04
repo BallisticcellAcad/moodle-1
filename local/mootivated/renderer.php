@@ -24,6 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
 use \local_mootivated\school;
 use \local_mootivated\helper;
 
@@ -48,16 +49,18 @@ class local_mootivated_renderer extends plugin_renderer_base {
             new tabobject('global', new moodle_url('/admin/settings.php', ['section' => 'local_mootivated']),
                 get_string('global', 'local_mootivated'))
         ];
-
         $baseurl = new moodle_url('/local/mootivated/school.php');
+
         $schools = school::get_menu();
         foreach ($schools as $id => $name) {
             $tabs[] = new tabobject('school_' . $id, new moodle_url($baseurl, array('id' => $id)), $name);
         }
 
-        $tabs[] = new tabobject(
-            'school_0', new moodle_url($baseurl, array('id' => 0)), get_string('addschool', 'local_mootivated')
-        );
+        if (helper::uses_sections()) {
+            $tabs[] = new tabobject(
+                'school_0', new moodle_url($baseurl, array('id' => 0)), get_string('addschool', 'local_mootivated')
+            );
+        }
 
         return $this->tabtree($tabs, $page);
     }
@@ -141,6 +144,44 @@ class local_mootivated_renderer extends plugin_renderer_base {
             $o .= $this->action_link(new moodle_url('/admin/roles/manage.php'), '', null,
                 null, new pix_icon('t/edit', get_string('edit')));
         }
+        $o .= html_writer::end_tag('td');
+        $o .= html_writer::end_tag('tr');
+
+
+        $o .= html_writer::start_tag('tr');
+        $o .= html_writer::start_tag('td');
+        if (!helper::mootivated_role_was_ever_synced() && !helper::adhoc_role_sync_scheduled()) {
+            $o .= $nok;
+        } else {
+            $o .= $ok;
+        }
+        $o .= html_writer::end_tag('td');
+        $o .= html_writer::start_tag('td');
+        $o .= get_string('rolesync', 'local_mootivated') . ' ';
+        if (!helper::adhoc_role_sync_scheduled()) {
+            if (!helper::mootivated_role_was_ever_synced()) {
+                $o .= get_string('lastfullsync', 'local_mootivated', get_string('never'));
+            } else {
+                $o .= get_string('lastfullsync', 'local_mootivated', userdate(helper::mootivated_role_last_synced(),
+                    get_string('strftimedatetimeshort', 'langconfig')));
+            }
+        } else {
+            $o .= get_string('scheduledorrunning', 'local_mootivated');
+        }
+        $o .= html_writer::end_tag('td');
+        $o .= html_writer::start_tag('td');
+        if (!helper::adhoc_role_sync_scheduled()) {
+            $o .= $this->action_link(new moodle_url('/local/mootivated/rolesync.php', ['sesskey' => sesskey()]),
+                '', null, null, new pix_icon('sync', get_string('syncnow', 'local_mootivated'), 'local_mootivated'));
+        } else {
+            $o .= html_writer::tag('span',
+                $this->render(new pix_icon('sync', get_string('syncnow', 'local_mootivated'), 'local_mootivated')),
+                ['style' => 'opacity: .5']
+            );
+        }
+        $o .= '&nbsp;';
+        $o .= $this->action_link(new moodle_url('/admin/tool/task/scheduledtasks.php'),
+            '', null, null, new pix_icon('t/edit', get_string('edit')));
         $o .= html_writer::end_tag('td');
         $o .= html_writer::end_tag('tr');
 

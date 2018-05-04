@@ -59,7 +59,7 @@ class layout_imported extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' imported a mootyper keyboard layout while in the course with id
-            '$this->contextinstanceid'";
+            '$this->contextinstanceid'.";
     }
 
     /**

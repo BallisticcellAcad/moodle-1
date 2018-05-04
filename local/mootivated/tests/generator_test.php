@@ -52,8 +52,8 @@ class local_mootivated_generator_testcase extends advanced_testcase {
         $this->assertEquals($school->get_cohort_id(), 0);
         $this->assertEquals($school->get_private_key(), '');
         $this->assertEquals($school->get_send_username(), true);
-        $this->assertEquals($school->get_max_actions(), 3);
-        $this->assertEquals($school->get_time_frame_for_max_actions(), 600);
+        $this->assertEquals($school->get_max_actions(), 10);
+        $this->assertEquals($school->get_time_frame_for_max_actions(), 60);
         $this->assertEquals($school->get_time_between_same_actions(), 3600);
 
         $school2 = $pg->create_school();

@@ -27,23 +27,40 @@ defined('MOODLE_INTERNAL') || die();
 
 // We defined the web service functions to install.
 $functions = [
+    'local_mootivated_get_setup' => [
+        'classname'     => 'local_mootivated\\external',
+        'methodname'    => 'get_setup',
+        'description'   => 'Get information about the setup.',
+        'type'          => 'read',
+        'capabilities'  => '',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+            'local_mobile'
+        ]
+    ],
     'local_mootivated_login' => [
         'classname'     => 'local_mootivated\\external',
         'methodname'    => 'login',
         'description'   => 'Login to the remote server.',
         'type'          => 'write',
-        'capabilities'  => '',
+        'capabilities'  => 'local/mootivated:login',
+        'services' => [ // We must be able to login from the Moodle Mobile app.
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+            'local_mobile'
+        ]
     ],
     'local_mootivated_upload_avatar' => [
         'classname'     => 'local_mootivated\\external',
         'methodname'    => 'upload_avatar',
         'description'   => 'Upload an avatar.',
         'type'          => 'write',
-        'capabilities'  => 'moodle/user:viewdetails, moodle/user:editownprofile',
+        'capabilities'  => 'moodle/user:editownprofile',
     ]
 ];
 
-// We define the services to install as pre-build services. A pre-build service is not editable by administrator.
+// We define the services to install as pre-build services.
+// A pre-build service is not editable by administrator.
+// This limits the webservices accessible to the user we generate a token for.
 $services = [
     get_string('mootivated_web_services', 'local_mootivated') => array(
         'functions' => [

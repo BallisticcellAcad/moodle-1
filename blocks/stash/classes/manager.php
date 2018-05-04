@@ -256,6 +256,19 @@ class manager {
     }
 
     /**
+     * Get the manager by trade ID.
+     *
+     * @param int $tradeid The trade ID.
+     * @return manager
+     */
+    public static function get_by_tradeid($tradeid) {
+        $stash = stash::get_by_tradeid($tradeid);
+        $manager = self::get($stash->get_courseid());
+        $manager->stash = $stash;
+        return $manager;
+    }
+
+    /**
      * Get the course ID.
      *
      * @return int
@@ -340,6 +353,9 @@ class manager {
             $this->delete_drop($drop);
         }
 
+        // Delete items from trades.
+        $DB->delete_records(\block_stash\tradeitems::TABLE, ['itemid' => $item->get_id()]);
+
         // Delete items from users stashes.
         $DB->delete_records(\block_stash\user_item::TABLE, ['itemid' => $item->get_id()]);
         // Delete the item.
@@ -348,6 +364,47 @@ class manager {
         // Remove image from file storage.
         $fs = get_file_storage();
         $fs->delete_area_files($this->context->id, 'block_stash', 'item', $item->get_id());
+
+        $transaction->allow_commit();
+    }
+
+    /**
+     * Delete a trade widget from everywhere.
+     *
+     * @param object $trade
+     */
+    public function delete_trade($trade) {
+        global $DB;
+        $this->require_enabled();
+        $this->require_manage();
+
+        // Delete trade items.
+        $tradeitems = $this->get_trade_items($trade->get_id());
+        $transaction = $DB->start_delegated_transaction();
+
+        foreach ($tradeitems as $tradeitem) {
+            $this->delete_trade_item($tradeitem);
+        }
+
+        // Delete the trade.
+        $DB->delete_records(\block_stash\trade::TABLE, ['id' => $trade->get_id()]);
+
+        $transaction->allow_commit();
+    }
+
+    /**
+     * Delete a trade item from a trade.
+     *
+     * @param  object $tradeitem A trade item object
+     */
+    public function delete_trade_item($tradeitem) {
+        global $DB;
+        $this->require_enabled();
+        $this->require_manage();
+
+        $transaction = $DB->start_delegated_transaction();
+        // Delete the trade item.
+        $DB->delete_records(\block_stash\tradeitems::TABLE, ['id' => $tradeitem->get_id()]);
 
         $transaction->allow_commit();
     }
@@ -537,6 +594,16 @@ class manager {
     }
 
     /**
+     * Whether the trade is part of this stash.
+     *
+     * @param int $tradeid The trade ID.
+     * @return bool
+     */
+    protected function is_trade_in_stash($tradeid) {
+        return trade::is_trade_in_stash($tradeid, $this->get_stash()->get_id());
+    }
+
+    /**
      * Pickup a drop.
      *
      * @param drop|int $droporid The drop, or its ID.
@@ -708,4 +775,214 @@ class manager {
         }
     }
 
+    /**
+     * Get a trade widget.
+     *
+     * For internal use, this does not perform any capability checks.
+     *
+     * @param int $tradeid The trade widget ID.
+     * @return item
+     */
+    public function get_trade($tradeid) {
+        $this->require_enabled();
+
+        $trade = new trade($tradeid);
+        if ($trade->get_stashid() != $this->get_stash()->get_id()) {
+            throw new coding_exception('Unexpected trade ID.');
+        }
+        return $trade;
+    }
+
+    /**
+     * Get the trades defined in this course.
+     *
+     * @return trade[]
+     */
+    public function get_trades() {
+        $this->require_enabled();
+        $this->require_manage();
+
+        return trade::get_records(['stashid' => $this->get_stash()->get_id()], 'name');
+    }
+
+    /**
+     * Create or update a trade based on the data passed.
+     *
+     * @param stdClass $data Data to use to create or update.
+     * @return drop
+     */
+    public function create_or_update_trade($data) {
+        $this->require_enabled();
+        $this->require_manage();
+
+        if (!$data->id) {
+            $trade = new trade(null, $data);
+            $trade->create();
+
+        } else {
+            $trade = new trade($data->id);
+            // if ($data->itemid != $trade->get_id()) {
+            //     throw new coding_exception('The item ID of a trade cannot be changed.');
+            // }
+            $trade->from_record($data);
+            $trade->update();
+        }
+        return $trade;
+    }
+
+    /**
+     * Create or update a trade item based on the data passed.
+     *
+     * @param stdClass $data Data to use to create or update.
+     * @return drop
+     */
+    public function create_or_update_tradeitem($data) {
+        $this->require_enabled();
+        $this->require_manage();
+
+        if (empty($data->id)) {
+            $tradeitem = new tradeitems(null, $data);
+            $tradeitem->create();
+        } else {
+            $tradeitem = new tradeitems($data->id);
+            if ($data->tradeid != $tradeitem->get_tradeid()) {
+                throw new coding_exception('The item ID of a trade cannot be changed.');
+            }
+            $tradeitem->from_record($data);
+            $tradeitem->update();
+        }
+    }
+
+    public function get_trade_item($id) {
+        $this->require_enabled();
+
+        return tradeitems::get_record(['id' => $id]);
+    }
+
+    public function get_trade_items($tradeid) {
+        $this->require_enabled();
+
+        return tradeitems::get_records(['tradeid' => $tradeid]);
+    }
+
+    public function get_full_trade_items_data($tradeid) {
+        $this->require_enabled();
+
+        $tradedata = [];
+
+        $tradeitems = $this->get_trade_items($tradeid);
+
+        foreach ($tradeitems as $tradeitem) {
+            $item = $this->get_item($tradeitem->get_itemid());
+            if ($tradeitem->get_gainloss()) {
+                $tradedata['add'][] = ['id' => $tradeitem->get_id(),
+                                       'itemid' => $tradeitem->get_itemid(),
+                                       'name' => $item->get_name(),
+                                       'quantity' => $tradeitem->get_quantity(),
+                                       'imageurl' => \moodle_url::make_pluginfile_url($this->context->id, 'block_stash', 'item', $tradeitem->get_itemid(), '/', 'image')
+                                       ];
+            } else {
+                $tradedata['loss'][] = ['id' => $tradeitem->get_id(),
+                                       'itemid' => $tradeitem->get_itemid(),
+                                       'name' => $item->get_name(),
+                                       'quantity' => $tradeitem->get_quantity(),
+                                       'imageurl' => \moodle_url::make_pluginfile_url($this->context->id, 'block_stash', 'item', $tradeitem->get_itemid(), '/', 'image')
+                                       ];
+            }
+        }
+
+        return $tradedata;
+    }
+
+    public function do_trade($tradeid, $userid = null, $checkifcantrade = false) {
+        global $USER;
+        $this->require_enabled();
+
+        if (!$this->can_manage() && !$this->can_acquire_items()) {
+            return false;
+        }
+
+        $tradeitems = $this->get_trade_items($tradeid);
+        $requireditems = [];
+        $itemstoacquire = [];
+        foreach ($tradeitems as $tradeitem) {
+            if (!$tradeitem->get_gainloss()) {
+                // Check the user has this item available to trade.
+                if (!$this->user_has_item_to_trade($tradeitem->get_itemid(), $tradeitem->get_quantity(), $userid)) {
+                    // If the user doesn't have any of the required items then cancel the trade.
+                    return false;
+                }
+                $requireditems[] = $tradeitem;
+            } else {
+                $itemstoacquire[] = $tradeitem;
+            }
+        }
+        if ($checkifcantrade) {
+            return true;
+        }
+        // If we get this far, then follow through with the trade.
+        $this->remove_user_items($requireditems, $userid);
+        foreach ($itemstoacquire as $items) {
+            $this->pickup_item($items->get_itemid(), $items->get_quantity(), $userid);
+        }
+        // Send back summary information.
+        return [
+            'acquireditems' => $itemstoacquire,
+            'removeditems' => $requireditems
+        ];
+    }
+
+    public function user_has_item_to_trade($itemid, $quantity, $userid) {
+        $this->require_enabled();
+
+        if (!$useritem = user_item::get_record(['itemid' => $itemid, 'userid' => $userid])) {
+            return false;
+        }
+        if ($useritem->get_quantity() < $quantity) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * This is used in trading to reduce the number or required items
+     *
+     * @param array $tradeitems an array of tradeitem objects.
+     * @param int $userid The ID of the user that we are removing items from.
+     * @return [type] [description]
+     */
+    public function remove_user_items($tradeitems, $userid = null) {
+        global $USER;
+        $this->require_enabled();
+
+        if ($userid == $USER->id) {
+            $this->require_acquire_items();
+        } else {
+            // The current user needs to be able to manage, and the target user
+            // must have the permission to acquire items.
+            $this->require_manage();
+            $this->require_acquire_items($userid);
+        }
+
+        foreach ($tradeitems as $tradeitem) {
+            $useritem = $this->get_user_item($userid, $tradeitem->get_itemid());
+            $currentquantity = intval($useritem->get_quantity());
+
+            // TODO Check if can have more than $quantity items.
+            // TODO Create a method that automatically pushes to the database to prevent race conditions.
+            $useritem->set_quantity($currentquantity - $tradeitem->get_quantity());
+            $useritem->update();
+            // TODO create this event.
+            // $event = \block_stash\event\item_removed::create(array(
+            //         'context' => $this->context,
+            //         'userid' => $USER->id,
+            //         'courseid' => $this->courseid,
+            //         'objectid' => $item->get_id(),
+            //         'relateduserid' => $userid,
+            //         'other' => array('quantity' => $quantity)
+            //     )
+            // );
+            // $event->trigger();
+        }
+    }
 }

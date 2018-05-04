@@ -30,8 +30,12 @@ if (!empty($CFG->enablecompletion)) {
 }
 
 use completion_info;
+use context_course;
 use context_system;
+use context_user;
 use course_modinfo;
+use moodle_exception;
+use stdClass;
 
 /**
  * Mootivated helper class.
@@ -49,7 +53,64 @@ class helper {
     protected static $schoolrevolver = null;
 
     /**
+     * Whether automatically assigning the Mootivated User role is allowed.
+     *
+     * @return bool
+     */
+    public static function allow_automatic_role_assignment() {
+        $autoassign = get_config('local_mootivated', 'disableautoroleassign');
+        return empty($autoassign);
+    }
+
+    /**
+     * Can the user login with the server.
+     *
+     * @param stdClass $user The user.
+     * @return bool
+     */
+    public static function can_login(stdClass $user) {
+        return has_capability('local/mootivated:login', context_system::instance(), $user);
+    }
+
+    /**
+     * Can redeem store items.
+     *
+     * @param stdClass $user The user.
+     * @return bool.
+     */
+    public static function can_redeem_store_items(stdClass $user) {
+        $cap = 'local/mootivated:redeem_store_items';
+        $sysctx = context_system::instance();
+        $userctx = context_user::instance($user->id);
+
+        // This checks whether the capability is given at user or system context. For legacy
+        // reason we check the user context, but it should not be possible to assign it there.
+        if (has_capability($cap, $userctx, $user)) {
+            return true;
+        }
+
+        // Now we need to check if the user has the capability in any course. Yes, it looks
+        // terribly inefficient, but I suggest you look at various functions in enrollib...
+        $courses = enrol_get_all_users_courses($user->id, true, 'id');
+        foreach ($courses as $course) {
+            if (has_capability($cap, context_course::instance($course->id), $user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Create the mootivated role.
+     *
+     * The role is required in order to allow user to create WS token for the Mootivated service.
+     * Such service grants access to the few external functions needed for the system to work.
+     *
+     * Additionally, this role also contain the capability to determine whether they can login or
+     * not. It's unlikely that this would be turned off, but it gives flexibility to the admin. For
+     * instance if users have the capability to create tokens and use rest, but shouldn't be able
+     * to login to Mootivated.
      *
      * @return void
      */
@@ -61,15 +122,29 @@ class helper {
             get_string('mootivatedroledesc', 'local_mootivated'));
 
         set_role_contextlevels($roleid, [CONTEXT_SYSTEM]);
-        assign_capability('moodle/user:viewdetails', CAP_ALLOW, $roleid, $contextid, true);
         assign_capability('webservice/rest:use', CAP_ALLOW, $roleid, $contextid, true);
         assign_capability('moodle/webservice:createtoken', CAP_ALLOW, $roleid, $contextid, true);
+        assign_capability('local/mootivated:login', CAP_ALLOW, $roleid, $contextid, true);
 
         $managerroleid = $DB->get_field('role', 'id', ['shortname' => 'manager'], IGNORE_MISSING);
         if ($managerroleid) {
-            allow_override($managerroleid, $roleid);
-            allow_assign($managerroleid, $roleid);
-            allow_switch($managerroleid, $roleid);
+            if (function_exists('core_role_set_override_allowed')) {
+                core_role_set_override_allowed($managerroleid, $roleid);
+            } else {
+                allow_override($managerroleid, $roleid);
+            }
+
+            if (function_exists('core_role_set_assign_allowed')) {
+                core_role_set_assign_allowed($managerroleid, $roleid);
+            } else {
+                allow_assign($managerroleid, $roleid);
+            }
+
+            if (function_exists('core_role_set_switch_allowed')) {
+                core_role_set_switch_allowed($managerroleid, $roleid);
+            } else {
+                allow_switch($managerroleid, $roleid);
+            }
         }
     }
 
@@ -91,6 +166,46 @@ class helper {
     public static function get_mootivated_role() {
         global $DB;
         return $DB->get_record('role', ['shortname' => static::ROLE_SHORTNAME], '*', MUST_EXIST);
+    }
+
+    /**
+     * Last sync time.
+     *
+     * @return int
+     */
+    public static function mootivated_role_last_synced() {
+        return (int) get_config('local_mootivated', 'lastrolesync');
+    }
+
+    /**
+     * Did we ever sync the role?
+     *
+     * @return bool
+     */
+    public static function mootivated_role_was_ever_synced() {
+        return (bool) get_config('local_mootivated', 'lastrolesync');
+    }
+
+    /**
+     * Is syncing scheduled?
+     *
+     * @return bool
+     */
+    public static function adhoc_role_sync_scheduled() {
+        // Value 1 means running or scheduled, 0 means neither.
+        return (bool) get_config('local_mootivated', 'adhocrolesync');
+    }
+
+    /**
+     * Schedule the adhoc role sync.
+     *
+     * @return void
+     */
+    public static function schedule_mootivated_role_sync() {
+        set_config('adhocrolesync', 1, 'local_mootivated');
+        $task = new task\adhoc_role_sync();
+        $task->set_component('local_mootivated');
+        \core\task\manager::queue_adhoc_task($task);
     }
 
     /**
@@ -137,6 +252,25 @@ class helper {
     }
 
     /**
+     * Get a Mootivated token for the current user.
+
+     * @return string
+     */
+    public static function get_mootivated_token() {
+        global $DB;
+
+        $service = $DB->get_record('external_services', ['shortname' => 'local_mootivated', 'enabled' => 1], '*', MUST_EXIST);
+        if (!function_exists('external_generate_token_for_current_user')) {
+            throw new moodle_exception('cannotcreatetoken', 'webservice', '', $service->shortname);
+        }
+
+        $token = external_generate_token_for_current_user($service);
+        external_log_token_request($token);
+
+        return $token->token;
+    }
+
+    /**
      * Quick set-up.
      *
      * Enables webservices, rest and creates the mootivated role.
@@ -152,6 +286,9 @@ class helper {
         }
         if (!static::mootivated_role_exists()) {
             static::create_mootivated_role();
+        }
+        if (!static::mootivated_role_was_ever_synced()) {
+            static::schedule_mootivated_role_sync();
         }
     }
 
@@ -177,26 +314,45 @@ class helper {
 
         static $allowedcontexts = array(CONTEXT_COURSE, CONTEXT_MODULE);
 
-        $linter = null;
         if ($event->component === 'local_mootivated') {
             // Skip own events.
-            $linter = 'happy';
-        } else if (!$event->userid || isguestuser($event->userid) || is_siteadmin($event->userid)) {
-            // Skip non-logged in users and guests.
-            $linter = 'happy';
+            return;
         } else if ($event->anonymous) {
             // Skip all the events marked as anonymous.
-            $linter = 'happy';
+            return;
         } else if (!in_array($event->contextlevel, $allowedcontexts)) {
             // Ignore events that are not in the right context.
-            $linter = 'happy';
-        } else if ($event->edulevel !== \core\event\base::LEVEL_PARTICIPATING) {
-            // Ignore events that are not participating.
-            $linter = 'happy';
-        } else {
-            // Keep the event, and proceed.
-            static::handle_event($event);
+            return;
+        } else if (!$event->get_context()) {
+            // Sometimes the context does not exist, not sure when...
+            return;
         }
+
+        if ($event->edulevel !== \core\event\base::LEVEL_PARTICIPATING
+                && !($event instanceof \core\event\course_completed)) {
+
+            // Ignore events that are not participating, or course completion.
+            return;
+        }
+
+        // Check target.
+        $userid = static::get_event_target_user($event);
+
+        // Skip non-logged in users and guests.
+        if (!$userid || isguestuser($userid) || is_siteadmin($userid)) {
+            return;
+        }
+
+        try {
+            if (!has_capability('local/mootivated:earncoins', $event->get_context())) {
+                return;
+            }
+        } catch (moodle_exception $e) {
+            return;
+        }
+
+        // Keep the event, and proceed.
+        static::handle_event($event);
     }
 
     /**
@@ -209,14 +365,22 @@ class helper {
         global $CFG;
 
         // Don't use completion_info::is_enabled_for_site() because we only include the library when completion is enabled.
-        // We also skip all non-module events as we current are only being conditional on activities.
-        if ($CFG->enablecompletion && $event->contextlevel == CONTEXT_MODULE) {
+        $completionenabled = !empty($CFG->enablecompletion);
 
-            // Try to guess the user we need capture for.
-            $userid = $event->userid;
-            if ($event instanceof \core\event\course_module_completion_updated) {
-                $userid = $event->relateduserid;
-            }
+        // Early catch the course completed event.
+        if ($completionenabled && $event instanceof \core\event\course_completed) {
+            static::handle_course_completed_event($event);
+            return;
+        }
+
+        // Just making sure we're not letting unexpected events through.
+        if ($event->edulevel !== \core\event\base::LEVEL_PARTICIPATING) {
+            return;
+        }
+
+        // We also skip all non-module events as we current are only being conditional on activities.
+        if ($completionenabled && $event->contextlevel == CONTEXT_MODULE) {
+            $userid = static::get_event_target_user($event);
 
             // Check their school.
             $school = self::get_school_resolver()->get_by_member($userid);
@@ -243,6 +407,38 @@ class helper {
     }
 
     /**
+     * Handle course completed event.
+     *
+     * @param \core\event\course_completed $event The event.
+     * @return void
+     */
+    protected static function handle_course_completed_event(\core\event\course_completed $event) {
+        $userid = static::get_event_target_user($event);
+
+        // Check their school.
+        $school = self::get_school_resolver()->get_by_member($userid);
+        if (!$school || !$school->is_setup()) {
+            // No school, no chocolate.
+            return;
+        }
+
+        if (!$school->is_course_completion_reward_enabled()) {
+            // Sorry mate, no pocket money for you.
+            return;
+        }
+
+        if ($school->was_user_rewarded_for_completion($userid, $event->courseid, 0)) {
+            // The course completion state must have been reset. If we do not ignore this
+            // then we will have issue when logging the event due to unique indexes.
+            return;
+        }
+
+        // Ok, here you can have some coins.
+        $school->capture_event($userid, $event, (int) $school->get_course_completion_reward());
+        $school->log_user_was_rewarded_for_completion($userid, $event->courseid, 0, COMPLETION_COMPLETE);
+    }
+
+    /**
      * Reward a user for completion.
      *
      * @param \core\event\base $event The event.
@@ -255,7 +451,7 @@ class helper {
             if ($data->completionstate == COMPLETION_COMPLETE
                     || $data->completionstate == COMPLETION_COMPLETE_PASS) {
 
-                $userid = $event->relateduserid;
+                $userid = static::get_event_target_user($event);
                 $courseid = $event->courseid;
                 $cmid = $event->get_context()->instanceid;
 
@@ -266,34 +462,8 @@ class helper {
 
                 $modinfo = course_modinfo::instance($courseid);
                 $cminfo = $modinfo->get_cm($cmid);
-                $component = 'mod_' . $cminfo->modname;
-                $coins = 0;
-                if ($component === 'mod_quiz'
-                        || $component === 'mod_lesson'
-                        || $component === 'mod_scorm'
-                        || $component === 'mod_assign'
-                        || $component === 'mod_forum') {
-                    $coins = 15;
-                } else if ($component === 'mod_feedback'
-                        || $component === 'mod_questionnaire'
-                        || $component === 'mod_workshop'
-                        || $component === 'mod_glossary'
-                        || $component === 'mod_database'
-                        || $component === 'mod_journal'
-                        || $component === 'mod_hotpot'
-                        || $component === 'mod_lti') {
-                    $coins = 10;
-                } else if ($component === 'mod_book'
-                        || $component === 'mod_resource'
-                        || $component === 'mod_folder'
-                        || $component === 'mod_imscp'
-                        || $component === 'mod_label'
-                        || $component === 'mod_page'
-                        || $component === 'mod_url') {
-                    $coins = 2;
-                } else {
-                    $coins = 5;
-                }
+                $calculator = $school->get_completion_points_calculator_by_mod();
+                $coins = (int) $calculator->get_for_module($cminfo->modname);
 
                 $school->capture_event($userid, $event, $coins);
                 $school->log_user_was_rewarded_for_completion($userid, $courseid, $cmid, $data->completionstate);
@@ -309,7 +479,7 @@ class helper {
      */
     protected static function reward_for_event(\core\event\base $event) {
         $coins = 0;
-        $userid = $event->userid;
+        $userid = static::get_event_target_user($event);
 
         static $ignored = [
             '\\core\\event\\competency_user_competency_review_request_cancelled' => true,
@@ -381,13 +551,51 @@ class helper {
     }
 
     /**
+     * Get the target of an event.
+     *
+     * @param \core\base\event $event The event.
+     * @return int The user ID.
+     */
+    protected static function get_event_target_user(\core\event\base $event) {
+        $userid = $event->userid;
+        if ($event instanceof \core\event\course_completed || $event instanceof \core\event\course_module_completion_updated) {
+            $userid = $event->relateduserid;
+        }
+        return $userid;
+    }
+
+    /**
+     * Find the global school.
+     *
+     * It is always the first school we find, in case the site switched from and to
+     * using sections. Also, this ensures that the global school is kept even after
+     * using sections has been turned on.
+     *
+     * @return stdClass|null
+     */
+    public static function get_global_school() {
+        global $DB;
+        $candidates = $DB->get_records('local_mootivated_school', [], 'id ASC', 'id');
+        if (!empty($candidates)) {
+            $candidate = reset($candidates);
+            return new \local_mootivated\global_school($candidate->id);
+        }
+        return new \local_mootivated\global_school(0);
+    }
+
+    /**
      * Get the school resolver.
      *
      * @return ischool_resolver
      */
     public static function get_school_resolver() {
         if (!self::$schoolrevolver) {
-            self::$schoolrevolver = new school_resolver();
+            if (!self::uses_sections()) {
+                $resolver = new global_school_resolver();
+            } else {
+                $resolver = new school_resolver();
+            }
+            self::$schoolrevolver = $resolver;
         }
         return self::$schoolrevolver;
     }
@@ -399,6 +607,16 @@ class helper {
      */
     public static function set_school_resolver(ischool_resolver $resolver) {
         self::$schoolrevolver = $resolver;
+    }
+
+    /**
+     * Whether we're using sections.
+     *
+     * @return bool
+     */
+    public static function uses_sections() {
+        $usesections = get_config('local_mootivated', 'usesections');
+        return !empty($usesections);
     }
 
 }

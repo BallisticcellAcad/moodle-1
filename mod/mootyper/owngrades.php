@@ -69,18 +69,18 @@ if (!has_capability('mod/mootyper:viewmygrades', context_module::instance($cm->i
     $PAGE->set_context($context);
     $PAGE->set_cacheable(false);
     echo $OUTPUT->header();
-    echo '<link rel="stylesheet" type="text/css" href="style.css">';
+    echo '<link rel="stylesheet" type="text/css" href="styles.css">';
     echo $OUTPUT->heading($mootyper->name);
     $htmlout = '';
     $htmlout .= '<div id="mainDiv">';
 
     // Update the library.
     if ($des == -1 || $des == 0) {
-        $grds = get_typergradesuser($_GET['n'], $USER->id, $orderby, 0);
+        $grds = get_typergradesuser(optional_param('n', 0, PARAM_INT), $USER->id, $orderby, 0);
     } else if ($des == 1) {
-        $grds = get_typergradesuser($_GET['n'], $USER->id, $orderby, 1);
+        $grds = get_typergradesuser(optional_param('n', 0, PARAM_INT), $USER->id, $orderby, 1);
     } else {
-        $grds = get_typergradesuser($_GET['n'], $USER->id, $orderby, $des);
+        $grds = get_typergradesuser(optional_param('n', 0, PARAM_INT), $USER->id, $orderby, $des);
     }
     if ($des == -1 || $des == 1) {
         $lnkadd = "&desc=0";
@@ -99,8 +99,9 @@ if (!has_capability('mod/mootyper:viewmygrades', context_module::instance($cm->i
     $arrtextadds[$orderby] = $des == -1 || $des == 1 ? '<span class="arrow-s" style="font-size:1em;">
         </span>' : '<span class="arrow-n" style="font-size:1em;"></span>';
     if ($grds != false) {
-        $htmlout .= '<table style="border-style: solid;"><tr><td>Exercise</td><td><a href="?id='
-                    .$id.'&n='.$n.'&orderby=4'.$lnkadd.'">'.
+        $htmlout .= '<table style="border-style: solid;"><tr><td>'.
+        get_string('fexercise', 'mootyper').'</td><td><a href="?id='
+                   .$id.'&n='.$n.'&orderby=4'.$lnkadd.'">'.
         get_string('vmistakes', 'mootyper').'</a>'.$arrtextadds[4]
                    .'</td><td><a href="?id='.$id.'&n='.$n.'&orderby=5'.$lnkadd.'">'.
         get_string('timeinseconds', 'mootyper').'</a>'.$arrtextadds[5]
@@ -128,6 +129,10 @@ if (!has_capability('mod/mootyper:viewmygrades', context_module::instance($cm->i
                         '</td><td>'.format_float($gr->hitsperminute).'</td><td>'.$gr->fullhits
                         .'</td><td>'.format_float($gr->precisionfield).'%</td><td>'
                         .date(get_config('mod_mootyper', 'dateformat'), $gr->timetaken).'</td><td>'.$gr->wpm.'</td></tr>';
+            $labels[] = 'Ex-'.$fcol;  // This gets the exercise number.
+            $serieshitsperminute[] = format_float($gr->hitsperminute); // Get the hits per minute value.
+            $seriesprecision[] = format_float($gr->precisionfield);  // Get the precision percentage value.
+            $serieswpm[] = $gr->wpm; // Get the corrected words per minute rate.
         }
         $avg = get_grades_avg($grds);
         if (!$mootyper->isexam) {
@@ -144,4 +149,21 @@ if (!has_capability('mod/mootyper:viewmygrades', context_module::instance($cm->i
     $htmlout .= '</div>';
 }
 echo $htmlout;
+if (($grds != false) && ($CFG->branch > 31)) {  // If there are NOT any grades, DON'T draw the chart.
+    // Create the info the api needs passed to it for each series I want to chart.
+    $serie1 = new core\chart_series(get_string('hitsperminute', 'mootyper'), $serieshitsperminute);
+    $serie2 = new core\chart_series(get_string('precision', 'mootyper'), $seriesprecision);
+    $serie3 = new core\chart_series(get_string('wpm', 'mootyper'), $serieswpm);
+
+    $chart = new core\chart_bar();  // Tell the api I want a bar chart.
+    $chart->set_horizontal(true); // Calling set_horizontal() passing true as parameter will display horizontal bar charts.
+    $chart->set_title(get_string('charttitlemyowngrades', 'mootyper')); // Tell the api what I want for a the chart title.
+    $chart->add_series($serie1);  // Pass the hits per minute data to the api.
+    $chart->add_series($serie2);  // Pass the precision data to the api.
+    $chart->add_series($serie3);  // Pass the words per minute data to the api.
+    $chart->set_labels($labels);  // Pass the exercise number data to the api.
+    $chart->get_xaxis(0, true)->set_label(get_string('xaxislabel', 'mootyper'));  // Pass a label to add to the x-axis.
+    $chart->get_yaxis(0, true)->set_label(get_string('fexercise', 'mootyper')); // Pass the label to add to the y-axis.
+    echo $OUTPUT->render($chart); // Draw the chart on the output page.
+}
 echo $OUTPUT->footer();

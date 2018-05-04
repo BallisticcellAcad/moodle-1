@@ -35,9 +35,8 @@ defined('MOODLE_INTERNAL') || die;
  * @see upgrade_plugins_modules().
  */
 function xmldb_mootyper_install() {
-    require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-    global $CFG, $USER;
-    require_login(0, true, null, false);
+    global $DB, $CFG, $USER;
+
     $pth = $CFG->dirroot."/mod/mootyper/lessons";
     $res = scandir($pth);
     for ($i = 0; $i < count($res); $i++) {
@@ -62,7 +61,6 @@ function xmldb_mootyper_install() {
  * @param string $dafile
  */
 function add_keyboard_layout($dafile) {
-    require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
     global $DB, $CFG;
     $thefile = $CFG->dirroot."/mod/mootyper/layouts/".$dafile;
     $wwwfile = $CFG->wwwroot."/mod/mootyper/layouts/".$dafile;
@@ -85,7 +83,6 @@ function add_keyboard_layout($dafile) {
  * @param int $coursearg
  */
 function read_lessons_file($dafile, $authoridarg, $visiblearg, $editablearg, $coursearg=null) {
-    require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
     global $DB, $CFG;
     $thefile = $CFG->dirroot."/mod/mootyper/lessons/".$dafile;
     // Echo thefile.
@@ -112,9 +109,8 @@ function read_lessons_file($dafile, $authoridarg, $visiblearg, $editablearg, $co
     $splitted = explode ('/**/' , $haha);
     for ($j = 0; $j < count($splitted); $j++) {
         $vaja = trim($splitted[$j]);
-        $allowed = array('\\', '~', '!', '@', '#', '$', '%', '^', '&', '(', ')', '*', '_',
-        '+', ':', ';', '"', '{', '}', '>', '<', '?', '\'', '-', '/', '=', '.', ',', ' ',
-        '|', '¡', '`', 'ç', 'ñ', 'º', '¿', 'ª', '·', '\n', '\r', '\r\n', '\n\r', ']', '[', '¬', '´', '`');
+        // @codingStandardsIgnoreLine
+        $allowed = array('\\', '~', '!', '@', '#', '$', '%', '^', '&', '(', ')', '*', '_', '+', ':', ';', '"', '{', '}', '>', '<', '?', '\'', '-', '/', '=', '.', ',', ' ', '|', '¡', '`', 'ç', 'ñ', 'º', '¿', 'ª', '·', '\n', '\r', '\r\n', '\n\r', ']', '[', '¬', '´', '`');
         $nm = "".($j + 1);
         $texttotype = "";
         for ($k = 0; $k < strlen($vaja); $k++) {

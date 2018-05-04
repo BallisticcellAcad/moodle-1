@@ -34,6 +34,7 @@ require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/cohort/lib.php');
 
 MoodleQuickForm::registerElementType('local_mootivated_duration', __DIR__ . '/duration.php', 'local_mootivated_form_duration');
+MoodleQuickForm::registerElementType('local_mootivated_integer', __DIR__ . '/integer.php', 'local_mootivated_form_integer');
 
 /**
  * Form class.
@@ -47,11 +48,16 @@ class school extends \moodleform {
 
     public function definition() {
         global $PAGE;
+
         $mform = $this->_form;
         $school = $this->_customdata['school'];
+        $usessections = $this->_customdata['usessections'];
+        $renderer = $PAGE->get_renderer('local_mootivated');
 
-        $mform->addElement('select', 'cohortid', get_string('cohortid', 'local_mootivated'), $this->get_cohorts());
-        $mform->addHelpButton('cohortid', 'cohortid', 'local_mootivated');
+        if ($usessections) {
+            $mform->addElement('select', 'cohortid', get_string('cohortid', 'local_mootivated'), $this->get_cohorts());
+            $mform->addHelpButton('cohortid', 'cohortid', 'local_mootivated');
+        }
 
         $mform->addElement('text', 'privatekey', get_string('privatekey', 'local_mootivated'));
         $mform->setType('privatekey', PARAM_RAW);
@@ -68,6 +74,11 @@ class school extends \moodleform {
         $mform->addElement('select', 'rewardmethod', get_string('rewardmethod', 'local_mootivated'), $methods);
         $mform->addHelpButton('rewardmethod', 'rewardmethod', 'local_mootivated');
 
+        $mform->addElement('local_mootivated_integer', 'coursecompletionreward', get_string('coursecompletionreward',
+            'local_mootivated'), ['style' => 'width: 3em;']);
+        $mform->setType('coursecompletionreward', PARAM_INT);
+        $mform->addHelpButton('coursecompletionreward', 'coursecompletionreward', 'local_mootivated');
+
         $mform->addElement('text', 'maxactions', get_string('maxactions', 'local_mootivated'));
         $mform->setType('maxactions', PARAM_INT);
         $mform->addHelpButton('maxactions', 'maxactions', 'local_mootivated');
@@ -82,12 +93,42 @@ class school extends \moodleform {
         $mform->setType('timebetweensameactions', PARAM_INT);
         $mform->addHelpButton('timebetweensameactions', 'timebetweensameactions', 'local_mootivated');
 
+        $mform->addElement('header', 'rewardshdr', get_string('modcompletionrewards', 'local_mootivated'));
+        $mform->addHelpButton('rewardshdr', 'modcompletionrewards', 'local_mootivated');
+        $mform->setExpanded('rewardshdr', false);
+
+        $mform->addElement('selectyesno', 'modcompletionrulesusedefault',
+            get_string('userecommendedsettings', 'local_mootivated'));
+
+        $calculator = $school->get_completion_points_calculator_by_mod();
+        $mods = get_module_types_names();       // Only shows visible modules, which should be fine.
+        foreach ($mods as $mod => $modname) {
+            $mform->addElement('text', "modcompletionrule[$mod]", $modname, ['size' => 4]);
+            $mform->setType("modcompletionrule[$mod]", PARAM_INT);
+            $mform->disabledIf("modcompletionrule[$mod]", 'modcompletionrulesusedefault', 'eq', 1);
+            // This is how we load the values in the form, not ideal but it works.
+            $mform->setDefault("modcompletionrule[$mod]", $calculator->get_for_module($mod));
+        }
+
         $this->add_action_buttons();
 
-        if ($school->get_id()) {
-            $renderer = $PAGE->get_renderer('local_mootivated');
+        if ($usessections && $school->get_id()) {
             $mform->addElement('static', '', '', $renderer->delete_school_button($school));
         }
+
+        $completionenabled = schoolclass::METHOD_COMPLETION_ELSE_EVENT;
+        $PAGE->requires->js_init_code("
+            var rewardmethod = Y.one('#id_rewardmethod');
+            var fieldset = Y.one('#id_rewardshdr');
+            var fn = function() {
+                if (rewardmethod.get('value') == '$completionenabled') {
+                    fieldset.show();
+                } else {
+                    fieldset.hide();
+                }
+            }
+            fn();
+            rewardmethod.on('change', fn);", false);
     }
 
     /**
@@ -105,4 +146,83 @@ class school extends \moodleform {
         return $data;
     }
 
+    /**
+     * Get data.
+     *
+     * @return stdClass
+     */
+    public function get_data() {
+        $data = parent::get_data();
+        if (!$data) {
+            return $data;
+        }
+
+        if (!empty($data->modcompletionrulesusedefault) || empty($data->modcompletionrule)) {
+            $data->modcompletionrules = [];
+
+        } else {
+            $rules = array_reduce(array_keys($data->modcompletionrule), function($carry, $mod) use ($data) {
+                $points = $data->modcompletionrule[$mod];
+                $carry[] = [
+                    'points' => $points,
+                    'mod' => $mod
+                ];
+                return $carry;
+            }, []);
+            $data->modcompletionrules = $rules;
+        }
+
+        if (!empty($data->modcompletionrules)) {
+            $data->modcompletionrules = json_encode($rules);
+        } else {
+            $data->modcompletionrules = '';
+        }
+
+        unset($data->modcompletionrule);
+        unset($data->modcompletionrulesusedefault);
+
+        return $data;
+    }
+
+    /**
+     * Set the data.
+     *
+     * @param stdClass $data The data.
+     */
+    public function set_data($data) {
+        $data->modcompletionrulesusedefault = 1;
+        if (!empty($data->modcompletionrules)) {
+            $data->modcompletionrulesusedefault = 0;
+            $rules = json_decode($data->modcompletionrules);
+            if (empty($rules)) {
+                $data->modcompletionrulesusedefault = 1;
+            }
+        }
+        unset($data->modcompletionrules);
+
+        parent::set_data($data);
+    }
+
+    /**
+     * Validation.
+     *
+     * @param array $data The data.
+     * @param array $files The files.
+     * @return array
+     */
+    public function validation($data, $files) {
+        if (!empty($data['modcompletionrulesusedefault']) || empty($data['modcompletionrule'])) {
+            return [];
+        }
+
+        $rules = $data['modcompletionrule'];
+        return array_reduce(array_keys($rules), function($carry, $mod) use ($rules) {
+            $points = $rules[$mod];
+            if ($points < 0 || $points > 50) {
+                $carry["modcompletionrule[{$mod}]"] = get_string('invalidcoinvalueminmax', 'local_mootivated',
+                    (object) ['min' => 0, 'max' => 50]);
+            }
+            return $carry;
+        }, []);
+    }
 }

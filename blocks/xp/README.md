@@ -1,4 +1,4 @@
-Level up! (block_xp)
+Level up! (block_xp) ![GitHub tag](https://img.shields.io/github/tag/FMCorz/moodle-block_xp.svg) ![Travis branch](https://img.shields.io/travis/FMCorz/moodle-block_xp/master.svg)
 ====================
 
 Engage your students! A Moodle plugin to gamify your students' learning experience by allowing them to _level up_ in their courses.
@@ -17,6 +17,10 @@ Features
 - Page to display the list of levels and a description
 - Experience points are earned per course
 - An event is fired when a student levels up (for developers)
+
+### Additional features
+
+Purchasing the _Level up! Plus_ add-on unlocks additional features. [Click here for more details](http://levelup.branchup.tech?utm_source=blockxp&utm_medium=github_readme&utm_campaign=github).
 
 Requirements
 ------------
@@ -51,6 +55,11 @@ Restricting access based on students' levels
 --------------------------------------------
 
 Have a look at this availability plugin [Level](https://github.com/FMCorz/moodle-availability_xp).
+
+Level-based enrolment
+---------------------
+
+Have a look at this enrolment plugin [Level](https://github.com/branchup/moodle-enrol_xp).
 
 How to use one block for all courses
 ------------------------------------

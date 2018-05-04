@@ -23,7 +23,8 @@
   * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
   */
 
-$freeplaneurl = $CFG->wwwroot.'/course/format/mindmap/freeplane_java_applet';
+defined('MOODLE_INTERNAL') || die();
+$mthreeurl = $CFG->wwwroot.'/course/format/mindmap/m3';
 $filename = substr(md5($COURSE->id.'_'.mt_rand()), 0, 14);
 $pathlocal = "$CFG->dataroot/temp/mindmap_course_format/";
 if (!file_exists($pathlocal)) {
@@ -42,22 +43,36 @@ if ($_SESSION["USER"]->editing) {
         $renderer->print_multiple_section_page($course, null, null, null, null);
     }
 } else {
-    echo ('
-    <script src="'.$freeplaneurl.'/deployJava.js"></script><script>
-                var attributes = {
-                    code:"org.freeplane.main.applet.FreeplaneApplet",  width:"100%", height:"1000px"
-                } ;
-                var parameters = {
-                    jnlp_href: "'.$freeplaneurl.'/freeplane_applet.jnlp",
-                    browsemode_initial_map:"'.$url.'",
-                    selection_method:"selection_method_direct"
-                } ;
-                parameters["location_href"] = window.location.href;
 
-                deployJava.runApplet(attributes, parameters, "1.5");
-            </script>
+    echo ('
+      <link rel="stylesheet" href="'.$mthreeurl.'/m3.css">
+      <script>
+         m3MobileMindMapper = {
+            apiVersion: "0.12",
+            warnOnNavigateAway: false,
+
+            fullPage: true,
+            height: "100%",
+            width: "100%",
+            readOnly: true,
+            showButtons: false,
+            showMapName: false,
+
+            initialMapUrl: "'.$url.'",
+
+         };
+      </script>
+      <script type="text/javascript" src="'.$mthreeurl.'/m3.js"></script>
+
+         <iframe
+         src='.$mthreeurl.'/m3iframe.html
+         scrolling=no
+         style="height: 94vh; width: 100%; border: none"
+         >
+      </iframe>
+
     ');
-    echo "<br><a href =\"".$url."\">".get_string('downloadmapfile', 'format_mindmap')."</a>";
+    echo "<a href =\"".$url."\">".get_string('downloadmapfile', 'format_mindmap')."</a>";
 }
 
 function format_mindmap_create_file($filename, $path) {
@@ -73,8 +88,11 @@ function format_mindmap_create_file($filename, $path) {
     $coursesections = get_fast_modinfo($COURSE->id, 0)->get_section_info_all();
 
     $content  = "<map version=\"0.8.1\">\n";
-    $content .= "\t<node TEXT='".format_mindmap_escape_single_quote($COURSE->shortname)."' >\n";
-    $content .= "\t<font BOLD=\"true\" SIZE=\"12\"/>\n";
+    $content .= "\t<node>\n";
+    $content .= "\t\t<richcontent TYPE=\"NODE\">";
+    $content .= '<html><body style="font-size:18px; background-color: white;   font-family: Arial,
+    Helvetica, sans-serif"><b>'.format_mindmap_escape_single_quote($COURSE->shortname).'</b></body></html>';
+    $content .= "</richcontent>\n";
     $sectionsvisible = 0;
     $hiddensections = $DB->get_field('course_format_options', 'value', array('courseid' => $COURSE->id ,
     'name' => 'hiddensections'));
@@ -128,7 +146,7 @@ function format_mindmap_print_section($section, $sectionsvisible, $notavailable)
     }
     // First half of sections will be on left side of map, second half on right side.
 
-    $options = new object();
+    $options = new stdClass();
     $context = context_course::instance($section->course);
 
     $summarytext = file_rewrite_pluginfile_urls($section->summary, 'pluginfile.php',
@@ -146,28 +164,28 @@ function format_mindmap_print_section($section, $sectionsvisible, $notavailable)
     }
 
     if ($notavailable) {
-        $content = "\t\t\t\t<node TEXT='".get_string('notavailable', 'core')."' POSITION=\"".$leftorright."\" ></node>\n";
+        $content = "\t\t\t<node TEXT='".get_string('notavailable', 'core')."' POSITION=\"".$leftorright."\" ></node>\n";
     } else {
 
-        $content  = "\t\t\t\t<node POSITION=\"".$leftorright."\" >\n";
-        $content .= "\n\t\t\t\t<richcontent TYPE=\"NODE\">";
-        $content .= '<html><body style="font-size:16px;"><b>'.$sectionname.'</b></body></html>';
-        $content .= "\n\t\t\t\t</richcontent>";
+        $content  = "\t\t\t<node POSITION=\"".$leftorright."\" >\n";
+        $content .= "\t\t\t\t<richcontent TYPE=\"NODE\">";
+        $content .= '<html><body style="font-size:16px; background-color: white;   font-family: Arial, Helvetica,
+        sans-serif">'.$sectionname;
 
         if (!empty($summarytext)) {
-            $content .= "\n\t\t\t\t<richcontent TYPE=\"DETAILS\">";
-            $content .= '<html><body style="font-size:15px;">'.$summarytext.'</body></html>';
-            $content .= "\n\t\t\t\t</richcontent>";
+            $content .= purify_html($summarytext);
         }
-
+        $content .= '</body></html>';
+        $content .= "</richcontent>\n";
         $content .= format_mindmap_pamfs($section);
-        $content .= "\t\t</node>\n";
+        $content .= "\t\t\t</node>\n";
     }
     return $content;
 
 }
 
-function format_mindmap_pamfs($section) { // Function print_all_modules_from_section.
+// Function print_all_modules_from_section.
+function format_mindmap_pamfs($section) {
     global $COURSE;
     $content = "";
     $sectionmods = explode (",", $section->sequence);
@@ -235,7 +253,7 @@ function format_mindmap_print_fa($cm, $type, $accessiblebutdim, $uservisible, $h
     $content = "";
     $module = $DB->get_record($type, array('id' => $cm->instance));
     if ($accessiblebutdim) {
-        $color = ' COLOR="#C0C0C0" ';
+        $color = ' color:#C0C0C0;';
     } else {
         $color = '';
     }
@@ -274,23 +292,22 @@ function format_mindmap_print_fa($cm, $type, $accessiblebutdim, $uservisible, $h
     }
 
     $nameorcontent = purify_html($nameorcontent);
-
-    $content .= "\t\t\t<node  ID=\"".$cm->id."\"".
-    $colortemp.
+    $content .= "\t\t\t\t\t<node  ID=\"".$cm->id."\"".
     format_mindmap_get_link_to_module($type, $cm->id, $accessiblebutdim, $uservisible)." ".
     $folditem.">\n";
 
-    $content .= "\n\t\t\t<richcontent TYPE=\"NODE\">";
-    $content .= '<html><body style="font-size:15px;">';
+    $content .= "\t\t\t\t\t\t<richcontent TYPE=\"NODE\">";
+    $content .= '<html><body style="font-size:14px; background-color: white;   font-family: Arial,
+    Helvetica, sans-serif; '.$colortemp.'">';
     if ($type != 'label') {
         $content .= format_mindmap_print_mod_icon($type);
     }
     $content .= $nameorcontent.'</body></html>';
-    $content .= "\n\t\t\t\t</richcontent>";
+    $content .= "</richcontent>";
 
     if ($cm->showdescription) {
         $content .= "\n\t\t\t\t<richcontent TYPE=\"DETAILS\">";
-        $content .= '<html><body style="font-size:15px;">';
+        $content .= '<html><body style="font-size:14px; ">';
         $content .= purify_html($module->intro);
         $content .= '</body></html>';
         $content .= "\n\t\t\t\t</richcontent>";
@@ -324,9 +341,14 @@ function format_mindmap_print_fa($cm, $type, $accessiblebutdim, $uservisible, $h
         $content .= $keywords;
     }
     if ($timeleftnodetemp) {
-        $content .= "\t\t\t\t<node TEXT='".$timeleftnodetemp ."'><font NAME=\"SansSerif\" SIZE=\"8\"/></node>\n";
+        $content .= "\t\t\t\t\t\t<node>";
+        $content .= "\n\t\t\t\t\t\t\t<richcontent TYPE=\"NODE\">";
+        $content .= '<html><body style="font-size:12px; background-color: white;   font-family: Arial,
+        Helvetica, sans-serif">'.$timeleftnodetemp.'</body></html>';
+        $content .= "</richcontent>";
+        $content .= "\n\t\t\t\t\t\t</node>";
     }
-    $content .= "\t\t\t</node>\n";
+    $content .= "\n\t\t\t\t\t</node>\n";
     return $content;
 }
 
@@ -337,19 +359,24 @@ function format_mindmap_print_book_chapter($chapter, $chapters, $cm) {
     global $DB, $CFG;
     $chaptercontent = $DB->get_field('book_chapters', 'content', array('bookid' => $cm->instance, 'pagenum' => $chapter->pagenum ));
     $content = '';
-    $content .= "\t\t\t\t\t\t<node TEXT='".format_mindmap_escape_single_quote($chapter->title)."' LINK=\"".$CFG->wwwroot.
-    "/mod/book/view.php?id=".$cm->id."&amp;chapterid=".$chapter->id."\"><font NAME=\"SansSerif\" ".
-    format_mindmap_check_if_visited($cm, $chapter->id)." SIZE=\"8\" />".format_mindmap_print_lesson_page($chaptercontent);
+    $content .= "\n\t\t\t\t\t\t<node LINK=\"".$CFG->wwwroot."/mod/book/view.php?id=".$cm->id."&amp;chapterid=".$chapter->id."\">";
+    $content .= "\n\t\t\t\t\t\t\t<richcontent TYPE=\"NODE\">";
+    $content .= '<html><body style="font-size:12px; background-color: white;   font-family: Arial, Helvetica,
+    sans-serif">'.format_mindmap_escape_single_quote($chapter->title).'</body></html>';
+    $content .= "</richcontent>";
+    $content .= format_mindmap_print_lesson_page($chaptercontent);
+
     if (!empty ($chapter->subchapters)) {
         foreach ($chapter->subchapters as $subchapter) {
                 $content .= format_mindmap_print_book_chapter($chapters[$subchapter], 0, $cm);
         }
     }
-    $content .= "</node>\n";
+    $content .= "\n\t\t\t\t\t\t</node>";
     return $content;
 }
 
-function format_mindmap_check_if_visited($cm, $lessonorbookpagenumber) { // If not visisted, font of module will be bolded.
+// If not visisted, font of module will be bolded.
+function format_mindmap_check_if_visited($cm, $lessonorbookpagenumber) {
     global $USER, $COURSE, $DB;
     $content = "";
     if (empty($lessonorbookpagenumber)) { // If current module is not lesson page and not book page.
@@ -380,7 +407,8 @@ function format_mindmap_get_link_to_module($modulename, $moduleid, $accessiblebu
     return $content;
 }
 
-function format_mindmap_get_lesson_dependency($cm) { // Function included only in lesson module, for lesson module dependency only.
+// Function included only in lesson module, for lesson module dependency only.
+function format_mindmap_get_lesson_dependency($cm) {
     global $COURSE, $DB;
     $output = "";
     $instance = 0;
@@ -395,7 +423,7 @@ function format_mindmap_get_lesson_dependency($cm) { // Function included only i
     if ($dependentofid == "") { // If option "dependent of" is set to "none", but was set to correct module before.
         return "";
     }
-    $output = "\t\t\t\t<arrowlink COLOR=\"#0080c0\" DESTINATION=\"".$dependentofid."\" ENDARROW=\"Default\" />\n";
+    $output = "\n\t\t\t\t\t\t<arrowlink COLOR=\"#0080c0\" DESTINATION=\"".$dependentofid."\" ENDARROW=\"Default\" />";
 
     return $output;
 }
@@ -510,11 +538,14 @@ function format_mindmap_print_lesson_pages($cm, $accessiblebutdim, $hascapabilit
     foreach ($orderedpages as $page) {
         if ($page->display == 1) {
             if ($page->title != "") {
-                $output .= "\t\t\t\t\t\t<node TEXT='".format_mindmap_escape_single_quote($page->title)."' LINK=\"".
-                $CFG->wwwroot."/mod/lesson/view.php?id=".$cm->id."&amp;pageid=".$page->id.
-                "\" FOLDED=\"true\"><font NAME=\"SansSerif\" ".format_mindmap_check_if_visited($cm, $page->id)." SIZE=\"8\"  />"
-                .format_mindmap_print_lesson_page($page->contents)
-                ."</node>\n";
+                $output .= "\n\t\t\t\t\t\t<node LINK=\"".
+                $CFG->wwwroot."/mod/lesson/view.php?id=".$cm->id."&amp;pageid=".$page->id."\" FOLDED=\"true\">";
+                $output .= "\n\t\t\t\t\t\t\t<richcontent TYPE=\"NODE\">";
+                $output .= '<html><body style="font-size:12px; background-color: white;   font-family: Arial,
+                Helvetica, sans-serif">'.format_mindmap_escape_single_quote($page->title).'</body></html>';
+                $output .= "</richcontent>";
+                $output .= format_mindmap_print_lesson_page($page->contents)."\n\t\t\t\t\t\t</node>";
+
             }
         }
     }
@@ -522,8 +553,8 @@ function format_mindmap_print_lesson_pages($cm, $accessiblebutdim, $hascapabilit
     return $output;
 }
 
-function format_mindmap_array_iunique($topics) { // This function works as array_unique($match, SORT_STRING);
-                                                 // but is case insensitive.
+// This function works as array_unique($match, SORT_STRING); but is case insensitive.
+function format_mindmap_array_iunique($topics) {
 
     $ltopics = array_map('strtolower', $topics);
     $cleanedtopics = array_unique($ltopics);
@@ -537,11 +568,12 @@ function format_mindmap_array_iunique($topics) { // This function works as array
     return $topics;
 }
 
-function format_mindmap_print_lesson_page($pagecontent) { // It could be named 'print_glossary_keywords'.
+// This function could be named 'print_glossary_keywords'.
+function format_mindmap_print_lesson_page($pagecontent) {
 
     global $COURSE, $CFG;
     $output = "";
-    $options = new object();
+    $options = new stdClass();
     $context = context_course::instance($COURSE->id);
     $text = '';
     $pagecontent = file_rewrite_pluginfile_urls($pagecontent, 'pluginfile.php', $context->id, 'format_mindmap', 'content', null);
@@ -551,8 +583,11 @@ function format_mindmap_print_lesson_page($pagecontent) { // It could be named '
         $match = format_mindmap_array_iunique($match);
         foreach ($match as $mat) {
             preg_match('/href="([^"]*)"/i', $mat, $url);
-            $output .= "\t\t\t\t\t\t\t<node TEXT='".format_mindmap_escape_single_quote(trim(strip_tags($mat)))."' LINK=\"".$url[1].
-            "\"><font NAME=\"SansSerif\" SIZE=\"8\"/></node>\n";
+            $output .= "\n\t\t\t\t\t\t\t<node LINK=\"".$url[1]."\">";
+            $output .= "\n\t\t\t\t\t\t\t\t<richcontent TYPE=\"NODE\">";
+            $output .= '<html><body style="font-size:10px; background-color: white;   font-family: Arial,
+            Helvetica, sans-serif">'.format_mindmap_escape_single_quote(trim(strip_tags($mat))).'</body></html></richcontent>';
+            $output .= "\n\t\t\t\t\t\t\t</node>";
         }
     }
 
@@ -589,8 +624,8 @@ function format_mindmap_print_conditional_availability_arrows($cm) {
                             }
                         }
 
-                        $output .= "\t\t\t\t<arrowlink COLOR=\"#0080c0\" DESTINATION=\"".$dependentofid
-                        ."\" ENDARROW=\"Default\" />\n";
+                        $output .= "\n\t\t\t\t\t\t<arrowlink COLOR=\"#0080c0\" DESTINATION=\"".$dependentofid
+                        ."\" ENDARROW=\"Default\" />";
                     }
                 }
             }
@@ -603,19 +638,20 @@ function format_mindmap_print_conditional_availability_arrows($cm) {
 function format_mindmap_print_mod_icon($type) {
     global $CFG;
     if (file_exists($CFG->dirroot.'/mod/'.$type.'/pix/icon.gif')) {
-        $output = '<img src="'.$CFG->wwwroot.'/mod/'.$type.'/pix/icon.gif" />';
+        $output = '<img height="24" widht="24" style="margin-right:5px;" src="'.$CFG->wwwroot.'/mod/'.$type.'/pix/icon.gif" />';
     } else {
-        $output = '<img src="'.$CFG->wwwroot.'/mod/'.$type.'/pix/icon.png" />';
+        $output = '<img height="24" width="24" style="margin-right:5px;" src="'.$CFG->wwwroot.'/mod/'.$type.'/pix/icon.png" />';
     }
 
     return $output;
 }
 
-function format_mindmap_grade_icon($grade, $cm) { // If $textocolor=true then return color="TEXT", if not then return only icon.
+// If $textocolor=true then return color="TEXT", if not then return only icon.
+function format_mindmap_grade_icon($grade, $cm) {
     global $USER;
-    $colorbad     = ' COLOR = "#ff0033"';
-    $colorok      = ' COLOR = "#009900"';
-    $colorwarning = ' COLOR = "#FF9900"';
+    $colorbad     = ' color:#ff0033;';
+    $colorok      = ' color:#009900;';
+    $colorwarning = ' color:#FF9900;';
     $output = new stdClass();
     $context = context_module::instance($cm->id);
 
@@ -682,14 +718,14 @@ function format_mindmap_grade_icon($grade, $cm) { // If $textocolor=true then re
         } else { // If grade is < gradepass.
             if ( !is_null($grade->items[0]->grades[$USER->id]->grade) ) { // If grade was made.
                 if ($timeleft) { // Print icon "warning".
-                    $output->icon = "\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n";
+                    $output->icon = "\n\t\t\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n";
                 }
-                $output->icon .= "\t\t\t\t<icon BUILTIN=\"button_cancel\"/>\n"; // Print icon "cancel".
+                $output->icon .= "\n\t\t\t\t\t\t<icon BUILTIN=\"button_cancel\"/>\n"; // Print icon "cancel".
                 $output->color = $colorbad;
                 $output->timeleftnode = $timeleft;
             } else if ($timeleft) {
-                        $output->icon = "\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n"; // If student has not made any attempts
-                                                                                            // and time is running out.
+                        // If student has not made any attempts and time is running out.
+                        $output->icon = "\n\t\t\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n";
                         $output->color = $colorwarning;
                         $output->timeleftnode = $timeleft;
             }
@@ -702,13 +738,14 @@ function format_mindmap_grade_icon($grade, $cm) { // If $textocolor=true then re
         } else {
             if ( !is_null($grade->items[0]->grades[$USER->id]->grade) ) { // If grade is < than 1/2 * grademax print.
                 if ($timeleft) {
-                    $output->icon = "\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n"; // Print icon "warning".
+                    $output->icon = "\n\t\t\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n"; // Print icon "warning".
                 }
                     $output->icon .= "\t\t\t\t<icon BUILTIN=\"button_cancel\"/>\n";
                     $output->color = $colorbad;
                     $output->timeleftnode = $timeleft;
             } else if ($timeleft) {
-                        $output->icon = "\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n";
+                        $output->icon = "\n\t\t\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n";
+                        $output->icon = "\n\t\t\t\t\t\t<icon BUILTIN=\"messagebox_warning\"/>\n";
                         // If student has not made any attempts and time is running out.
                         $output->color = $colorwarning;
                         $output->timeleftnode = $timeleft;
@@ -857,10 +894,13 @@ function format_mindmap_print_grade_node($grade) {
     if ($grade->items[0]->grades[$USER->id]->str_long_grade == "-" ) {
         return $content;
     }
-    $content .= "\t\t\t\t\t<node TEXT='".get_string('grade', 'format_mindmap')." ".
-    format_mindmap_escape_single_quote($grade->items[0]->grades[$USER->id]->str_long_grade)."'>\n";
-    $content .= '\t<font SIZE="8"/>\n';
-    $content .= "\t\t\t\t\t</node>\n";
+    $content .= "\n\t\t\t\t\t\t\t<node>";
+    $content .= "\n\t\t\t\t\t\t\t\t<richcontent TYPE=\"NODE\">";
+    $content .= '<html><body style="font-size:12px; background-color: white;   font-family: Arial, Helvetica, sans-serif">'.
+    get_string('grade', 'format_mindmap')." ".
+    format_mindmap_escape_single_quote($grade->items[0]->grades[$USER->id]->str_long_grade).
+    '</body></html></richcontent>';
+    $content .= "\n\t\t\t\t\t\t\t</node>";
     return $content;
 }
 
@@ -870,14 +910,17 @@ function format_mindmap_print_feedback_node($grade) {
     if (empty($grade->items[0]->grades[$USER->id]->str_feedback)) {
         return $content;
     }
-    $content .= "\t\t\t\t\t<node TEXT='".get_string('feedback', 'format_mindmap').' '.
-    strip_tags($grade->items[0]->grades[$USER->id]->str_feedback)."'>\n";
-    $content .= '\t<font SIZE="8"/>\n';
-    $content .= "\t\t\t\t\t</node>\n";
+    $content .= "\n\t\t\t\t\t\t\t<node>";
+    $content .= "\n\t\t\t\t\t\t\t\t<richcontent TYPE=\"NODE\">";
+    $content .= '<html><body style="font-size:12px; background-color: white;   font-family: Arial, Helvetica, sans-serif">'.
+    get_string('feedback', 'format_mindmap')." ".strip_tags($grade->items[0]->grades[$USER->id]->str_feedback).
+    '</body></html></richcontent>';
+    $content .= "\n\t\t\t\t\t\t\t</node>";
     return $content;
 }
 
-function format_mindmap_change_chars($content) { // This function changes national characters into html entities.
+// This function changes national characters into html entities.
+function format_mindmap_change_chars($content) {
     global $CFG;
     require_once($CFG->dirroot.'/course/format/mindmap/mind_map_generator/specialcharacters.php');
 
@@ -888,8 +931,9 @@ function format_mindmap_change_chars($content) { // This function changes nation
     return $content;
 }
 
-function format_mindmap_fold_item($grade, $keywords) { // If there is grade node here, then fold this item,
-                                                      // or in resource if there is a keyword from glossary, then fold item.
+// If there is grade node here, then fold this item, or in resource if there is a keyword from glossary, then fold item.
+function format_mindmap_fold_item($grade, $keywords) {
+
     $content = "";
     if (format_mindmap_print_grade_node($grade) != "") {
         $content .= " FOLDED=\"true\"";

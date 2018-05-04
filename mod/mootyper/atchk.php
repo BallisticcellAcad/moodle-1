@@ -15,35 +15,45 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file checks results and for suspicious performance.
+ * This file tracks student progress through an exercise.
+ *
+ * Called from three places in typer.js file.
+ *     doStart - opens an entry in mdl_mootyper_attempts.
+ *     doCheck - opens multiple entries in mdl_mootyper_checks
+ *               new entry every 4 seconds of mistakes, hits, and checktime.
+ *     doTheEnd - mdl_mootyper_checks - all entries for the attempt are deleted when exercise is completed.
  *
  * @package    mod_mootyper
  * @copyright  2012 Jaka Luthar (jaka.luthar@gmail.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
 global $DB;
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/locallib.php');
-require_login($course, true, $cm);
-$record = new stdClass();
-$st = $_GET['status'];
-if ($st == 1) {
 
-    $record->mootyperid = $_GET['mootyperid'];
-    $record->userid = $_GET['userid'];
-    $record->timetaken = $_GET['time'];
+$record = new stdClass();
+
+
+// Status 1 indicates called from doStart in typer.js.
+// Status 2 indicates called from doCheck in typer.js.
+// Status 3 indicates called from doTheEnd in typer.js.
+
+$st = optional_param('status', '', PARAM_INT);
+
+if ($st == 1) {
+    $record->mootyperid = optional_param('mootyperid', 0, PARAM_INT);
+    $record->userid = optional_param('userid', 0, PARAM_INT);
+    $record->timetaken = optional_param('time', 0, PARAM_INT);
     $record->inprogress = 1;
     $record->suspicion = 0;
     $newid = $DB->insert_record('mootyper_attempts', $record, true);
     echo $newid;
 } else if ($st == 2) {
-    $record->attemptid = $_GET['attemptid'];
-    $record->mistakes = $_GET['mistakes'];
-    $record->hits = $_GET['hits'];
+    $record->attemptid = optional_param('attemptid', '', PARAM_INT);
+    $record->mistakes = optional_param('mistakes', 0, PARAM_INT);
+    $record->hits = optional_param('hits', 0, PARAM_INT);
     $record->checktime = time();
     $DB->insert_record('mootyper_checks', $record, false);
 } else if ($st == 3) {
@@ -65,6 +75,8 @@ if ($st == 1) {
     } else {
         $attemptnew->suspicion = $attemptold->suspicion;
     }
+    // Exercise completed so update the attemp record.
     $DB->update_record('mootyper_attempts', $attemptnew);
+    // Exercise completed so remove all the checks for this attempt.
     $DB->delete_records('mootyper_checks', array('attemptid' => $attid));
 }

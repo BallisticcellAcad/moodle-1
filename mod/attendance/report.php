@@ -32,7 +32,7 @@ $from                   = optional_param('from', null, PARAM_ACTION);
 $pageparams->view       = optional_param('view', null, PARAM_INT);
 $pageparams->curdate    = optional_param('curdate', null, PARAM_INT);
 $pageparams->group      = optional_param('group', null, PARAM_INT);
-$pageparams->sort       = optional_param('sort', null, PARAM_INT);
+$pageparams->sort       = optional_param('sort', ATT_SORT_DEFAULT, PARAM_INT);
 $pageparams->page       = optional_param('page', 1, PARAM_INT);
 $pageparams->perpage    = get_config('attendance', 'resultsperpage');
 
@@ -71,13 +71,14 @@ $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('attendance', $attrecord);
 $event->trigger();
 
-// Output starts here.
+$title = get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname);
+$header = new mod_attendance_header($att, $title);
 
+// Output starts here.
 echo $output->header();
-echo $output->heading(get_string('attendanceforthecourse', 'attendance').' :: ' .format_string($course->fullname));
+echo $output->render($header);
 echo $output->render($tabs);
 echo $output->render($filtercontrols);
 echo $output->render($reportdata);
-
 echo $output->footer();
 

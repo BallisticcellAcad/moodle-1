@@ -79,9 +79,13 @@ class mod_mootyper_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'mootypername', 'mootyper');
-        $this->standard_intro_elements();
+        if ($CFG->branch > 28) {
+            $this->standard_intro_elements();
+        } else {
+            $this->add_intro_editor();
+        }
 
-        // Availability.
+        // MooTyper activity setup, Availability settings.
         $mform->addElement('header', 'availabilityhdr', get_string('availability'));
 
         $mform->addElement('date_time_selector', 'timeopen',
@@ -90,7 +94,7 @@ class mod_mootyper_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'timeclose',
                            get_string('mootyperclosetime', 'mootyper'),
                            array('optional' => true, 'step' => 1));
-
+        // MooTyper activity password setup.
         $mform->addElement('selectyesno', 'usepassword', get_string('usepassword', 'mootyper'));
         $mform->addHelpButton('usepassword', 'usepassword', 'mootyper');
         $mform->setDefault('usepassword', $mootyperconfig->password);
@@ -103,15 +107,100 @@ class mod_mootyper_mod_form extends moodleform_mod {
         $mform->disabledIf('password', 'usepassword', 'eq', 0);
         $mform->disabledIf('passwordunmask', 'usepassword', 'eq', 0);
 
-        // Options.
+        // MooTyper activity setup, Options settings.
         $mform->addElement('header', 'optionhdr', get_string('options', 'mootyper'));
+
+        // Add a dropdown slector for Required precision. 11/25/17.
+        $precs = array();
+        for ($i = 0; $i <= 100; $i++) {
+            $precs[] = $i;
+        }
+        $mform->addElement('select', 'requiredgoal', get_string('requiredgoal', 'mootyper'), $precs);
+        $mform->addHelpButton('requiredgoal', 'requiredgoal', 'mootyper');
+        $mform->setDefault('requiredgoal', $mootyperconfig->defaultprecision);
+
+        // Add a dropdown slector for text alignment.
+        $aligns = array(get_string('defaulttextalign_left', 'mod_mootyper'),
+                      get_string('defaulttextalign_center', 'mod_mootyper'),
+                      get_string('defaulttextalign_right', 'mod_mootyper'));
+        $mform->addElement('select', 'textalign', get_string('defaulttextalign', 'mootyper'), $aligns);
+        $mform->addHelpButton('textalign', 'defaulttextalign', 'mootyper');
+        $mform->setDefault('textalign', $mootyperconfig->defaulttextalign);
+
+        // Continuous typing setup.
         $mform->addElement('selectyesno', 'continuoustype', get_string('continuoustype', 'mootyper'));
         $mform->addHelpButton('continuoustype', 'continuoustype', 'mootyper');
+        $mform->setDefault('continuoustype', $mootyperconfig->continuoustype);
+        $mform->setAdvanced('continuoustype', $mootyperconfig->continuoustype_adv);
 
-        // Link to exercises for this MooTyper activity.
+        // Count mistyped spaces setup.
+        $mform->addElement('selectyesno', 'countmistypedspaces', get_string('countmistypedspaces', 'mootyper'));
+        $mform->addHelpButton('countmistypedspaces', 'countmistypedspaces', 'mootyper');
+        $mform->setDefault('countmistypedspaces', $mootyperconfig->countmistypedspaces);
+        $mform->setAdvanced('countmistypedspaces', $mootyperconfig->countmistypedspaces_adv);
+
+        // Count mistakes setup.
+        $mform->addElement('selectyesno', 'countmistakes', get_string('countmistakes', 'mootyper'));
+        $mform->addHelpButton('countmistakes', 'countmistakes', 'mootyper');
+        $mform->setDefault('countmistakes', $mootyperconfig->countmistakes);
+        $mform->setAdvanced('countmistakes', $mootyperconfig->countmistakes_adv);
+
+        // Show keyboard setup.
+        $mform->addElement('selectyesno', 'showkeyboard', get_string('showkeyboard', 'mootyper'));
+        $mform->addHelpButton('showkeyboard', 'showkeyboard', 'mootyper');
+        $mform->setDefault('showkeyboard', $mootyperconfig->showkeyboard);
+        $mform->setAdvanced('showkeyboard', $mootyperconfig->showkeyboard_adv);
+
+        // Add a dropdown slector for keyboard layouts. 11/22/17.
+        // Use function in localib.php to get layouts.
+        $layouts = get_keyboard_layouts_db();
+        $mform->addElement('select', 'layout', get_string('layout', 'mootyper'), $layouts);
+        $mform->addHelpButton('layout', 'layout', 'mootyper');
+        $mform->setDefault('layout', $mootyperconfig->defaultlayout);
+
+        // Add setting for statistics bar background color.
+        $attributes = 'size = "20"';
+        $mform->setType('statsbgc', PARAM_NOTAGS);
+        $mform->addElement('text', 'statsbgc', get_string('statsbgc', 'mootyper'), $attributes);
+        $mform->addHelpButton('statsbgc', 'statsbgc', 'mootyper');
+        $mform->setDefault('statsbgc', $mootyperconfig->statscolor);
+
+        // Add setting for keytop background color.
+        $mform->setType('keytopbgc', PARAM_NOTAGS);
+        $mform->addElement('text', 'keytopbgc', get_string('keytopbgc', 'mootyper'), $attributes);
+        $mform->addHelpButton('keytopbgc', 'keytopbgc', 'mootyper');
+        $mform->setDefault('keytopbgc', $mootyperconfig->normalkeytops);
+
+        // Add setting for keyboard background color.
+        $mform->setType('keybdbgc', PARAM_NOTAGS);
+        $mform->addElement('text', 'keybdbgc', get_string('keybdbgc', 'mootyper'), $attributes);
+        $mform->addHelpButton('keybdbgc', 'keybdbgc', 'mootyper');
+        $mform->setDefault('keybdbgc', $mootyperconfig->keyboardbgc);
+
+        // Add setting for cursor color.
+        $mform->setType('cursorcolor', PARAM_NOTAGS);
+        $mform->addElement('text', 'cursorcolor', get_string('cursorcolor', 'mootyper'), $attributes);
+        $mform->addHelpButton('cursorcolor', 'cursorcolor', 'mootyper');
+        $mform->setDefault('cursorcolor', $mootyperconfig->cursorcolor);
+
+        // Add setting for texttotype background color.
+        $mform->setType('textbgc', PARAM_NOTAGS);
+        $mform->addElement('text', 'textbgc', get_string('textbgc', 'mootyper'), $attributes);
+        $mform->addHelpButton('textbgc', 'textbgc', 'mootyper');
+        $mform->setDefault('textbgc', $mootyperconfig->textbgc);
+
+        // Add setting for mistyped text background color.
+        $mform->setType('texterrorcolor', PARAM_NOTAGS);
+        $mform->addElement('text', 'texterrorcolor', get_string('texterrorcolor', 'mootyper'), $attributes);
+        $mform->addHelpButton('texterrorcolor', 'texterrorcolor', 'mootyper');
+        $mform->setDefault('texterrorcolor', $mootyperconfig->texterrorcolor);
+
+        // MooTyper activity, link to Lesson/Categories and exercises.
         $mform->addElement('header', 'mootyperz', get_string('pluginadministration', 'mootyper'));
         $jlnk3 = $CFG->wwwroot . '/mod/mootyper/exercises.php?id='.$COURSE->id;
         $mform->addElement('html', '<a id="jlnk3" href="'.$jlnk3.'">'.get_string('emanage', 'mootyper').'</a>');
+
+        // The rest of the common activity settings.
         $this->standard_coursemodule_elements();
         $this->apply_admin_defaults();
         $this->add_action_buttons();

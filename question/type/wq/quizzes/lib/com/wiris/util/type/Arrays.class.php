@@ -12,6 +12,16 @@ class com_wiris_util_type_Arrays {
 		}
 		return $data;
 	}
+	static function isNotEmpty($array) {
+		return $array !== null && $array->length > 0;
+	}
+	static function getOrDefault($array, $index, $defaultValue) {
+		if($array !== null && $index >= 0 && $index < $array->length) {
+			return $array[$index];
+		} else {
+			return $defaultValue;
+		}
+	}
 	static function indexOfElement($array, $element) {
 		$i = 0;
 		$n = $array->length;
@@ -22,6 +32,13 @@ class com_wiris_util_type_Arrays {
 			++$i;
 		}
 		return -1;
+	}
+	static function fromIterator($iterator) {
+		$array = new _hx_array(array());
+		while($iterator->hasNext()) {
+			$array->push($iterator->next());
+		}
+		return $array;
 	}
 	static function fromCSV($s) {
 		$words = _hx_explode(",", $s);
@@ -82,6 +99,9 @@ class com_wiris_util_type_Arrays {
 			$i--;
 		}
 	}
+	static function sort($elements, $comparator) {
+		com_wiris_util_type_Arrays::quicksort($elements, 0, $elements->length - 1, $comparator);
+	}
 	static function insertSorted($a, $e) {
 		com_wiris_util_type_Arrays::insertSortedImpl($a, $e, false);
 	}
@@ -92,7 +112,7 @@ class com_wiris_util_type_Arrays {
 		$imin = 0;
 		$imax = $a->length;
 		while($imin < $imax) {
-			$imid = Math::floor(($imax + $imin) / 2);
+			$imid = intval(($imax + $imin) / 2);
 			$cmp = Reflect::compare($a[$imid], $e);
 			if($cmp === 0) {
 				if($set) {
@@ -112,6 +132,25 @@ class com_wiris_util_type_Arrays {
 		}
 		$a->insert($imin, $e);
 	}
+	static function binarySearch($array, $key) {
+		$imin = 0;
+		$imax = $array->length;
+		while($imin < $imax) {
+			$imid = intval(($imin + $imax) / 2);
+			$cmp = Reflect::compare($array[$imid], $key);
+			if($cmp === 0) {
+				return $imid;
+			} else {
+				if($cmp < 0) {
+					$imin = $imid + 1;
+				} else {
+					$imax = $imid;
+				}
+			}
+			unset($imid,$cmp);
+		}
+		return -1;
+	}
 	static function copyArray($a) {
 		$b = new _hx_array(array());
 		$i = $a->iterator();
@@ -125,6 +164,42 @@ class com_wiris_util_type_Arrays {
 		while($i->hasNext()) {
 			$baseArray->push($i->next());
 		}
+	}
+	static function quicksort($elements, $lower, $higher, $comparator) {
+		if($lower < $higher) {
+			$p = com_wiris_util_type_Arrays::partition($elements, $lower, $higher, $comparator);
+			com_wiris_util_type_Arrays::quicksort($elements, $lower, $p - 1, $comparator);
+			com_wiris_util_type_Arrays::quicksort($elements, $p + 1, $higher, $comparator);
+		}
+	}
+	static function partition($elements, $lower, $higher, $comparator) {
+		$pivot = $elements[$higher];
+		$i = $lower - 1;
+		$j = $lower;
+		while($j < $higher) {
+			if($comparator->compare($pivot, $elements[$j]) > 0) {
+				$i++;
+				if($i !== $j) {
+					$swapper = $elements[$i];
+					$elements[$i] = $elements[$j];
+					$elements[$j] = $swapper;
+					unset($swapper);
+				}
+			}
+			$j++;
+		}
+		if($comparator->compare($elements[$i + 1], $elements[$higher]) > 0) {
+			$finalSwap = $elements[$i + 1];
+			$elements[$i + 1] = $elements[$higher];
+			$elements[$higher] = $finalSwap;
+		}
+		return $i + 1;
+	}
+	static function firstElement($elements) {
+		return $elements[0];
+	}
+	static function lastElement($elements) {
+		return $elements[$elements->length - 1];
 	}
 	function __toString() { return 'com.wiris.util.type.Arrays'; }
 }

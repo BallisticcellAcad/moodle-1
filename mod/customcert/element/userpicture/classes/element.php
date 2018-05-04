@@ -113,11 +113,12 @@ class element extends \mod_customcert\element {
         global $CFG;
 
         // If there is no element data, we have nothing to display.
-        if (empty($this->element->data)) {
+        $data = $this->get_data();
+        if (empty($data)) {
             return;
         }
 
-        $imageinfo = json_decode($this->element->data);
+        $imageinfo = json_decode($data);
 
         $context = \context_user::instance($user->id);
 
@@ -138,10 +139,10 @@ class element extends \mod_customcert\element {
         if ($file) {
             $location = make_request_directory() . '/target';
             $file->copy_content_to($location);
-            $pdf->Image($location, $this->element->posx, $this->element->posy, $imageinfo->width, $imageinfo->height);
+            $pdf->Image($location, $this->get_posx(), $this->get_posy(), $imageinfo->width, $imageinfo->height);
         } else if ($preview) { // Can't find an image, but we are in preview mode then display default pic.
             $location = $CFG->dirroot . '/pix/u/f1.png';
-            $pdf->Image($location, $this->element->posx, $this->element->posy, $imageinfo->width, $imageinfo->height);
+            $pdf->Image($location, $this->get_posx(), $this->get_posy(), $imageinfo->width, $imageinfo->height);
         }
     }
 
@@ -157,11 +158,12 @@ class element extends \mod_customcert\element {
         global $PAGE, $USER;
 
         // If there is no element data, we have nothing to display.
-        if (empty($this->element->data)) {
+        $data = $this->get_data();
+        if (empty($data)) {
             return '';
         }
 
-        $imageinfo = json_decode($this->element->data);
+        $imageinfo = json_decode($data);
 
         // Get the image.
         $userpicture = new \user_picture($USER);
@@ -194,10 +196,15 @@ class element extends \mod_customcert\element {
      */
     public function definition_after_data($mform) {
         // Set the image, width and height for this element.
-        if (!empty($this->element->data)) {
-            $imageinfo = json_decode($this->element->data);
-            $this->element->width = $imageinfo->width;
-            $this->element->height = $imageinfo->height;
+        $data = $this->get_data();
+        if (!empty($data)) {
+            $imageinfo = json_decode($data);
+
+            $element = $mform->getElement('width');
+            $element->setValue($imageinfo->width);
+
+            $element = $mform->getElement('height');
+            $element->setValue($imageinfo->height);
         }
 
         parent::definition_after_data($mform);

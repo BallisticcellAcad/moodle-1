@@ -41,23 +41,23 @@ if ($id) {
 }
 require_login($course, true);
 $lessonpo = optional_param('lesson', -1, PARAM_INT);
-if (isset($_POST['button'])) {
-    $param1 = $_POST['button'];
-}
+
 $context = context_course::instance($id);
 
+// Check to see if Confirm button is clicked and returning 'Confirm' to trigger insert record.
+$param1 = optional_param('button', '', PARAM_TEXT);
 
 // DB insert.
 if (isset($param1) && get_string('fconfirm', 'mootyper') == $param1 ) {
 
-    $texttotypeepo = $_POST['texttotype'];
+    $texttotypeepo = optional_param('texttotype', '', PARAM_RAW);
 
     if ($lessonpo == -1) {
-        $lsnnamepo = $_POST['lessonname'];
+        $lsnnamepo = optional_param('lessonname', '', PARAM_TEXT);
         $lsnrecord = new stdClass();
         $lsnrecord->lessonname = $lsnnamepo;
-        $lsnrecord->visible = $_POST['visible'];
-        $lsnrecord->editable = $_POST['editable'];
+        $lsnrecord->visible = optional_param('visible', '', PARAM_TEXT);
+        $lsnrecord->editable = optional_param('editable', '', PARAM_TEXT);
         $lsnrecord->authorid = $USER->id;
         $lsnrecord->courseid = $course->id;
         $lessonid = $DB->insert_record('mootyper_lessons', $lsnrecord, true);
@@ -81,7 +81,19 @@ if (isset($param1) && get_string('fconfirm', 'mootyper') == $param1 ) {
     ));
     $event->trigger();
 }
+// Get all the default configuration settings for MooTyper.
+$moocfg = get_config('mod_mootyper');
 
+// Check to see if configuration for MooTyper defaulteditalign is set.
+if (isset($moocfg->defaulteditalign)) {
+    // Current MooTyper edittalign is set so use it.
+    $editalign = optional_param('editalign', $moocfg->defaulteditalign, PARAM_INT);
+    $align = $editalign;
+} else {
+    // Current MooTyper edittalign is NOT set so set it to left.
+    $editalign = optional_param('editalign', 0, PARAM_INT);
+    $align = $editalign;
+}
 // Print the page header.
 
 $PAGE->set_url('/mod/mootyper/eins.php', array('id' => $course->id));
@@ -135,7 +147,7 @@ if ($lessonpo == -1) {
 
 <script type="text/javascript">
 function isLetter(str) {
-    var pattern = /[a-zčšžđćüöäèéàçâêîôº¡çñ]/i;
+    var pattern = /[a-z,ก-๛,а-я,א-ת,äáàâãčćçëéèêđïîíöôóõüúùûµšžº¡ñ]/i;
     return str.length === 1 && str.match(pattern);
 }
 function isNumber(n) {
@@ -149,9 +161,10 @@ function clClick()
     var exercise_text = document.getElementById("texttotype").value;
     var allowed_chars = ['\\', '~', '!', '@', '#', '$', '%', '^', '&', '(', ')', '*', '_',
                          '+', ':', ';', '"', '{', '}', '>', '<', '?', '\'', '-', '/', '=',
-                         '.', ',', ' ', '|', '¡', '`', 'ç', 'ã', 'ê', 'í', 'ñ', 'º', '¿',
+                         '.', ',', ' ', '|', '¡', '`', 'ç', 'ã', 'ê', 'ë', 'í', 'ï', 'ñ', 'º', '¿',
                          'ª', '·', '\n', '\r', '\r\n', '\n\r', ']', '[', '¬', '´', '`',
-                         '§', '°', '€', '¦', '¢', '£', '₢', '¹', '²', '³', '¨'];
+                         '§', '°', '€', '¦', '¢', '£', '₢', '¹', '²', '³', '¨', '÷', '×',
+                         'ł', 'Ł', 'ß', '¤', '«', '»', '₪', '־', 'װ', 'ױ', 'ײ', 'ˇ', '½'];
     var shown_text = "";
     ok = true;
     for(var i=0; i<exercise_text.length; i++) {
@@ -176,8 +189,30 @@ function clClick()
 </script>
 
 <?php
+// Get our alignment strings and add a selector for text alignment.
+$aligns = array(get_string('defaulttextalign_left', 'mod_mootyper'),
+              get_string('defaulttextalign_center', 'mod_mootyper'),
+              get_string('defaulttextalign_right', 'mod_mootyper'));
+echo '<br><br><span id="editalign" class="">'.get_string('defaulttextalign', 'mootyper').': ';
+echo '<select onchange="this.form.submit()" name="editalign">';
+// This will loop through ALL three alignments and show current alignment setting.
+foreach ($aligns as $akey => $aval) {
+    // The first if is executed ONLY when, when defaulttextalign matches one of the alignments
+    // and it will then show that alignment in the selector.
+    if ($akey == $editalign) {
+        echo '<option value="'.$akey.'" selected="true">'.$aval.'</option>';
+        $align = $aval;
+    } else {
+        // This part of the if is reached the most and its when an alignment
+        // is is not the one selected.
+        echo '<option value="'.$akey.'">'.$aval.'</option>';
+    }
+}
+
+echo '</select></span>'.get_string('defaulttextalign_warning', 'mootyper');
+
 echo '<br><span id="text_holder_span" class=""></span><br>'.get_string('fexercise', 'mootyper').':<br>'.
-     '<textarea rows="4" cols="40" name="texttotype" id="texttotype"></textarea><br>'.
+     '<textarea rows="4" cols="60" name="texttotype" id="texttotype"style="text-align:'.$align.'"></textarea><br>'.
      '<br><input name="button" onClick="return clClick()" type="submit" value="'.get_string('fconfirm', 'mootyper').'">'.
      '</form>';
 

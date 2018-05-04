@@ -55,7 +55,10 @@ class block_stash_form_integer extends MoodleQuickForm_group {
 
         parent::__construct($elementname, $elementlabel);
         $this->setAttributes(array_merge((array) $this->_attributes, $attributes));
-        $this->_type = 'integer';
+
+        // The type of this element must not be changed or it creates a series of unpredictable
+        // in Boost (3.2 onwards) as the Mustache templates would not be picked adequately.
+        // $this->_type = 'integer';
     }
 
     /**
@@ -74,13 +77,21 @@ class block_stash_form_integer extends MoodleQuickForm_group {
     function _createElements() {
         $attributes = (array) $this->getAttributes();
 
-        $element = @MoodleQuickForm::createElement('text', 'int', get_string('number', 'block_stash'), $attributes);
+        if (method_exists($this, 'createFormElement')) {
+            $element = $this->createFormElement('text', 'int', get_string('number', 'block_stash'), $attributes);
+        } else {
+            $element = @MoodleQuickForm::createElement('text', 'int', get_string('number', 'block_stash'), $attributes);
+        }
         $element->setType('number');
         $element->setHiddenLabel(true);
 
         $this->_elements = [];
         $this->_elements[] = $element;
-        $this->_elements[] = @MoodleQuickForm::createElement('checkbox', 'unl', null, get_string('unlimited', 'block_stash'));
+        if (method_exists($this, 'createFormElement')) {
+            $this->_elements[] = $this->createFormElement('checkbox', 'unl', null, get_string('unlimited', 'block_stash'));
+        } else {
+            $this->_elements[] = @MoodleQuickForm::createElement('checkbox', 'unl', null, get_string('unlimited', 'block_stash'));
+        }
     }
 
     /**
@@ -108,6 +119,9 @@ class block_stash_form_integer extends MoodleQuickForm_group {
      * @return bool
      */
     function onQuickFormEvent($event, $arg, &$caller) {
+        if (method_exists($this, 'setMoodleForm')) {
+            $this->setMoodleForm($caller);
+        }
         switch ($event) {
             case 'updateValue':
                 $value = $this->_findValue($caller->_constantValues);

@@ -66,58 +66,74 @@ if ($context->contextlevel == CONTEXT_SYSTEM) {
     $PAGE->navbar->add(get_string('editcustomcert', 'customcert'));
 }
 
-
 // Flag to determine if we are deleting anything.
 $deleting = false;
 
 if ($tid) {
-    switch ($action) {
-        case 'pmoveup' :
-            $template->move_item('page', $actionid, 'up');
-            break;
-        case 'pmovedown' :
-            $template->move_item('page', $actionid, 'down');
-            break;
-        case 'emoveup' :
-            $template->move_item('element', $actionid, 'up');
-            break;
-        case 'emovedown' :
-            $template->move_item('element', $actionid, 'down');
-            break;
-        case 'deletepage' :
-            if (!empty($confirm)) { // Check they have confirmed the deletion.
-                $template->delete_page($actionid);
-            } else {
-                // Set deletion flag to true.
-                $deleting = true;
-                // Create the message.
-                $message = get_string('deletepageconfirm', 'customcert');
-                // Create the link options.
-                $nourl = new moodle_url('/mod/customcert/edit.php', array('tid' => $tid));
-                $yesurl = new moodle_url('/mod/customcert/edit.php', array('tid' => $tid,
-                    'action' => 'deletepage',
-                    'aid' => $actionid,
-                    'confirm' => 1,
-                    'sesskey' => sesskey()));
-            }
-            break;
-        case 'deleteelement' :
-            if (!empty($confirm)) { // Check they have confirmed the deletion.
-                $template->delete_element($actionid);
-            } else {
-                // Set deletion flag to true.
-                $deleting = true;
-                // Create the message.
-                $message = get_string('deleteelementconfirm', 'customcert');
-                // Create the link options.
-                $nourl = new moodle_url('/mod/customcert/edit.php', array('tid' => $tid));
-                $yesurl = new moodle_url('/mod/customcert/edit.php', array('tid' => $tid,
-                    'action' => 'deleteelement',
-                    'aid' => $actionid,
-                    'confirm' => 1,
-                    'sesskey' => sesskey()));
-            }
-            break;
+    if ($action && confirm_sesskey()) {
+        switch ($action) {
+            case 'pmoveup' :
+                $template->move_item('page', $actionid, 'up');
+                break;
+            case 'pmovedown' :
+                $template->move_item('page', $actionid, 'down');
+                break;
+            case 'emoveup' :
+                $template->move_item('element', $actionid, 'up');
+                break;
+            case 'emovedown' :
+                $template->move_item('element', $actionid, 'down');
+                break;
+            case 'addpage' :
+                $template->add_page();
+                $url = new \moodle_url('/mod/customcert/edit.php', array('tid' => $tid));
+                redirect($url);
+                break;
+            case 'deletepage' :
+                if (!empty($confirm)) { // Check they have confirmed the deletion.
+                    $template->delete_page($actionid);
+                    $url = new \moodle_url('/mod/customcert/edit.php', array('tid' => $tid));
+                    redirect($url);
+                } else {
+                    // Set deletion flag to true.
+                    $deleting = true;
+                    // Create the message.
+                    $message = get_string('deletepageconfirm', 'customcert');
+                    // Create the link options.
+                    $nourl = new moodle_url('/mod/customcert/edit.php', array('tid' => $tid));
+                    $yesurl = new moodle_url('/mod/customcert/edit.php',
+                        array(
+                            'tid' => $tid,
+                            'action' => 'deletepage',
+                            'aid' => $actionid,
+                            'confirm' => 1,
+                            'sesskey' => sesskey()
+                        )
+                    );
+                }
+                break;
+            case 'deleteelement' :
+                if (!empty($confirm)) { // Check they have confirmed the deletion.
+                    $template->delete_element($actionid);
+                } else {
+                    // Set deletion flag to true.
+                    $deleting = true;
+                    // Create the message.
+                    $message = get_string('deleteelementconfirm', 'customcert');
+                    // Create the link options.
+                    $nourl = new moodle_url('/mod/customcert/edit.php', array('tid' => $tid));
+                    $yesurl = new moodle_url('/mod/customcert/edit.php',
+                        array(
+                            'tid' => $tid,
+                            'action' => 'deleteelement',
+                            'aid' => $actionid,
+                            'confirm' => 1,
+                            'sesskey' => sesskey()
+                        )
+                    );
+                }
+                break;
+        }
     }
 }
 
@@ -182,11 +198,6 @@ if ($data = $mform->get_data()) {
     // Save any page data.
     $template->save_page($data);
 
-    // Check if we are adding a page.
-    if (!empty($data->addcertpage)) {
-        $template->add_page();
-    }
-
     // Loop through the data.
     foreach ($data as $key => $value) {
         // Check if they chose to add an element to a page.
@@ -221,9 +232,10 @@ if ($data = $mform->get_data()) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('editcustomcert', 'customcert'));
 $mform->display();
-if ($tid) {
+if ($tid && $context->contextlevel == CONTEXT_MODULE) {
     $loadtemplateurl = new moodle_url('/mod/customcert/load_template.php', array('tid' => $tid));
-    $loadtemplateform = new \mod_customcert\load_template_form($loadtemplateurl, array('context' => $context));
+    $loadtemplateform = new \mod_customcert\load_template_form($loadtemplateurl, array('context' => $context), 'post',
+        '', array('id' => 'loadtemplateform'));
     $loadtemplateform->display();
 }
 echo $OUTPUT->footer();

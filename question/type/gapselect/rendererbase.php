@@ -53,7 +53,7 @@ abstract class qtype_elements_embedded_in_question_text_renderer
                 array('class' => $this->qtext_classname(), 'id' => $this->qtext_id($qa)));
 
         $result .= $this->post_qtext_elements($qa, $options);
-
+//var_dump(htmlspecialchars($result));die();
         if ($qa->get_state() == question_state::$invalid) {
             $result .= html_writer::nonempty_tag('div',
                     $question->get_validation_error($qa->get_last_qt_data()),

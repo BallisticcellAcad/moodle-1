@@ -354,7 +354,8 @@ class auth_plugin_googleoauth2 extends auth_plugin_base {
 
                     // Redirection.
                     if (user_not_fully_set_up($USER)) {
-                        $urltogo = $CFG->wwwroot.'/user/edit.php';
+//                        $urltogo = $CFG->wwwroot.'/user/edit.php';
+                        $urltogo = $CFG->wwwroot.'/user/profile.php?id=' . $USER->id;
                         // We don't delete $SESSION->wantsurl yet, so we get there later.
                     } else if (isset($SESSION->wantsurl) && (strpos($SESSION->wantsurl, $CFG->wwwroot) === 0)) {
                         $urltogo = $SESSION->wantsurl;    // Because it's an address in this site.

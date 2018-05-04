@@ -61,7 +61,7 @@ function xmldb_block_grade_me_upgrade($oldversion, $block) {
 
         }
 
-        // grade_me savepoint reached
+        // Grade_me savepoint reached.
         upgrade_block_savepoint(true, 2013022600, 'grade_me');
     }
 
@@ -85,6 +85,28 @@ function xmldb_block_grade_me_upgrade($oldversion, $block) {
         // Pre populate block_grade_me_quiz_ngrade table.
         \block_grade_me\quiz_util::update_quiz_ngrade();
         upgrade_block_savepoint(true, '2015102402', 'grade_me');
+    }
+
+    if ($oldversion < 2016052305) {
+
+        // Define index itemmodule (not unique) to be added to grade_me.
+        $table = new xmldb_table('block_grade_me');
+        $index = new xmldb_index('itemmodule', XMLDB_INDEX_NOTUNIQUE, array('itemmodule'));
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index iteminstance (unique) to be added to grade_me.
+        $table = new xmldb_table('block_grade_me');
+        $index = new xmldb_index('iteminstance', XMLDB_INDEX_NOTUNIQUE, array('iteminstance'));
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Grade me  savepoint reached.
+        upgrade_block_savepoint(true, 2016052305, 'grade_me');
     }
     return true;
 }

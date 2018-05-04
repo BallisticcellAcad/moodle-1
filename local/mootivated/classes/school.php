@@ -29,8 +29,13 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/cohort/lib.php');
 require_once($CFG->libdir . '/filelib.php');
 
+use context_system;
 use curl;
+use moodle_exception;
 use stdClass;
+use local_mootivated\helper;
+use local_mootivated\local\calculator\mod_points_calculator;
+use local_mootivated\local\calculator\mod_points_calculator_stack;
 
 /**
  * School class.
@@ -56,6 +61,8 @@ class school {
         'timeframeformaxactions' => 60,
         'timebetweensameactions' => 3600,
         'rewardmethod' => self::METHOD_EVENT,
+        'modcompletionrules' => '',
+        'coursecompletionreward' => 30,
     ];
 
     /** @var int The school internal ID. */
@@ -74,9 +81,16 @@ class school {
     protected $timebetweensameactions;
     /** @var int Reward method. */
     protected $rewardmethod;
+    /** @var string Mod completion rules. */
+    protected $modcompletionrules;
+    /** @var string Mod completion rules. */
+    protected $coursecompletionreward;
 
     /** @var string The host to communicate with. */
     protected $host;
+
+    /** @var string Mod completion rules. */
+    protected $modcompletioncalculator;
 
     /**
      * Constructor.
@@ -141,7 +155,10 @@ class school {
         $result = $this->request('/coins/add', $data);
 
         if (strpos($result, '200') === false) {
-            debugging('Server error calling /coins/add with data: ' . json_encode($data), DEBUG_DEVELOPER);
+            $debugdata = $data;
+            $debugdata['private_key'] = substr($debugdata['private_key'], 0, 4) . '...' . substr($debugdata['private_key'], -4);
+            debugging(sprintf('Server error calling /coins/add. Request: %s. Response: %s', json_encode($debugdata), $result),
+                DEBUG_DEVELOPER);
         }
 
         $event = \local_mootivated\event\coins_earned::create([
@@ -164,8 +181,9 @@ class school {
         if (!$this->id) {
             return;
         }
-        $DB->delete_records('local_mootivated_school', ['id' => $this->id]);
         $DB->delete_records('local_mootivated_log', ['schoolid' => $this->id]);
+        $DB->delete_records('local_mootivated_completion', ['schoolid' => $this->id]);
+        $DB->delete_records('local_mootivated_school', ['id' => $this->id]);
         $this->id = null;
     }
 
@@ -190,6 +208,42 @@ class school {
      */
     public function get_cohort_id() {
         return (int) $this->cohortid;
+    }
+
+    /**
+     * The object computing points for completing an activity.
+     *
+     * @return mod_points_calculator
+     */
+    public function get_completion_points_calculator_by_mod() {
+        if (!$this->modcompletioncalculator) {
+            $rules = null;
+            $customcalculator = null;
+            if (!empty($this->modcompletionrules)) {
+                $rules = json_decode($this->modcompletionrules);
+                if (is_array($rules)) {
+                    $customcalculator = new mod_points_calculator($rules, null);
+                }
+            }
+
+            $calculator = self::get_default_completion_points_calculator_by_mod();
+            if (!empty($customcalculator)) {
+                $calculator = new mod_points_calculator_stack([$customcalculator, $calculator]);
+            }
+
+            $this->modcompletioncalculator = $calculator;
+        }
+
+        return $this->modcompletioncalculator;
+    }
+
+    /**
+     * Get the course completion reward.
+     *
+     * @return int|null
+     */
+    public function get_course_completion_reward() {
+        return $this->coursecompletionreward;
     }
 
     /**
@@ -385,6 +439,15 @@ class school {
     }
 
     /**
+     * Whether course completion rewards are enabled.
+     *
+     * @return bool
+     */
+    public function is_course_completion_reward_enabled() {
+        return $this->coursecompletionreward > 0;
+    }
+
+    /**
      * Whether the reward method is completion, else event.
      *
      * @return bool
@@ -479,6 +542,10 @@ class school {
         $firstname = '';
         $lastname = '';
 
+        if (!helper::can_login($user)) {
+            throw new moodle_exception('Login not permitted for user.');
+        }
+
         if ($this->get_send_username()) {
             $username = !empty($user->username) ? $user->username : '';
             $firstname = !empty($user->firstname) ? $user->firstname : '';
@@ -572,12 +639,52 @@ class school {
     }
 
     /**
+     * Get the default completion points calculator.
+     *
+     * @return array
+     */
+    protected static function get_default_completion_points_calculator_by_mod() {
+        return new mod_points_calculator([
+            (object) ['mod' => 'quiz', 'points' => 15],
+            (object) ['mod' => 'lesson', 'points' => 15],
+            (object) ['mod' => 'scorm', 'points' => 15],
+            (object) ['mod' => 'assign', 'points' => 15],
+            (object) ['mod' => 'forum', 'points' => 15],
+
+            (object) ['mod' => 'feedback', 'points' => 10],
+            (object) ['mod' => 'questionnaire', 'points' => 10],
+            (object) ['mod' => 'workshop', 'points' => 10],
+            (object) ['mod' => 'glossary', 'points' => 10],
+            (object) ['mod' => 'database', 'points' => 10],
+            (object) ['mod' => 'journal', 'points' => 10],
+            (object) ['mod' => 'hotpot', 'points' => 10],
+
+            (object) ['mod' => 'book', 'points' => 2],
+            (object) ['mod' => 'resource', 'points' => 2],
+            (object) ['mod' => 'folder', 'points' => 2],
+            (object) ['mod' => 'imscp', 'points' => 2],
+            (object) ['mod' => 'label', 'points' => 2],
+            (object) ['mod' => 'page', 'points' => 2],
+            (object) ['mod' => 'url', 'points' => 2]
+        ], 5);
+    }
+
+    /**
      * Get a menu of schools.
      *
      * @return array Keys are IDs, values are names.
      */
     public static function get_menu() {
         global $DB;
+
+        // When we don't use section, we return a global section.
+        if (!helper::uses_sections()) {
+            $school = helper::get_global_school();
+            $result = [];
+            $result[$school->get_id()] = get_string('collectionsettings', 'local_mootivated');
+            return $result;
+        }
+
         $sql = 'SELECT s.id, c.name
                   FROM {local_mootivated_school} s
              LEFT JOIN {cohort} c

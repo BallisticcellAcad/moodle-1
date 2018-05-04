@@ -24,6 +24,10 @@
   */
 
 $string['currentsection'] = 'Ten temat';
+$string['editsection'] = 'Edituj ten temat';
+$string['editsectionname'] = 'Zmień nazwę tematu';
+$string['deletesection'] = 'Usuń temat';
+$string['newsectionname'] = 'Nowa nazwa tematu {$a}';
 $string['sectionname'] = 'Temat';
 $string['pluginname'] = 'Mapa Myśli';
 $string['section0name'] = 'Główne składowe';

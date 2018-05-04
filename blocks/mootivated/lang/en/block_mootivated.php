@@ -31,10 +31,12 @@ $string['configheader'] = 'Settings';
 $string['confighideavatar'] = 'Hide avatar';
 $string['configtitle'] = 'Title';
 $string['defaulttitle'] = 'Mootivated';
+$string['earnedthissession'] = 'Earned this session';
 $string['mootivated:addinstance'] = 'Adding a new Mootivated block';
 $string['mootivated:myaddinstance'] = 'Adding the Mootivated block on the dashboard';
 $string['mootivated:view'] = 'Viewing the content of the Mootivated block';
 $string['myavatar'] = 'My avatar';
 $string['ncoins'] = '{$a} coin(s)';
 $string['pluginname'] = 'Mootivated';
+$string['privacy:metadata'] = 'This plugin does not store or send any user information.';
 

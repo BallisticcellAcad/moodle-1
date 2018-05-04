@@ -412,7 +412,7 @@ class mod_attendance_renderer extends plugin_renderer_base {
             }
         }
 
-        if (!empty($CFG->enablegroupmembersonly) and $takedata->cm->groupmembersonly) {
+        if (!empty($takedata->cm->groupingid)) {
             if ($group == 0) {
                 $groups = array_keys(groups_get_all_groups($takedata->cm->course, 0, $takedata->cm->groupingid, 'g.id'));
             } else {
@@ -624,14 +624,13 @@ class mod_attendance_renderer extends plugin_renderer_base {
 
         if ($data->pageparams->sort == ATT_SORT_LASTNAME) {
             $firstname = html_writer::link($data->url(array('sort' => ATT_SORT_FIRSTNAME)), get_string('firstname'));
-        } else {
+            $lastname = get_string('lastname');
+        } else if ($data->pageparams->sort == ATT_SORT_FIRSTNAME) {
             $firstname = get_string('firstname');
-        }
-
-        if ($data->pageparams->sort == ATT_SORT_FIRSTNAME) {
             $lastname = html_writer::link($data->url(array('sort' => ATT_SORT_LASTNAME)), get_string('lastname'));
         } else {
-            $lastname = get_string('lastname');
+            $firstname = html_writer::link($data->url(array('sort' => ATT_SORT_FIRSTNAME)), get_string('firstname'));
+            $lastname = html_writer::link($data->url(array('sort' => ATT_SORT_LASTNAME)), get_string('lastname'));
         }
 
         if ($CFG->fullnamedisplay == 'lastname firstname') {
@@ -697,6 +696,23 @@ class mod_attendance_renderer extends plugin_renderer_base {
         return $celldata;
     }
 
+    protected function render_mod_attendance_header(mod_attendance_header $header) {
+        if (!$header->should_render()) {
+            return '';
+        }
+
+        $attendance = $header->get_attendance();
+
+        $heading = format_string($header->get_title(), false, ['context' => $attendance->context]);
+        $o = $this->output->heading($heading);
+
+        $o .= $this->output->box_start('generalbox boxaligncenter', 'intro');
+        $o .= format_module_intro('attendance', $attendance, $attendance->cm->id);
+        $o .= $this->output->box_end();
+
+        return $o;
+    }
+
     protected function render_attendance_user_data(attendance_user_data $userdata) {
         $o = $this->render_user_report_tabs($userdata);
 
@@ -751,14 +767,12 @@ class mod_attendance_renderer extends plugin_renderer_base {
 
                     $o .= html_writer::tag('h3', $ca->coursefullname);
                 }
-                $o .= html_writer::tag('h4', $ca->attname);
 
                 if (isset($userdata->summary[$ca->attid])) {
+                    $o .= html_writer::tag('h4', $ca->attname);
                     $usersummary = $userdata->summary[$ca->attid]->get_all_sessions_summary_for($userdata->user->id);
-                } else {
-                    $usersummary = null;
+                    $o .= construct_user_data_stat($usersummary, ATT_VIEW_ALL);
                 }
-                $o .= construct_user_data_stat($usersummary, ATT_VIEW_ALL);
             }
         }
 
@@ -816,7 +830,9 @@ class mod_attendance_renderer extends plugin_renderer_base {
                 $cell->colspan = 2;
                 $row->cells[] = $cell;
             } else {
-                if (!empty($sess->studentscanmark)) { // Student can mark their own attendance.
+                $configjs = get_config('attendance', 'studentscanmark');
+                if (!empty($configjs) && !empty($sess->studentscanmark)) {
+                    // Student can mark their own attendance.
                     // URL to the page that lets the student modify their attendance.
                     $url = new moodle_url('/mod/attendance/attendance.php',
                             array('sessid' => $sess->id, 'sesskey' => sesskey()));

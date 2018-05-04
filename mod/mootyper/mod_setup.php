@@ -47,62 +47,208 @@ if ($id) {
 } else {
     error('You must specify a course_module ID or an instance ID');
 }
-
-$moocfg = get_config('mod_mootyper');
-$epo = optional_param('e', 0, PARAM_INT);
-$modepo = optional_param('mode', $mootyper->isexam, PARAM_INT);
-$exercisepo = optional_param('exercise', $mootyper->exercise, PARAM_INT);
-$lessonpo = optional_param('lesson', $mootyper->lesson, PARAM_INT);
-$showkeyboardpo = optional_param('showkeyboard', "off", PARAM_CLEAN);
-$continuoustypepo = optional_param('continuoustype', "off", PARAM_CLEAN);
-if (empty($_POST)) {
-    $showkeyboardpo = $mootyper->showkeyboard == 1 ? "on" : "off";
-}
-if (empty($_POST)) {
-    $continuoustypepo = $mootyper->continuoustype == 1 ? "on" : "off";
-}
-if ($mootyper->layout == null || is_null($mootyper->layout)) {
-    $dfly = $moocfg->defaultlayout;
-} else {
-    $dfly = $mootyper->layout;
-}
-$layoutpo = optional_param('layout', $dfly, PARAM_INT);
-if ($mootyper->requiredgoal == null || is_null($mootyper->requiredgoal)) {
-    $dfgoal = $moocfg->defaultprecision;
-} else {
-    $dfgoal = $mootyper->requiredgoal;
-}
-$goalpo = optional_param('requiredgoal', $dfgoal, PARAM_INT);
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-if (isset($_POST['button'])) {
-    $param1 = $_POST['button'];
+// Get the default config for MooTyper.
+$moocfg = get_config('mod_mootyper');
+// Enable-disable flag.
+$epo = optional_param('e', 0, PARAM_INT);
+// Get settings for current mootyper activity.
+$modepo = optional_param('mode', $mootyper->isexam, PARAM_INT);
+$exercisepo = optional_param('exercise', $mootyper->exercise, PARAM_INT);
+$textalign = optional_param('textalign', $mootyper->textalign, PARAM_INT);
+$lessonpo = optional_param('lesson', $mootyper->lesson, PARAM_INT);
+$showkeyboardpo = optional_param('showkeyboard', "off", PARAM_CLEAN);
+$continuoustypepo = optional_param('continuoustype', "off", PARAM_CLEAN);
+$countmistypedspacespo = optional_param('countmistypedspaces', "off", PARAM_CLEAN);
+$countmistakespo = optional_param('countmistakes', "off", PARAM_CLEAN);
+$statscolor = optional_param('statscolor', $mootyper->statsbgc, PARAM_CLEAN);
+$keytopcolor = optional_param('keytopcolor', $mootyper->keytopbgc, PARAM_CLEAN);
+$backgroundcolor = optional_param('backgroundcolor', $mootyper->keybdbgc, PARAM_CLEAN);
+$cursorcolor = optional_param('cursorcolor', $mootyper->cursorcolor, PARAM_CLEAN);
+
+$textbgc = optional_param('textbgc', $mootyper->textbgc, PARAM_CLEAN);
+$texterrorcolor = optional_param('texterrorcolor', $mootyper->texterrorcolor, PARAM_CLEAN);
+
+
+// Check to see if current MooTyper precision goal is empty.
+if ($mootyper->requiredgoal == null || is_null($mootyper->requiredgoal)) {
+    // Current MooTyper precision goal is empty so set it to the site default.
+    $dfgoal = $moocfg->defaultprecision;
+} else {
+    // Otherwise use current MooTyper precision goal.
+    $dfgoal = $mootyper->requiredgoal;
 }
+$goalpo = optional_param('requiredgoal', $dfgoal, PARAM_INT); // Display with default or current setting.
+
+// Check to see if current MooTyper activity textalign is empty.
+if ($mootyper->textalign == null || is_null($mootyper->textalign)) {
+    // Current MooTyper textalign is empty so set it to the site default.
+    $dftextalign = $moocfg->defaulttextalign;
+} else {
+    // Otherwise use current MooTyper textalign.
+    $dftextalign = $mootyper->textalign;
+}
+$textalignpo = optional_param('textalign', $dftextalign, PARAM_INT); // Display with default or current setting.
+
+// Check to see if current MooTyper continuoustype is empty.
+if ($mootyper->continuoustype == null || is_null($mootyper->continuoustype)) {
+    $dfct = "off";
+} else if ($mootyper->continuoustype) {
+    // Otherwise use current MooTyper continuoustype.
+    $dfct = "on";
+} else {
+    $dfct = "off";
+}
+$continuoustypepo = optional_param('continuoustype', $dfct, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if the current MooTyper countmistypedspaces is empty.
+if ($mootyper->countmistypedspaces == null || is_null($mootyper->countmistypedspaces)) {
+    // Current MooTyper continuoustype is empty so set it to the site default.
+    $dfms = "off";
+} else if ($mootyper->countmistypedspaces) {
+    // Otherwise use current MooTyper countmistypedspaces.
+    $dfms = "on";
+} else {
+    $dfms = "off";
+}
+$countmistypedspacespo = optional_param('countmistypedspaces', $dfms, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if the current MooTyper countmistakes is empty.
+if ($mootyper->countmistakes == null || is_null($mootyper->countmistakes)) {
+    // Current MooTyper continuoustype is empty so set it to the site default.
+    $dfcm = "on";
+} else if ($mootyper->countmistakes) {
+    // Otherwise use current MooTyper countmistakes.
+    $dfcm = "on";
+} else {
+    $dfcm = "off";
+}
+$countmistakespo = optional_param('countmistakes', $dfcm, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if current MooTyper showkeyboard is empty.
+if ($mootyper->showkeyboard == null || is_null($mootyper->showkeyboard)) {
+    $dfkb = "off";
+} else if ($mootyper->showkeyboard) {
+    // Otherwise use current MooTyper showkeyboard.
+    $dfkb = "on";
+} else {
+    $dfkb = "off";
+}
+$showkeyboardpo = optional_param('showkeyboard', $dfkb, PARAM_CLEAN);
+
+// Check to see current MooTyper layout is empty.
+if ($mootyper->layout == null || is_null($mootyper->layout)) {
+    // Current MooTyper layout is empty so set it to the site default.
+    $dfly = $moocfg->defaultlayout;
+} else {
+    // Otherwise use current MooTyper layout.
+    $dfly = $mootyper->layout;
+}
+$layoutpo = optional_param('layout', $dfly, PARAM_INT); // Display with default or current setting.
+
+// Check to see if current MooTyper statsbgc is empty.
+if ($mootyper->statsbgc == null || is_null($mootyper->statsbgc)) {
+    // Current MooTyper statsbgc is empty so set it to the sites statscolor default.
+    $dfstatscolor = $moocfg->statscolor;
+} else {
+    $dfstatscolor = $mootyper->statsbgc;
+}
+$statscolorpo = optional_param('statsbgc', $dfstatscolor, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if current MooTyper keytopbgc is empty.
+if ($mootyper->keytopbgc == null || is_null($mootyper->keytopbgc)) {
+    // Current MooTyper keytopbgc is empty so set it to the sites normalkeytops default.
+    $dfkeytopcolor = $moocfg->normalkeytops;
+} else {
+    $dfkeytopcolor = $mootyper->keytopbgc;
+}
+$keytopcolorpo = optional_param('keytopbgc', $dfkeytopcolor, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if current MooTyper keybdbgc is empty.
+if ($mootyper->keybdbgc == null || is_null($mootyper->keybdbgc)) {
+    // Current MooTyper keybdbgc is empty so set it to the sites keyboardbgc default.
+    $dfbackgroundcolor = $moocfg->keyboardbgc;
+} else {
+    $dfbackgroundcolor = $mootyper->keybdbgc;
+}
+$backgroundcolorpo = optional_param('keybdbgc', $dfbackgroundcolor, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if current MooTyper cursorcolor is empty.
+if ($mootyper->cursorcolor == null || is_null($mootyper->cursorcolor)) {
+    // Current MooTyper cursorcolor is empty so set it to the sites cursorcolor default.
+    $dfcursorcolor = $moocfg->keyboardbgc;
+} else {
+    $dfcursorcolor = $mootyper->cursorcolor;
+}
+$cursorcolorpo = optional_param('cursorcolor', $dfcursorcolor, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if current MooTyper textbgc is empty.
+if ($mootyper->textbgc == null || is_null($mootyper->textbgc)) {
+    // Current MooTyper textbgc is empty so set it to the sites textbgc default.
+    $dftextbgc = $moocfg->textbgc;
+} else {
+    $dftextbgc = $mootyper->textbgc;
+}
+$textbgcpo = optional_param('textbgc', $dftextbgc, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if current MooTyper text error color is empty.
+if ($mootyper->texterrorcolor == null || is_null($mootyper->texterrorcolor)) {
+    // Current MooTyper texterrorcolor is empty so set it to the sites texterrorcolor default.
+    $dftexterrorcolor = $moocfg->texterrorcolor;
+} else {
+    $dftexterrorcolor = $mootyper->texterrorcolor;
+}
+$texterrorcolorpo = optional_param('texterrorcolor', $dftexterrorcolor, PARAM_CLEAN); // Display with default or current setting.
+
+// Check to see if Confirm button is clicked and returning 'Confirm' to trigger insert record.
+$param1 = optional_param('button', '', PARAM_TEXT);
 if (isset($param1) && get_string('fconfirm', 'mootyper') == $param1) {
     $modepo = optional_param('mode', null, PARAM_INT);
     $lessonpo = optional_param('lesson', null, PARAM_INT);
-
     $goalpo = optional_param('requiredgoal', $moocfg->defaultprecision, PARAM_INT);
     if ($goalpo == 0) {
         $goalpo = $moocfg->defaultprecision;
     }
-    $layoutpo = optional_param('layout', 0, PARAM_INT);
-
-    $showkeyboardpo = optional_param('showkeyboard', null, PARAM_CLEAN);
+    $textalignpo = optional_param('textalign', $dftextalign, PARAM_INT); // Display with default or current setting.
     $continuoustypepo = optional_param('continuoustype', null, PARAM_CLEAN);
+    $countmistypedspacespo = optional_param('countmistypedspaces', null, PARAM_CLEAN);
+    $countmistakespo = optional_param('countmistakes', null, PARAM_CLEAN);
+    $showkeyboardpo = optional_param('showkeyboard', null, PARAM_CLEAN);
+    $layoutpo = optional_param('layout', 0, PARAM_INT);
+    $statscolorpo = optional_param('statsbgc', $dfstatscolor, PARAM_CLEAN);
+    $keytopcolorpo = optional_param('keytopbgc', $dfkeytopcolor, PARAM_CLEAN);
+    $backgroundcolorpo = optional_param('keybdbgc', $dfbackgroundcolor, PARAM_CLEAN);
+
+    $cursorcolorpo = optional_param('cursorcolor', $dfcursorcolor, PARAM_CLEAN);
+    $textbgcpo = optional_param('textbgc', $dftextbgc, PARAM_CLEAN);
+    $texterrorcolorpo = optional_param('texterrorcolor', $dftexterrorcolor, PARAM_CLEAN);
+
     global $DB, $CFG;
+    // Update all the settings for this MooTyper instance when Confirm is clicked.
     $mootyper  = $DB->get_record('mootyper', array('id' => $n), '*', MUST_EXIST);
     $mootyper->lesson = $lessonpo;
-    $mootyper->showkeyboard = $showkeyboardpo == 'on';
-    $mootyper->continuoustype = $continuoustypepo == 'on';
-    $mootyper->layout = $layoutpo;
     $mootyper->isexam = $modepo;
-    $mootyper->requiredgoal = $goalpo;
     if ($modepo == 1) {
         $exercisepo = optional_param('exercise', null, PARAM_INT);
         $mootyper->exercise = $exercisepo;
     }
+    $mootyper->requiredgoal = $goalpo;
+    $mootyper->textalign = $textalignpo;
+    $mootyper->continuoustype = $continuoustypepo == 'on';
+    $mootyper->countmistypedspaces = $countmistypedspacespo == 'on';
+    $mootyper->countmistakes = $countmistakespo == 'on';
+    $mootyper->showkeyboard = $showkeyboardpo == 'on';
+    $mootyper->layout = $layoutpo;
+    $mootyper->statsbgc = $statscolorpo;
+    $mootyper->keytopbgc = $keytopcolorpo;
+    $mootyper->keybdbgc = $backgroundcolorpo;
+    $mootyper->cursorcolor = $cursorcolorpo;
+    $mootyper->textbgc = $textbgcpo;
+    $mootyper->texterrorcolor = $texterrorcolorpo;
+
+
     $DB->update_record('mootyper', $mootyper);
     header('Location: '.$CFG->wwwroot.'/mod/mootyper/view.php?n='.$n);
 }
@@ -135,7 +281,8 @@ if (has_capability('mod/mootyper:aftersetup', context_module::instance($cm->id))
     $lessons = get_mootyperlessons($USER->id, $course->id);
 }
 
-if ($modepo == 0 || is_null($modepo)) {
+// Start building htmlout for this page based on exam or lesson exercise.
+if ($modepo == 0 || is_null($modepo)) { // Since mode is 0, this is a lesson?
     $htmlout .= '<option selected="true" value="0">'.
             get_string('sflesson', 'mootyper').'</option><option value="1">'.
             get_string('isexamtext', 'mootyper').'</option>';
@@ -150,8 +297,8 @@ if ($modepo == 0 || is_null($modepo)) {
         }
     }
     $htmlout .= '</select></td></tr><tr><td>'.get_string('requiredgoal', 'mootyper').'</td>
-                 <td><input value="'.$goalpo.'" style="width: 20px;" type="text" name="requiredgoal"> % </td></tr>';
-} else if ($modepo == 1) {
+                 <td><input value="'.$goalpo.'" style="width: 35px;" type="text" name="requiredgoal"> % </td></tr>';
+} else if ($modepo == 1) { // Or, since mode is 1, this is an exam?
     $htmlout .= '<option value="0">'.
             get_string('sflesson', 'mootyper').'</option><option value="1" selected="true">'.
             get_string('isexamtext', 'mootyper').'</option>';
@@ -178,33 +325,111 @@ if ($modepo == 0 || is_null($modepo)) {
     $htmlout .= '</select></td></tr>';
 }
 
-$htmlout .= '<tr><td>'.get_string('showkeyboard', 'mootyper').'</td><td>';
-$showkeyboardchecked = $showkeyboardpo == 'on' ? ' checked="checked"' : '';
-$htmlout .= '<input type="checkbox"'.$showkeyboardchecked.' onchange="this.form.submit()" name="showkeyboard">';
-$htmlout .= '<tr><td>'.get_string('continuoustype', 'mootyper').'</td><td>';
-$continuoustypechecked = $continuoustypepo == 'on' ? ' checked="checked"' : '';
-$htmlout .= '<input type="checkbox"'.$continuoustypechecked.' onchange="this.form.submit()" name="continuoustype">';
-$layouts = get_keyboard_layouts_db();
+// Add a selector for text alignment.
+$aligns = array(get_string('defaulttextalign_left', 'mod_mootyper'),
+              get_string('defaulttextalign_center', 'mod_mootyper'),
+              get_string('defaulttextalign_right', 'mod_mootyper'));
+$defaulttextalign = $moocfg->defaulttextalign;
 
-$deflayout = $moocfg->defaultlayout;
-$htmlout .= '<tr><td>'.get_string('layout', 'mootyper').'</td><td><select name="layout">';
-
-foreach ($layouts as $lkey => $lval) {
-    if ((count($_POST) > 1) && ($lkey == $deflayout)) {
-        $htmlout .= '<option value="'.$lkey.'" selected="true">'.$lval.'</option>';
-    } else if ($lkey == $layoutpo) {
-        $htmlout .= '<option value="'.$lkey.'" selected="true">'.$lval.'</option>';
+$htmlout .= '<tr><td>'.get_string('defaulttextalign', 'mootyper').'</td><td><select name="textalign">';
+// Get the ID and name of each alignment in the DB.
+foreach ($aligns as $akey => $aval) {
+    // The first if is executed ONLY when, Text alignment, is
+    // clicked to change alignment.
+    if ($akey == $defaulttextalign) {
+        $htmlout .= '<option value="'.$akey.'" selected="true">'.$aval.'</option>';
+    } else if ($akey == $textalignpo) {
+        // This part of the if is reached when going to setup with an
+        // alignment already selected and it is the one already in use.
+        $htmlout .= '<option value="'.$akey.'" selected="true">'.$aval.'</option>';
     } else {
-        $htmlout .= '<option value="'.$lkey.'">'.$lval.'</option>';
+        // This part of the if is reached the most and its when an alignment
+        // is already selected but it is not the one being selected.
+        $htmlout .= '<option value="'.$akey.'">'.$aval.'</option>';
     }
 }
 $htmlout .= '</select>';
 
-$htmlout .= '</td></tr>';
+// Need to keep the next line as it is helping get rid of _POST in line 267.
+$tempchkkb = optional_param('showkeyboard', 0, PARAM_BOOL);
 
+// Add the check box to enable continuous typing.
+$htmlout .= '<tr><td>'.get_string('continuoustype', 'mootyper').'</td><td>';
+$continuoustypechecked = $continuoustypepo == 'on' ? ' checked="checked"' : '';
+$htmlout .= '<input type="checkbox"'.$continuoustypechecked.' " name="continuoustype">';
+
+// Add the check box to enable counting mistyped spaces.
+$htmlout .= '<tr><td>'.get_string('countmistypedspaces', 'mootyper').'</td><td>';
+$countmistypedspaceschecked = $countmistypedspacespo == 'on' ? ' checked="checked"' : '';
+$htmlout .= '<input type="checkbox"'.$countmistypedspaceschecked.' " name="countmistypedspaces">';
+
+// Add the check box to enable counting multiple keystrokes for one error.
+$htmlout .= '<tr><td>'.get_string('countmistakes', 'mootyper').'</td><td>';
+$countmistakeschecked = $countmistakespo == 'on' ? ' checked="checked"' : '';
+$htmlout .= '<input type="checkbox"'.$countmistakeschecked.' " name="countmistakes">';
+
+
+
+// Add the check box for show keyboard.
+$htmlout .= '<tr><td>'.get_string('showkeyboard', 'mootyper').'</td><td>';
+$showkeyboardchecked = $showkeyboardpo == 'on' ? ' checked="checked"' : '';
+$htmlout .= '<input type="checkbox"'.$showkeyboardchecked.' " name="showkeyboard">';
+
+// Add the dropdown slector for keyboard layouts.
+$layouts = get_keyboard_layouts_db();
+$deflayout = $moocfg->defaultlayout;
+$htmlout .= '<tr><td>'.get_string('layout', 'mootyper').'</td><td><select name="layout">';
+// Get the ID and name of each keyboard layout in the DB.
+foreach ($layouts as $lkey => $lval) {
+    // The first if is executed ONLY when Showkeyboard is
+    // clicked to turn it on or off. It seems to have the
+    // the job of selecting our default layout when turned ON.
+    if (($tempchkkb) && ($lkey == $deflayout)) {
+        $htmlout .= '<option value="'.$lkey.'" selected="true">'.$lval.'</option>';
+    } else if ($lkey == $layoutpo) {
+        // This part of the if is reached when going to setup with a
+        // keyboard layout already selected and it is the one already in use.
+        $htmlout .= '<option value="'.$lkey.'" selected="true">'.$lval.'</option>';
+    } else {
+        // This part of the if is reached the most and its when a keyboard layout
+        // is already selected but it is not the one being checked.
+        $htmlout .= '<option value="'.$lkey.'">'.$lval.'</option>';
+    }
+}
+
+// Add input box for statistics background color.
+$htmlout .= '</td></tr><tr><td>'.get_string('statsbgc', 'mootyper').'</td><td>';
+$htmlout .= '<input value="'.$statscolorpo.'" style="width: 135px;" type="text" name="statsbgc"></td></tr>';
+
+// Add input box for normal keytop color.
+$htmlout .= '</td></tr><tr><td>'.get_string('keytopbgc', 'mootyper').'</td><td>';
+$htmlout .= '<input value="'.$keytopcolorpo.'" style="width: 135px;" type="text" name="keytopbgc"></td></tr>';
+
+// Add input box for keyboard background color.
+$htmlout .= '</td></tr><tr><td>'.get_string('keybdbgc', 'mootyper').'</td><td>';
+$htmlout .= '<input value="'.$backgroundcolorpo.'" style="width: 135px;" type="text" name="keybdbgc"></td></tr>';
+
+// Add input box for cursorcolor.
+$htmlout .= '</td></tr><tr><td>'.get_string('cursorcolor', 'mootyper').'</td><td>';
+$htmlout .= '<input value="'.$cursorcolorpo.'" style="width: 135px;" type="text" name="cursorcolor"></td></tr>';
+
+// Add input box for textbgc.
+$htmlout .= '</td></tr><tr><td>'.get_string('textbgc', 'mootyper').'</td><td>';
+$htmlout .= '<input value="'.$textbgcpo.'" style="width: 135px;" type="text" name="textbgc"></td></tr>';
+
+// Add input box for texterrorcolor.
+$htmlout .= '</td></tr><tr><td>'.get_string('texterrorcolor', 'mootyper').'</td><td>';
+$htmlout .= '<input value="'.$texterrorcolorpo.'" style="width: 135px;" type="text" name="texterrorcolor"></td></tr>';
+
+
+// Finish adding html to our page.
+$htmlout .= '</select>';
+$htmlout .= '</td></tr>';
 $htmlout .= '</table>';
-$htmlout .= '<br><input name="button" value="'.get_string('fconfirm', 'mootyper').'" type="submit">';
+$htmlout .= '<br><input name="button" onclick="this.form.submit();" value="'.get_string('fconfirm', 'mootyper').'" type="submit">';
 $htmlout .= '</form>';
+
+// Finally show the complete page.
 echo $htmlout;
-// Finish the page.
+// Finish the page by adding a footer.
 echo $OUTPUT->footer();

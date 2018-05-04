@@ -9,6 +9,7 @@ class com_wiris_util_xml_WCharacterBase {
 	static $ROOT_NO_TAIL_VERTICAL = 61759;
 	static $ROOT_LEFT_TAIL = 61760;
 	static $ROOT_VERTICAL_LINE = 61761;
+	static $LINE_FEED = 10;
 	static $ROUND_BRACKET_LEFT = 40;
 	static $ROUND_BRACKET_RIGHT = 41;
 	static $COMMA = 44;
@@ -104,6 +105,7 @@ class com_wiris_util_xml_WCharacterBase {
 	static $MATHEMATICAL_DOUBLE_STRUCK_CAPITAL_A = 120120;
 	static $MATHEMATICAL_DOUBLE_STRUCK_SMALL_A = 120146;
 	static $MATHEMATICAL_DOUBLE_STRUCK_DIGIT_ZERO = 120792;
+	static $ALIGNMENT_RELATION_OPERATORS;
 	static function isDigit($c) {
 		if(48 <= $c && $c <= 57) {
 			return true;
@@ -138,7 +140,7 @@ class com_wiris_util_xml_WCharacterBase {
 		$min = 0;
 		$max = $v->length - 1;
 		do {
-			$mid = Math::floor(($min + $max) / 2);
+			$mid = intval(($min + $max) / 2);
 			$cc = $v[$mid];
 			if($c === $cc) {
 				return true;
@@ -162,6 +164,100 @@ class com_wiris_util_xml_WCharacterBase {
 	static $negations;
 	static $mirrorDictionary;
 	static $subSuperScriptDictionary;
+	static $accentsDictionary = null;
+	static function initAccentsDictionary() {
+		if(com_wiris_util_xml_WCharacterBase::$accentsDictionary !== null) {
+			return;
+		}
+		$h = new Hash();
+		$h->set("A", new _hx_array(array(192, 193, 194, 195, 196, 197, 256, 258, 260, 461, 478, 480, 506, 512, 514, 550, 570, 7680, 7840, 7842, 7844, 7846, 7848, 7850, 7852, 7854, 7856, 7858, 7860, 7862, 9398, 11375, 65313)));
+		$h->set("AA", new _hx_array(array(42802)));
+		$h->set("AE", new _hx_array(array(198, 482, 508)));
+		$h->set("AO", new _hx_array(array(42804)));
+		$h->set("AU", new _hx_array(array(42806)));
+		$h->set("AV", new _hx_array(array(42808, 42810)));
+		$h->set("AY", new _hx_array(array(42812)));
+		$h->set("B", new _hx_array(array(385, 386, 579, 7682, 7684, 7686, 9399, 65314)));
+		$h->set("C", new _hx_array(array(199, 262, 264, 266, 268, 391, 571, 7688, 9400, 42814, 65315)));
+		$h->set("D", new _hx_array(array(208, 270, 272, 393, 394, 395, 7690, 7692, 7694, 7696, 7698, 9401, 42873, 65316)));
+		$h->set("DZ", new _hx_array(array(452, 497)));
+		$h->set("Dz", new _hx_array(array(453, 498)));
+		$h->set("E", new _hx_array(array(200, 201, 202, 203, 274, 276, 278, 280, 282, 398, 400, 516, 518, 552, 7700, 7702, 7704, 7706, 7708, 7864, 7866, 7868, 7870, 7872, 7874, 7876, 7878, 9402, 65317)));
+		$h->set("F", new _hx_array(array(401, 7710, 9403, 42875, 65318)));
+		$h->set("G", new _hx_array(array(284, 286, 288, 290, 403, 484, 486, 500, 7712, 9404, 42877, 42878, 42912, 65319)));
+		$h->set("H", new _hx_array(array(292, 294, 542, 7714, 7716, 7718, 7720, 7722, 9405, 11367, 11381, 42893, 65320)));
+		$h->set("I", new _hx_array(array(204, 205, 206, 207, 296, 298, 300, 302, 304, 407, 463, 520, 522, 7724, 7726, 7880, 7882, 9406, 65321)));
+		$h->set("J", new _hx_array(array(308, 584, 9407, 65322)));
+		$h->set("K", new _hx_array(array(310, 408, 488, 7728, 7730, 7732, 9408, 11369, 42816, 42818, 42820, 42914, 65323)));
+		$h->set("L", new _hx_array(array(313, 315, 317, 319, 321, 573, 7734, 7736, 7738, 7740, 9409, 11360, 11362, 42822, 42824, 42880, 65324)));
+		$h->set("LJ", new _hx_array(array(455)));
+		$h->set("Lj", new _hx_array(array(456)));
+		$h->set("M", new _hx_array(array(412, 7742, 7744, 7746, 9410, 11374, 65325)));
+		$h->set("N", new _hx_array(array(209, 323, 325, 327, 413, 504, 544, 7748, 7750, 7752, 7754, 9411, 42896, 42916, 65326)));
+		$h->set("NJ", new _hx_array(array(458)));
+		$h->set("Nj", new _hx_array(array(459)));
+		$h->set("O", new _hx_array(array(210, 211, 212, 213, 214, 216, 332, 334, 336, 390, 415, 416, 465, 490, 492, 510, 524, 526, 554, 556, 558, 560, 7756, 7758, 7760, 7762, 7884, 7886, 7888, 7890, 7892, 7894, 7896, 7898, 7900, 7902, 7904, 7906, 9412, 42826, 42828, 65327)));
+		$h->set("OI", new _hx_array(array(418)));
+		$h->set("OO", new _hx_array(array(42830)));
+		$h->set("OU", new _hx_array(array(546)));
+		$h->set("OE", new _hx_array(array(140, 338)));
+		$h->set("oe", new _hx_array(array(156, 339)));
+		$h->set("P", new _hx_array(array(420, 7764, 7766, 9413, 11363, 42832, 42834, 42836, 65328)));
+		$h->set("Q", new _hx_array(array(586, 9414, 42838, 42840, 65329)));
+		$h->set("R", new _hx_array(array(340, 342, 344, 528, 530, 588, 7768, 7770, 7772, 7774, 9415, 11364, 42842, 42882, 42918, 65330)));
+		$h->set("S", new _hx_array(array(346, 348, 350, 352, 536, 7776, 7778, 7780, 7782, 7784, 7838, 9416, 11390, 42884, 42920, 65331)));
+		$h->set("T", new _hx_array(array(354, 356, 358, 428, 430, 538, 574, 7786, 7788, 7790, 7792, 9417, 42886, 65332)));
+		$h->set("TZ", new _hx_array(array(42792)));
+		$h->set("U", new _hx_array(array(217, 218, 219, 220, 360, 362, 364, 366, 368, 370, 431, 467, 469, 471, 473, 475, 532, 534, 580, 7794, 7796, 7798, 7800, 7802, 7908, 7910, 7912, 7914, 7916, 7918, 7920, 9418, 65333)));
+		$h->set("V", new _hx_array(array(434, 581, 7804, 7806, 9419, 42846, 65334)));
+		$h->set("VY", new _hx_array(array(42848)));
+		$h->set("W", new _hx_array(array(372, 7808, 7810, 7812, 7814, 7816, 9420, 11378, 65335)));
+		$h->set("X", new _hx_array(array(7818, 7820, 9421, 65336)));
+		$h->set("Y", new _hx_array(array(221, 374, 376, 435, 562, 590, 7822, 7922, 7924, 7926, 7928, 7934, 9422, 65337)));
+		$h->set("Z", new _hx_array(array(377, 379, 381, 437, 548, 7824, 7826, 7828, 9423, 11371, 11391, 42850, 65338)));
+		$h->set("a", new _hx_array(array(224, 225, 226, 227, 228, 229, 257, 259, 261, 462, 479, 481, 507, 513, 515, 551, 592, 7681, 7834, 7841, 7843, 7845, 7847, 7849, 7851, 7853, 7855, 7857, 7859, 7861, 7863, 9424, 11365, 65345)));
+		$h->set("aa", new _hx_array(array(42803)));
+		$h->set("ae", new _hx_array(array(230, 483, 509)));
+		$h->set("ao", new _hx_array(array(42805)));
+		$h->set("au", new _hx_array(array(42807)));
+		$h->set("av", new _hx_array(array(42809, 42811)));
+		$h->set("ay", new _hx_array(array(42813)));
+		$h->set("b", new _hx_array(array(384, 387, 595, 7683, 7685, 7687, 9425, 65346)));
+		$h->set("c", new _hx_array(array(231, 263, 265, 267, 269, 392, 572, 7689, 8580, 9426, 42815, 65347)));
+		$h->set("d", new _hx_array(array(271, 273, 396, 598, 599, 7691, 7693, 7695, 7697, 7699, 9427, 42874, 65348)));
+		$h->set("dz", new _hx_array(array(454, 499)));
+		$h->set("e", new _hx_array(array(232, 233, 234, 235, 275, 277, 279, 281, 283, 477, 517, 519, 553, 583, 603, 7701, 7703, 7705, 7707, 7709, 7865, 7867, 7869, 7871, 7873, 7875, 7877, 7879, 9428, 65349)));
+		$h->set("f", new _hx_array(array(402, 7711, 9429, 42876, 65350)));
+		$h->set("g", new _hx_array(array(285, 287, 289, 291, 485, 487, 501, 608, 7545, 7713, 9430, 42879, 42913, 65351)));
+		$h->set("h", new _hx_array(array(293, 295, 543, 613, 7715, 7717, 7719, 7721, 7723, 7830, 9431, 11368, 11382, 65352)));
+		$h->set("hv", new _hx_array(array(405)));
+		$h->set("i", new _hx_array(array(236, 237, 238, 239, 297, 299, 301, 303, 305, 464, 521, 523, 616, 7725, 7727, 7881, 7883, 9432, 65353)));
+		$h->set("j", new _hx_array(array(309, 496, 585, 9433, 65354)));
+		$h->set("k", new _hx_array(array(311, 409, 489, 7729, 7731, 7733, 9434, 11370, 42817, 42819, 42821, 42915, 65355)));
+		$h->set("l", new _hx_array(array(314, 316, 318, 320, 322, 383, 410, 619, 7735, 7737, 7739, 7741, 9435, 11361, 42823, 42825, 42881, 65356)));
+		$h->set("lj", new _hx_array(array(457)));
+		$h->set("m", new _hx_array(array(623, 625, 7743, 7745, 7747, 9436, 65357)));
+		$h->set("n", new _hx_array(array(241, 324, 326, 328, 329, 414, 505, 626, 7749, 7751, 7753, 7755, 9437, 42897, 42917, 65358)));
+		$h->set("nj", new _hx_array(array(460)));
+		$h->set("o", new _hx_array(array(242, 243, 244, 245, 246, 248, 333, 335, 337, 417, 466, 491, 493, 511, 525, 527, 555, 557, 559, 561, 596, 629, 7757, 7759, 7761, 7763, 7885, 7887, 7889, 7891, 7893, 7895, 7897, 7899, 7901, 7903, 7905, 7907, 9438, 42827, 42829, 65359)));
+		$h->set("oi", new _hx_array(array(419)));
+		$h->set("ou", new _hx_array(array(547)));
+		$h->set("oo", new _hx_array(array(42831)));
+		$h->set("p", new _hx_array(array(421, 7549, 7765, 7767, 9439, 42833, 42835, 42837, 65360)));
+		$h->set("q", new _hx_array(array(587, 9440, 42839, 42841, 65361)));
+		$h->set("r", new _hx_array(array(341, 343, 345, 529, 531, 589, 637, 7769, 7771, 7773, 7775, 9441, 42843, 42883, 42919, 65362)));
+		$h->set("s", new _hx_array(array(223, 347, 349, 351, 353, 537, 575, 7777, 7779, 7781, 7783, 7785, 7835, 9442, 42885, 42921, 65363)));
+		$h->set("t", new _hx_array(array(355, 357, 359, 429, 539, 648, 7787, 7789, 7791, 7793, 7831, 9443, 11366, 42887, 65364)));
+		$h->set("tz", new _hx_array(array(42793)));
+		$h->set("u", new _hx_array(array(249, 250, 251, 252, 361, 363, 365, 367, 369, 371, 432, 468, 470, 472, 474, 476, 533, 535, 649, 7795, 7797, 7799, 7801, 7803, 7909, 7911, 7913, 7915, 7917, 7919, 7921, 9444, 65365)));
+		$h->set("v", new _hx_array(array(651, 652, 7805, 7807, 9445, 42847, 65366)));
+		$h->set("vy", new _hx_array(array(42849)));
+		$h->set("w", new _hx_array(array(373, 7809, 7811, 7813, 7815, 7817, 7832, 9446, 11379, 65367)));
+		$h->set("x", new _hx_array(array(7819, 7821, 9447, 65368)));
+		$h->set("y", new _hx_array(array(253, 255, 375, 436, 563, 591, 7823, 7833, 7923, 7925, 7927, 7929, 7935, 9448, 65369)));
+		$h->set("z", new _hx_array(array(378, 380, 382, 438, 549, 576, 7825, 7827, 7829, 9449, 11372, 42851, 65370)));
+		com_wiris_util_xml_WCharacterBase::$accentsDictionary = $h;
+	}
 	static $horizontalLTRStretchyChars;
 	static $tallAccents;
 	static $PUNCTUATION_CATEGORY = "P";
@@ -733,8 +829,26 @@ class com_wiris_util_xml_WCharacterBase {
 			}
 		}
 	}
+	static function stripAccent($c) {
+		com_wiris_util_xml_WCharacterBase::initAccentsDictionary();
+		if($c >= 128) {
+			$i = com_wiris_util_xml_WCharacterBase::$accentsDictionary->keys();
+			while($i->hasNext()) {
+				$s = $i->next();
+				$chars = com_wiris_util_xml_WCharacterBase::$accentsDictionary->get($s);
+				if(com_wiris_util_xml_WCharacterBase::binarySearch($chars, $c)) {
+					return $s;
+				}
+				unset($s,$chars);
+			}
+			return com_wiris_util_xml_WCharacterBase_3($c, $i);
+		} else {
+			return com_wiris_util_xml_WCharacterBase_4($c);
+		}
+	}
 	function __toString() { return 'com.wiris.util.xml.WCharacterBase'; }
 }
+com_wiris_util_xml_WCharacterBase::$ALIGNMENT_RELATION_OPERATORS = new _hx_array(array(61, 8801, 8764, 8776, 8771, 8773, 8800, 8802, 8769, 62, 60, 8805, 8804, 10878, 10877, 10887, 10888, 8810, 8811, 8733, 8826, 8827, 8882, 8883));
 com_wiris_util_xml_WCharacterBase::$binaryOps = new _hx_array(array(43, 45, 47, 177, 183, 215, 247, 8226, 8722, 8723, 8724, 8726, 8727, 8728, 8743, 8744, 8745, 8746, 8760, 8768, 8846, 8851, 8852, 8853, 8854, 8855, 8856, 8857, 8858, 8859, 8861, 8862, 8863, 8864, 8865, 8890, 8891, 8900, 8901, 8902, 8903, 8905, 8906, 8907, 8908, 8910, 8911, 8914, 8915, 8966, 9021, 9675, 10678, 10789, 10794, 10797, 10798, 10799, 10804, 10805, 10812, 10815, 10835, 10836, 10837, 10838, 10846, 10847, 10851));
 com_wiris_util_xml_WCharacterBase::$relations = new _hx_array(array(60, 61, 62, 8592, 8593, 8594, 8595, 8596, 8597, 8598, 8599, 8600, 8601, 8602, 8603, 8604, 8605, 8606, 8608, 8610, 8611, 8614, 8617, 8618, 8619, 8620, 8621, 8622, 8624, 8625, 8627, 8630, 8631, 8636, 8637, 8638, 8639, 8640, 8641, 8642, 8643, 8644, 8645, 8646, 8647, 8648, 8649, 8650, 8651, 8652, 8653, 8654, 8655, 8656, 8657, 8658, 8659, 8660, 8661, 8666, 8667, 8669, 8693, 8712, 8713, 8715, 8716, 8733, 8739, 8740, 8741, 8742, 8764, 8765, 8769, 8770, 8771, 8772, 8773, 8774, 8775, 8776, 8777, 8778, 8779, 8781, 8782, 8783, 8784, 8785, 8786, 8787, 8788, 8789, 8790, 8791, 8793, 8794, 8795, 8796, 8799, 8800, 8801, 8802, 8804, 8805, 8806, 8807, 8808, 8809, 8810, 8811, 8812, 8814, 8815, 8816, 8817, 8818, 8819, 8820, 8821, 8822, 8823, 8824, 8825, 8826, 8827, 8828, 8829, 8830, 8831, 8832, 8833, 8834, 8835, 8836, 8837, 8838, 8839, 8840, 8841, 8842, 8843, 8847, 8848, 8849, 8850, 8866, 8867, 8869, 8871, 8872, 8873, 8874, 8875, 8876, 8877, 8878, 8879, 8882, 8883, 8884, 8885, 8886, 8887, 8888, 8904, 8909, 8912, 8913, 8918, 8919, 8920, 8921, 8922, 8923, 8926, 8927, 8930, 8931, 8934, 8935, 8936, 8937, 8938, 8939, 8940, 8941, 8994, 8995, 9123, 10229, 10230, 10231, 10232, 10233, 10234, 10236, 10239, 10501, 10514, 10515, 10531, 10532, 10533, 10534, 10535, 10536, 10537, 10538, 10547, 10550, 10551, 10560, 10561, 10562, 10564, 10567, 10574, 10575, 10576, 10577, 10578, 10579, 10580, 10581, 10582, 10583, 10584, 10585, 10586, 10587, 10588, 10589, 10590, 10591, 10592, 10593, 10606, 10607, 10608, 10620, 10621, 10869, 10877, 10878, 10885, 10886, 10887, 10888, 10889, 10890, 10891, 10892, 10901, 10902, 10909, 10910, 10913, 10914, 10927, 10928, 10933, 10934, 10935, 10936, 10937, 10938, 10949, 10950, 10955, 10956, 10987, 11005));
 com_wiris_util_xml_WCharacterBase::$largeOps = new _hx_array(array(8719, 8720, 8721, 8896, 8897, 8898, 8899, 10756, 10757, 10758, 10759, 10760));
@@ -765,6 +879,20 @@ function com_wiris_util_xml_WCharacterBase_1(&$actualValue, &$actual_range, &$i,
 	}
 }
 function com_wiris_util_xml_WCharacterBase_2(&$c, &$i, &$j, &$mirroredStr, &$str) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($c);
+		return $s->toString();
+	}
+}
+function com_wiris_util_xml_WCharacterBase_3(&$c, &$i) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($c);
+		return $s->toString();
+	}
+}
+function com_wiris_util_xml_WCharacterBase_4(&$c) {
 	{
 		$s = new haxe_Utf8(null);
 		$s->addChar($c);

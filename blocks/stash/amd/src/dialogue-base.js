@@ -25,8 +25,7 @@ define([
     'jquery',
     'core/yui',
     'core/str',
-    'core/templates',
-], function($, Y, Str, Templates) {
+], function($, Y, Str) {
 
     /**
      * Constructor.
@@ -101,6 +100,10 @@ define([
 
         // Return the promise.
         return deferred.promise();
+    };
+
+    DialogueBase.prototype.close = function() {
+        this._dialogue.destroy();
     };
 
     /**

@@ -1160,8 +1160,9 @@ class global_navigation extends navigation_node {
         //Ballistic Edits
         $this->rootnodes['mycourses']->classes = array("my-courses-tree");
         $this->rootnodes['mycourses']->forceopen = true;
+	$this->load_courses_enrolled();
         
-        foreach ($this->rootnodes['mycourses']->children as $child){
+        foreach ($this->rootnodes['mycourses']->children as $child) {
             $child->classes = array("my-course-child");
         }
 

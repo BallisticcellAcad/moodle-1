@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(dirname(__FILE__) . '/calendar_helpers.php');
+
 /**
  * Main class with all Attendance related info.
  *
@@ -49,6 +51,15 @@ class mod_attendance_structure {
 
     /** @var float number (10, 5) unsigned, the maximum grade for attendance */
     public $grade;
+
+    /** @var int when was this module last modified */
+    public $timemodified;
+
+    /** @var string required field for activity modules and searching */
+    public $intro;
+
+    /** @var int format of the intro (see above) */
+    public $introformat;
 
     /** current page parameters */
     public $pageparams;
@@ -349,6 +360,9 @@ class mod_attendance_structure {
                 $sess->description);
             $DB->set_field('attendance_sessions', 'description', $description, array('id' => $sess->id));
 
+            $sess->caleventid = 0;
+            attendance_create_calendar_event($sess);
+
             $infoarray = array();
             $infoarray[] = construct_session_full_date_time($sess->sessdate, $sess->duration);
 
@@ -389,6 +403,8 @@ class mod_attendance_structure {
 
         $sess->timemodified = time();
         $DB->update_record('attendance_sessions', $sess);
+
+        attendance_update_calendar_event($sess->caleventid, $sess->duration, $sess->sessdate);
 
         $info = construct_session_full_date_time($sess->sessdate, $sess->duration);
         $event = \mod_attendance\event\session_updated::create(array(
@@ -549,15 +565,20 @@ class mod_attendance_structure {
         // Fields we need from the user table.
         $userfields = user_picture::fields('u', array('username' , 'idnumber' , 'institution' , 'department'));
 
-        if (isset($this->pageparams->sort) and ($this->pageparams->sort == ATT_SORT_FIRSTNAME)) {
-            $orderby = "u.firstname ASC, u.lastname ASC, u.idnumber ASC, u.institution ASC, u.department ASC";
+        if (empty($this->pageparams->sort)) {
+            $this->pageparams->sort = ATT_SORT_DEFAULT;
+        }
+        if ($this->pageparams->sort == ATT_SORT_FIRSTNAME) {
+            $orderby = $DB->sql_fullname('u.firstname', 'u.lastname') . ', u.id';
+        } else if ($this->pageparams->sort == ATT_SORT_LASTNAME) {
+            $orderby = 'u.lastname, u.firstname, u.id';
         } else {
-            $orderby = "u.lastname ASC, u.firstname ASC, u.idnumber ASC, u.institution ASC, u.department ASC";
+            list($orderby, $sortparams) = users_order_by_sql('u');
         }
 
         if ($page) {
             $usersperpage = $this->pageparams->perpage;
-            if (!empty($CFG->enablegroupmembersonly) and $this->cm->groupmembersonly) {
+            if (!empty($this->cm->groupingid)) {
                 $startusers = ($page - 1) * $usersperpage;
                 if ($groupid == 0) {
                     $groups = array_keys(groups_get_all_groups($this->cm->course, 0, $this->cm->groupingid, 'g.id'));
@@ -574,7 +595,7 @@ class mod_attendance_structure {
                     $orderby, $startusers, $usersperpage);
             }
         } else {
-            if (!empty($CFG->enablegroupmembersonly) and $this->cm->groupmembersonly) {
+            if (!empty($this->cm->groupingid)) {
                 if ($groupid == 0) {
                     $groups = array_keys(groups_get_all_groups($this->cm->course, 0, $this->cm->groupingid, 'g.id'));
                 } else {
@@ -676,10 +697,15 @@ class mod_attendance_structure {
               GROUP BY ue.userid, ue.status";
         $params = array('zerotime' => 0, 'uid' => $userid, 'estatus' => ENROL_INSTANCE_ENABLED, 'courseid' => $this->course->id);
         $enrolments = $DB->get_record_sql($sql, $params);
-
-        $user->enrolmentstatus = $enrolments->status;
-        $user->enrolmentstart = $enrolments->mintime;
-        $user->enrolmentend = $enrolments->maxtime;
+        if (!empty($enrolments)) {
+            $user->enrolmentstatus = $enrolments->status;
+            $user->enrolmentstart = $enrolments->mintime;
+            $user->enrolmentend = $enrolments->maxtime;
+        } else {
+            $user->enrolmentstatus = '';
+            $user->enrolmentstart = 0;
+            $user->enrolmentend = 0;
+        }
 
         return $user;
     }
@@ -874,6 +900,9 @@ class mod_attendance_structure {
 
     public function delete_sessions($sessionsids) {
         global $DB;
+        if (attendance_existing_calendar_events_ids($sessionsids)) {
+            attendance_delete_calendar_events($sessionsids);
+        }
 
         list($sql, $params) = $DB->get_in_or_equal($sessionsids);
         $DB->delete_records_select('attendance_log', "sessionid $sql", $params);
@@ -895,6 +924,9 @@ class mod_attendance_structure {
             $sess->duration = $duration;
             $sess->timemodified = $now;
             $DB->update_record('attendance_sessions', $sess);
+            if ($sess->caleventid) {
+                attendance_update_calendar_event($sess->caleventid, $duration);
+            }
             $event = \mod_attendance\event\session_duration_updated::create(array(
                 'objectid' => $this->id,
                 'context' => $this->context,

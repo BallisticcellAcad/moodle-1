@@ -16,12 +16,12 @@
 //
 
 /**
- * This class implements WIRIS com_wiris_plugin_configuration_ConfigurationUpdater interface
+ * This class implements com_wiris_plugin_configuration_ConfigurationUpdater interface
  * to use a custom Moodle configuration.
  *
  * @package    filter
  * @subpackage wiris
- * @copyright  Maths for More S.L. <info@wiris.com>
+ * @copyright  WIRIS Europe (Maths for more S.L)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -84,6 +84,49 @@ class filter_wiris_configurationupdater implements com_wiris_plugin_configuratio
         $scriptname = array_pop($scriptname);
 
         com_wiris_system_CallWrapper::getInstance()->stop();
+
+        // configuration.ini wrapper
+
+        // Connection properties
+
+        if (get_config('filter_wiris', 'imageservicehost')) {
+            $configuration['wirisimageservicehost'] = get_config('filter_wiris', 'imageservicehost');
+        }
+
+        if (get_config('filter_wiris', 'imageservicepath')) {
+            $configuration['wirisimageservicepath'] = get_config('filter_wiris', 'imageservicepath');
+        }
+
+        if (get_config('filter_wiris', 'imageserviceprotocol')) {
+            $configuration['wirisimageserviceprotocol'] = get_config('filter_wiris', 'imageserviceprotocol');
+        }
+
+        // Image properties.
+
+        if (get_config('filter_wiris', 'imageformat')) {
+            $configuration['wirisimageformat'] = get_config('filter_wiris', 'imageformat');
+        }
+
+        if (!get_config('filter_wiris', 'pluginperformance')) {
+            $configuration['wirispluginperformance'] = 'false';
+        }
+
+        // Window Properties
+
+        if (!get_config('filter_wiris', 'editormodalwindow')) {
+            $configuration['wiriseditormodalwindow'] = 'false';
+        }
+
+        if (get_config('filter_wiris', 'editormodalwindowfullscreen')) {
+            $configuration['wiriseditormodalwindowfullscreen'] = 'true';
+        }
+
+        // Enabling access provider if has been setted on MathType filter settings.
+
+        if (get_config('filter_wiris', 'access_provider_enabled')) {
+            $configuration['wirisaccessproviderenabled'] = 'true';
+        }
+
         if ($scriptname == 'showimage.php') { // Minimal conf showing images.
             if (optional_param('refererquery', null, PARAM_RAW) != null) {
                 $refererquery = implode('&', explode('/', optional_param('refererquery', null, PARAM_RAW)));
@@ -97,32 +140,34 @@ class filter_wiris_configurationupdater implements com_wiris_plugin_configuratio
         if ($this->get_latex_status()) {
             $configuration['wiriseditorparselatex'] = false;
         }
-        // WIRIS editor.
+        // MathType.
         $filterenabled = filter_is_enabled('filter/wiris');
         $this->waseditorenabled = $this->eval_parameter($configuration['wiriseditorenabled']);
-        if (isset($CFG->filter_wiris_editor_enable)) {
+        if (get_config('filter_wiris', 'editor_enable')) {
+            // We need to convert all boolean values to text because $configuration object expects as values
+            // the same objects as configuration.ini (i.e strings). This is mandatory due to cross-technology.
             $wiriseditorenabled = ($this->waseditorenabled &&
-                                   $this->eval_parameter($CFG->filter_wiris_editor_enable) &&
-                                   $filterenabled);
+                                   $this->eval_parameter(get_config('filter_wiris', 'editor_enable')) &&
+                                   $filterenabled) ? "true" : "false";
             $configuration['wiriseditorenabled'] = $wiriseditorenabled;
         } else {
-            $configuration['wiriseditorenabled'] = false;
+            $configuration['wiriseditorenabled'] = "false";
         }
-        // WIRIS cas.
+        // Cas.
         $this->wascasenabled = $this->eval_parameter($configuration['wiriscasenabled']);
         if (isset($CFG->filter_wiris_cas_enable)) {
-            $wiriscasenabled = ($this->wascasenabled && $this->eval_parameter($CFG->filter_wiris_cas_enable) && $filterenabled);
+            $wiriscasenabled = ($this->wascasenabled && $this->eval_parameter($CFG->filter_wiris_cas_enable) && $filterenabled) ? "true" : "false";
             $configuration['wiriscasenabled'] = $wiriscasenabled;
         } else {
             $configuration['wiriscasenabled'] = false;
         }
 
-        // WIRIS Chem editor.
+        // ChemType.
         $this->waschemeditorenabled = $this->eval_parameter($configuration['wirischemeditorenabled']);
-        if (isset($CFG->filter_wiris_chem_editor_enable)) {
+        if (get_config('filter_wiris', 'chem_editor_enable')) {
             $wirischemeditorenabled = $this->waschemeditorenabled &&
-                                      $this->eval_parameter($CFG->filter_wiris_chem_editor_enable) &&
-                                      $filterenabled;
+                                      $this->eval_parameter(get_config('filter_wiris', 'chem_editor_enable')) &&
+                                      $filterenabled ? "true" : "false";
             $configuration['wirischemeditorenabled'] = $wirischemeditorenabled;
         } else {
             $configuration['wirischemeditorenabled'] = false;

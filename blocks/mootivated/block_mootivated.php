@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 use block_mootivated\manager;
+use local_mootivated\helper;
 
 /**
  * Block Mootivated class.
@@ -80,7 +81,7 @@ class block_mootivated extends block_base {
         $this->content->text = '';
         $this->content->footer = '';
 
-        $manager = new manager($USER, $PAGE->context);
+        $manager = new manager($USER, $PAGE->context, helper::get_school_resolver());
         $canmanage = $manager->can_manage();
         $canview = $manager->can_view() || $canmanage;
 

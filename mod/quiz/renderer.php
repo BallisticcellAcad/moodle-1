@@ -807,11 +807,11 @@ class mod_quiz_renderer extends plugin_renderer_base {
                     $viewobj->popuprequired, $viewobj->popupoptions);
         }
 
-        if ($viewobj->showbacktocourse) {
+//        if ($viewobj->showbacktocourse) {
             $output .= $this->single_button($viewobj->backtocourseurl,
                     get_string('backtocourse', 'quiz'), 'get',
                     array('class' => 'continuebutton'));
-        }
+//        }
 
         return $output;
     }

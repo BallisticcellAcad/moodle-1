@@ -346,7 +346,7 @@ class assignlerningplan_user_form extends moodleform {
         $mform->disabledIf('g_id', 'g_selection', 'eq', 1);
         $attributes = $DB->get_records_sql_menu('SELECT id, name FROM {groups}', null, $limitfrom = 0, $limitnum = 0);
         $select = $mform->addElement('select', 'g_id', get_string('department', 'block_learning_plan'), $attributes, null, array(null));
-        $attributes = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname)FROM {user} where username!="guest"', array($params = null), $limitfrom = 0, $limitnum = 0);
+        $attributes = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname)FROM {user} where username!="guest" AND suspended <> 1 AND deleted <> 1 ' , array($params = null), $limitfrom = 0, $limitnum = 0);   
         $select = $mform->addElement('select', 'u_id', get_string('users', 'block_learning_plan'), $attributes, null, array('link' => $CFG->wwwroot . '/user/editadvanced.php?id=-1', 'label' => get_string('addusers', 'block_learning_plan'), $attributes1));
         $select->setMultiple(true);
         $mform->addRule('u_id', get_string('select_user', 'block_learning_plan'), 'required', null, 'client');
@@ -371,12 +371,19 @@ class assignlerningplan_user_form extends moodleform {
         $table->align = array('center', 'left', 'left', 'center');
         $table->width = '100%';
         $table->data = array();
-        $sql = "SELECT id, u_id, lp_id, (SELECT concat(firstname,' ', lastname)  FROM {user} WHERE id = u_id) as fullname,
+        $sql = "SELECT concat(u.firstname,' ', u.lastname) as fullname, lu.u_id, lu.lp_id, lp.learning_plan "
+                . "FROM {user} as u , {learning_user_learningplan} as lu , {learning_learningplan} as lp "
+                . "WHERE u.id = lu.u_id AND lu.lp_id = lp.id AND username!='guest' AND suspended <> 1 AND deleted <> 1";
+//AND username!='guest' AND suspended <> 1 AND deleted <> 1
+ /*SELECT id, u_id, lp_id, (SELECT concat(firstname,' ', lastname)  FROM {user} WHERE id = u_id  AND username!='guest' AND suspended <> 1 AND deleted <> 1) as fullname,
                (SELECT learning_plan FROM {learning_learningplan} WHERE id = lp_id) as learning_plan,
                (SELECT concat(firstname,' ', lastname) FROM {user} WHERE id = assignee_id) as assignee
-               FROM {learning_user_learningplan}";
-
-		$inc = 0;
+               FROM {learning_user_learningplan} 
+  
+  */       
+        
+        $inc = 0;
+        
         //$rs = $DB->get_recordset_sql($sql, array(), $page * $perpage, $perpage);
         $rs = $DB->get_recordset_sql($sql, array());
         if ($DB->record_exists_sql($sql, array())) {
@@ -421,9 +428,9 @@ class trainingstatus_form extends moodleform {
         }
         $mform->addElement('selectwithlink', 'l_id', get_string('learningplan', 'block_learning_plan'), $attributes, null, null);
         if (isset($u_id)) {
-            $attributes = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname)FROM {user} where username!="guest" AND id=?', array($u_id), $limitfrom = 0, $limitnum = 0);
+            $attributes = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname) as name FROM {user} where username!="guest"  AND id=?', array($u_id), $limitfrom = 0, $limitnum = 0);
         } else {
-            $attributes = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname)FROM {user} where username!="guest"', array($params = null), $limitfrom = 0, $limitnum = 0);
+            $attributes = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname) as name FROM {user} where username!="guest"', array($params = null), $limitfrom = 0, $limitnum = 0);
         }
         $mform->addElement('selectwithlink', 'u_id', get_string('users', 'block_learning_plan'), $attributes, null, null);
         if (isset($t_id)) {

@@ -22,9 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['addcertpage'] = 'Add another certificate page';
+$string['addcertpage'] = 'Add page';
 $string['addelement'] = 'Add element';
 $string['awardedto'] = 'Awarded to';
+$string['cannotverifyallcertificates'] = 'You do not have the permission to verify all certificates on the site.';
 $string['certificate'] = 'Certificate';
 $string['code'] = 'Code';
 $string['copy'] = 'Copy';
@@ -36,21 +37,27 @@ $string['customcertreport'] = 'Custom certificate report';
 $string['customcert:addinstance'] = 'Add a new custom certificate instance';
 $string['customcert:manage'] = 'Manage a custom certificate';
 $string['customcert:view'] = 'View a custom certificate';
+$string['customcert:viewreport'] = 'View course report';
 $string['customcert:viewallcertificates'] = 'View all certificates';
+$string['customcert:verifyallcertificates'] = 'Verify all certificates on the site';
 $string['customcert:verifycertificate'] = 'Verify a certificate';
-$string['deletecertpage'] = 'Delete certificate page';
+$string['deletecertpage'] = 'Delete page';
 $string['deleteconfirm'] = 'Delete confirmation';
 $string['deleteelement'] = 'Delete element';
 $string['deleteelementconfirm'] = 'Are you sure you want to delete this element?';
+$string['deleteissueconfirm'] = 'Are you sure you want to delete this certificate issue?';
+$string['deleteissuedcertificates'] = 'Delete issued certificates';
 $string['deletepageconfirm'] = 'Are you sure you want to delete this certificate page?';
 $string['deletetemplateconfirm'] = 'Are you sure you want to delete this certificate template?';
 $string['description'] = 'Description';
-$string['editcustomcert'] = 'Edit custom certificate';
+$string['duplicate'] = 'Duplicate';
+$string['duplicateconfirm'] = 'Duplicate confirmation';
+$string['duplicatetemplateconfirm'] = 'Are you sure you want to duplicate this certificate template?';
+$string['editcustomcert'] = 'Edit certificate';
 $string['editelement'] = 'Edit element';
 $string['edittemplate'] = 'Edit template';
 $string['elementname'] = 'Element name';
-$string['elementname_help'] = 'This will be the name used to identify this element when editing a custom certificate. For example, you may have multiple images on a
-page and will want to distinguish between them quickly when editing the certificate. Note: this will not displayed on the PDF.';
+$string['elementname_help'] = 'This will be the name used to identify this element when editing a certificate. Note: this will not displayed on the PDF.';
 $string['elements'] = 'Elements';
 $string['elements_help'] = 'This is the list of elements that will be displayed on the certificate.
 
@@ -60,11 +67,11 @@ $string['elementwidth_help'] = 'Specify the width of the element - \'0\' means t
 $string['emailnonstudentbody'] = 'Attached is the certificate \'{$a->certificatename}\' for \'{$a->userfullname}\' for the course \'{$a->coursefullname}\'.';
 $string['emailnonstudentcertificatelinktext'] = 'View certificate report';
 $string['emailnonstudentgreeting'] = 'Hi';
-$string['emailnonstudentsubject'] = '{$a->coursename}: {$a->certificatename}';
+$string['emailnonstudentsubject'] = '{$a->coursefullname}: {$a->certificatename}';
 $string['emailstudentbody'] = 'Attached is your certificate \'{$a->certificatename}\' for the course \'{$a->coursefullname}\'.';
 $string['emailstudentcertificatelinktext'] = 'View certificate';
 $string['emailstudentgreeting'] = 'Dear {$a}';
-$string['emailstudentsubject'] = '{$a->coursename}: {$a->certificatename}';
+$string['emailstudentsubject'] = '{$a->coursefullname}: {$a->certificatename}';
 $string['emailstudents'] = 'Email students';
 $string['emailstudents_help'] = 'If set this will email the students a copy of the certificate when it becomes available.';
 $string['emailteachers'] = 'Email teachers';
@@ -95,16 +102,17 @@ $string['load'] = 'Load';
 $string['loadtemplate'] = 'Load template';
 $string['loadtemplatemsg'] = 'Are you sure you wish to load this template? This will remove any existing pages and elements for this certificate.';
 $string['managetemplates'] = 'Manage templates';
-$string['managetemplatesdesc'] = 'This link will take you to a new screen where you will be able to manage templates used by customcert activities in courses.';
+$string['managetemplatesdesc'] = 'This link will take you to a new screen where you will be able to manage templates used by Custom certificate activities in courses.';
 $string['modify'] = 'Modify';
 $string['modulename'] = 'Custom certificate';
 $string['modulenameplural'] = 'Custom certificates';
 $string['modulename_help'] = 'This module allows for the dynamic generation of PDF certificates.';
 $string['modulename_link'] = 'Custom_certificate_module';
 $string['mycertificates'] = 'My certificates';
+$string['mycertificatesdescription'] = 'These are the certificates you have been issued by either email or downloading manually.';
 $string['name'] = 'Name';
 $string['nametoolong'] = 'You have exceeded the maximum length allowed for the name';
-$string['nocustomcerts'] = 'There are no custom certificates for this course';
+$string['nocustomcerts'] = 'There are no certificates for this course';
 $string['noimage'] = 'No image';
 $string['notemplates'] = 'No templates';
 $string['notissued'] = 'Not issued';
@@ -150,12 +158,16 @@ $string['topright'] = 'Top right';
 $string['type'] = 'Type';
 $string['uploadimage'] = 'Upload image';
 $string['uploadimagedesc'] = 'This link will take you to a new screen where you will be able to upload images. Images uploaded using
-this method will be available throughout your site to all users who are able to create a custom certificate.';
+this method will be available throughout your site to all users who are able to create a certificate.';
 $string['verified'] = 'Verified';
 $string['verify'] = 'Verify';
+$string['verifyallcertificates'] = 'Allow verification of all certificates';
+$string['verifyallcertificates_desc'] = 'When this setting is enabled any person (including users not logged in) can visit the link \'{$a}\' in order to verify any certificate on the site, rather than having to go to the verification link for each certificate.
+
+Note - this only applies to certificates where \'Allow anyone to verify a certificate\' has been set to \'Yes\' in the certificate settings.';
 $string['verifycertificate'] = 'Verify certificate';
 $string['verifycertificateanyone'] = 'Allow anyone to verify a certificate';
 $string['verifycertificateanyone_help'] = 'This setting enables anyone with the certificate verification link (including users not logged in) to verify a certificate.';
-$string['viewcustomcertissues'] = 'View {$a} issued custom certificates';
+$string['viewcustomcertissues'] = 'View {$a} issued certificates';
 $string['width'] = 'Width';
 $string['width_help'] = 'This is the width of the certificate PDF in mm. For reference an A4 piece of paper is 210mm wide and a letter is 216mm wide.';

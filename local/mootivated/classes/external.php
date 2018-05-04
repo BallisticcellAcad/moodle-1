@@ -30,12 +30,14 @@ require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/gdlib.php');
 require_once($CFG->dirroot . '/cohort/lib.php');
 
+use context_system;
 use context_user;
 use external_api;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
 use moodle_exception;
+use local_mootivated\helper;
 
 /**
  * External API class.
@@ -52,9 +54,59 @@ class external extends external_api {
      *
      * @return external_function_parameters
      */
+    public static function get_setup_parameters() {
+        return new external_function_parameters([]);
+    }
+
+    /**
+     * External function.
+     *
+     * @return array
+     */
+    public static function get_setup() {
+        global $USER;
+
+        $params = self::validate_parameters(self::get_setup_parameters(), []);
+
+        $context = context_system::instance();
+        self::validate_context($context);
+
+        $schoolresolver = helper::get_school_resolver();
+        $inaschool = $schoolresolver->get_by_member($USER->id) !== null;
+
+        $canlogin = helper::can_login($USER);
+        $isvisible = $canlogin && $inaschool;
+
+        return [
+            'can_login' => $canlogin,
+            'can_redeem_store_items' => helper::can_redeem_store_items($USER),
+            'is_visible' => $isvisible,
+            'title' => get_string('motrainsidebartitle', 'local_mootivated')
+        ];
+    }
+
+    /**
+     * External function return definition.
+     *
+     * @return external_single_structure
+     */
+    public static function get_setup_returns() {
+        return new external_single_structure([
+            'can_login' => new external_value(PARAM_BOOL, 'Can login'),
+            'can_redeem_store_items' => new external_value(PARAM_BOOL, 'Can redeem store items'),
+            'is_visible' => new external_value(PARAM_BOOL, 'Is it visible'),
+            'title' => new external_value(PARAM_RAW, 'The title'),
+        ]);
+    }
+
+    /**
+     * External function parameters.
+     *
+     * @return external_function_parameters
+     */
     public static function login_parameters() {
         return new external_function_parameters([
-            'token' => new external_value(PARAM_RAW, 'Token'),
+            'token' => new external_value(PARAM_RAW, 'Token', VALUE_DEFAULT, ''),
             'language_code' => new external_value(PARAM_RAW, 'Language code', VALUE_DEFAULT, '')
         ]);
     }
@@ -78,18 +130,27 @@ class external extends external_api {
         $context = context_user::instance($USER->id);
         self::validate_context($context);
 
-        $school = school::load_from_member($USER->id);
+        $schoolresolver = helper::get_school_resolver();
+        $school = $schoolresolver->get_by_member($USER->id);
         if (!$school) {
             throw new moodle_exception('User does not belong to any school.');
         } else if (!$school->is_setup()) {
             throw new moodle_exception('School not configured.');
+        } else if (!helper::can_login($USER)) {
+            throw new moodle_exception('Login not permitted for user.');
+        }
+
+        // If we didn't get a token, and the user is allowed to login, generate a Mootivated token.
+        // This situation arises when the user attempts to login from the Moodle Mobile app.
+        if (empty($token)) {
+            $token = helper::get_mootivated_token();
         }
 
         $result = $school->login($USER, $token, $langcode);
 
         return [
             'server_ip' => $school->get_host(),
-            'can_redeem_store_items' => has_capability('local/mootivated:redeem_store_items', $context),
+            'can_redeem_store_items' => helper::can_redeem_store_items($USER),
             'result' => $result
         ];
     }
@@ -132,10 +193,6 @@ class external extends external_api {
 
         $context = context_user::instance($USER->id);
         self::validate_context($context);
-
-        if (!has_capability('moodle/user:viewdetails', $context)) {
-            throw new moodle_exception('cannotviewprofile');
-        }
 
         if ($CFG->disableuserimages) {
             throw new moodle_exception('disableuserimages', 'local_mootivated');

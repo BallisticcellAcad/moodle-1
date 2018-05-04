@@ -68,7 +68,7 @@ if (empty($action)) {
 
     // Generate the link to the report if there are issues to display.
     $reportlink = '';
-    if (has_capability('mod/customcert:manage', $context)) {
+    if (has_capability('mod/customcert:viewreport', $context)) {
         // Get the total number of issues.
         $numissues = \mod_customcert\certificate::get_number_of_issues($customcert->id, $cm, $groupmode);
         $href = new moodle_urL('/mod/customcert/report.php', array('id' => $cm->id));
@@ -133,6 +133,11 @@ if (empty($action)) {
     // Set the custom certificate as viewed.
     $completion = new completion_info($course);
     $completion->set_module_viewed($cm);
+
+    // Hack alert - don't initiate the download when running Behat.
+    if (defined('BEHAT_SITE_RUNNING')) {
+        redirect(new moodle_url('/mod/customcert/view.php', array('id' => $cm->id)));
+    }
 
     // Now we want to generate the PDF.
     $template = new \mod_customcert\template($template);

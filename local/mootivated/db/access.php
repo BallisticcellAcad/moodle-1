@@ -27,15 +27,31 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
 
-    // Whether or not the user can add the block.
+    // Whether or not the user can redeem store items.
     'local/mootivated:redeem_store_items' => array(
         'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
             'editingteacher' => CAP_ALLOW,
-            'coursecreator' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
         ),
-    )
+    ),
+
+    // Whether the user can login using the Mootivated app.
+    'local/mootivated:login' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [],
+    ],
+
+    // Whether the user can earn coins.
+    'local/mootivated:earncoins' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'student' => CAP_ALLOW
+        ],
+    ],
+
 );

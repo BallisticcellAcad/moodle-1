@@ -34,6 +34,8 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_configtext('local_mootivated/server_ip',
         get_string('serverip', 'local_mootivated'), get_string('serverip_desc', 'local_mootivated'),
         'school.mootivated.com', PARAM_RAW));
+    $settings->add(new admin_setting_configcheckbox('local_mootivated/usesections',
+        get_string('usesections', 'local_mootivated'), get_string('usesections_desc', 'local_mootivated'), false));
     $ADMIN->add('localplugins', $settings);
 
     // Create the hidden page holding the schools.

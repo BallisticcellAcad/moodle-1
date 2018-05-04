@@ -737,7 +737,7 @@ function mootyper_scale_used_anywhere($scaleid) {
 }
 
 /**
- * Creates or updates grade item for the give mootyper instance
+ * Creates or updates grade item for the given mootyper instance.
  *
  * Needed by grade_update_mod_grades() in lib/gradelib.php
  *
@@ -754,7 +754,7 @@ function mootyper_grade_item_update(stdClass $mootyper) {
     $item['grademax']  = $mootyper->grade;
     $item['grademin']  = 0;
 
-    grade_update('mod/mootyper', $mootyper->course, 'mod', 'mootyper', $mootyper->id, 0, null, $item);
+    // grade_update('mod/mootyper', $mootyper->course, 'mod', 'mootyper', $mootyper->id, 0, null, $item);
 }
 
 /**
@@ -773,6 +773,69 @@ function mootyper_update_grades(stdClass $mootyper, $userid = 0) {
     $grades = array(); // Populate array of grade objects indexed by userid.
 
     grade_update('mod/mootyper', $mootyper->course, 'mod', 'mootyper', $mootyper->id, 0, $grades);
+}
+
+/**
+ * Called by course/reset.php
+ *
+ * @param stdClass $mform
+ */
+function mootyper_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'mootyperheader', get_string('modulenameplural', 'mootyper'));
+    $mform->addElement('checkbox', 'reset_mootyper', get_string('resetmootyperall', 'mootyper'));
+}
+
+/**
+ * This function is used by the reset_course_userdata function in moodlelib.
+ *
+ *
+ * @param stdClass $data
+ * @return array
+ */
+function mootyper_reset_userdata($data) {
+    global $DB;
+
+    $status = array();
+    if (!empty($data->reset_mootyper)) {
+        $instances = $DB->get_records('mootyper', array('course' => $data->courseid));
+        foreach ($instances as $instance) {
+            if (reset_mootyper_instance($instance->id)) {
+                $status[] = array('component' => get_string('modulenameplural', 'mootyper')
+                , 'item' => get_string('resetmootyperall', 'mootyper')
+                .': '.$instance->name, 'error' => false);
+            }
+        }
+    }
+
+    return $status;
+}
+
+/**
+ * Clear all attempts and grades.
+ *
+ * This function will remove all attempts and grades from the specified
+ * mootyper and clean up any related data.
+ * @param int $mootyperid
+ * @return boolean Success/Failure
+ */
+function reset_mootyper_instance($mootyperid) {
+    global $DB;
+    $attempts = $DB->get_records('mootyper_attempts', array('mootyperid' => $mootyperid));
+    foreach ($attempts as $attempt) {
+        if (! $DB->delete_records('mootyper_attempts', array('id' => $mootyperid))) {
+            return false;
+        }
+    }
+
+    if (! $DB->delete_records('mootyper_grades', array('mootyper' => $mootyperid))) {
+        return false;
+    }
+
+    if (! $DB->delete_records('mootyper_attempts', array('mootyperid' => $mootyperid))) {
+        return false;
+    }
+
+    return true;
 }
 
 // File API.

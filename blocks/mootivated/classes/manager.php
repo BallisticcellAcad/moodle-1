@@ -32,6 +32,7 @@ use context;
 use moodle_exception;
 use stdClass;
 use local_mootivated\school;
+use local_mootivated\ischool_resolver;
 
 /**
  * Manager class.
@@ -51,6 +52,8 @@ class manager {
     protected $userid;
     /** @var school The school, if any. */
     protected $school = false;
+    /** @var ischool_resolver The school resolver. */
+    protected $schoolresolver;
     /** @var cache The coins cache. */
     protected $coinscache;
 
@@ -60,9 +63,10 @@ class manager {
      * @param object|int $user The user, or its ID.
      * @param context $context The context we are in, not the block context.
      */
-    public function __construct($userorid, context $context) {
+    public function __construct($userorid, context $context, ischool_resolver $schoolresolver) {
         global $USER;
         $this->context = $context;
+        $this->schoolresolver = $schoolresolver;
 
         $user = null;
         $userid = $userorid;
@@ -124,6 +128,15 @@ class manager {
      * @return void
      */
     public function add_locally_earned_coins($amount) {
+        global $SESSION;
+
+        // Save the amount of coins earned this session.
+        if (!isset($SESSION->block_mootivated_coins)) {
+            $SESSION->block_mootivated_coins = 0;
+        }
+        $SESSION->block_mootivated_coins += $amount;
+
+        // Save the amount of coins earned since last fetch from server.
         $cache = $this->get_coins_cache();
         $fromcache = $cache->get($this->userid);
         if ($fromcache === false) {
@@ -165,6 +178,19 @@ class manager {
         }
 
         return $coins['fromserver'] + $coins['fromlocal'];
+    }
+
+    /**
+     * Get the amount of coins earned in the session.
+     *
+     * @return int
+     */
+    public function get_coins_for_session() {
+        global $SESSION;
+        if (!isset($SESSION->block_mootivated_coins)) {
+            $SESSION->block_mootivated_coins = 0;
+        }
+        return $SESSION->block_mootivated_coins;
     }
 
     /**
@@ -213,7 +239,7 @@ class manager {
      */
     public function get_school() {
         if ($this->school !== null) {
-            $this->school = school::load_from_member($this->userid);
+            $this->school = $this->schoolresolver->get_by_member($this->userid);
         }
         return $this->school;
     }

@@ -271,7 +271,8 @@ class auth_plugin_wordpress extends auth_plugin_base {
                     // TODO update the current user with the latest first name and last name pulled from WordPress?
         
                     if (user_not_fully_set_up($user, false)) {
-                        $urltogo = $CFG->wwwroot.'/user/edit.php?id='.$user->id.'&amp;course='.SITEID;
+//                        $urltogo = $CFG->wwwroot.'/user/edit.php?id='.$user->id.'&amp;course='.SITEID;
+                        $urltogo = $CFG->wwwroot.'/user/profile.php?id='.$user->id;
                         // We don't delete $SESSION->wantsurl yet, so we get there later
         
                     }

@@ -29,7 +29,18 @@ $observers = [
     [
         'eventname' => '\\core\\event\\cohort_deleted',
         'callback' => 'local_mootivated\\observer::cohort_deleted',
-        'internal' => true
+    ],
+    [
+        'eventname' => '\\core\\event\\cohort_member_added',
+        'callback' => 'local_mootivated\\observer::cohort_member_added',
+    ],
+    [
+        'eventname' => '\\core\\event\\cohort_member_removed',
+        'callback' => 'local_mootivated\\observer::cohort_member_removed',
+    ],
+    [
+        'eventname' => '\\core\\event\\user_created',
+        'callback' => 'local_mootivated\\observer::user_created',
     ],
     [
         'eventname' => '*',

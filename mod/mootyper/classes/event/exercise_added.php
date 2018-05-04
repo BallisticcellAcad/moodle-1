@@ -59,7 +59,7 @@ class exercise_added extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' added a mootyper exercise/category while in the course with id
-            '$this->contextinstanceid'";
+            '$this->contextinstanceid'.";
     }
 
     /**

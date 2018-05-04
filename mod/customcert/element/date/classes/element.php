@@ -27,6 +27,11 @@ namespace customcertelement_date;
 defined('MOODLE_INTERNAL') || die();
 
 /**
+ * Date - Course grade date
+ */
+define('CUSTOMCERT_DATE_COURSE_GRADE', '0');
+
+/**
  * Date - Issue
  */
 define('CUSTOMCERT_DATE_ISSUE', '-1');
@@ -35,6 +40,16 @@ define('CUSTOMCERT_DATE_ISSUE', '-1');
  * Date - Completion
  */
 define('CUSTOMCERT_DATE_COMPLETION', '-2');
+
+/**
+ * Date - Course start
+ */
+define('CUSTOMCERT_DATE_COURSE_START', '-3');
+
+/**
+ * Date - Course end
+ */
+define('CUSTOMCERT_DATE_COURSE_END', '-4');
 
 require_once($CFG->dirroot . '/lib/grade/constants.php');
 
@@ -53,11 +68,16 @@ class element extends \mod_customcert\element {
      * @param \mod_customcert\edit_element_form $mform the edit_form instance
      */
     public function render_form_elements($mform) {
+        global $COURSE;
+
         // Get the possible date options.
         $dateoptions = array();
         $dateoptions[CUSTOMCERT_DATE_ISSUE] = get_string('issueddate', 'customcertelement_date');
         $dateoptions[CUSTOMCERT_DATE_COMPLETION] = get_string('completiondate', 'customcertelement_date');
-        $dateoptions = $dateoptions + \customcertelement_grade\element::get_grade_items();
+        $dateoptions[CUSTOMCERT_DATE_COURSE_START] = get_string('coursestartdate', 'customcertelement_date');
+        $dateoptions[CUSTOMCERT_DATE_COURSE_END] = get_string('courseenddate', 'customcertelement_date');
+        $dateoptions[CUSTOMCERT_DATE_COURSE_GRADE] = get_string('coursegradedate', 'customcertelement_date');
+        $dateoptions = $dateoptions + \mod_customcert\element_helper::get_grade_items($COURSE);
 
         $mform->addElement('select', 'dateitem', get_string('dateitem', 'customcertelement_date'), $dateoptions);
         $mform->addHelpButton('dateitem', 'dateitem', 'customcertelement_date');
@@ -97,14 +117,15 @@ class element extends \mod_customcert\element {
         global $DB;
 
         // If there is no element data, we have nothing to display.
-        if (empty($this->element->data)) {
+        $data = $this->get_data();
+        if (empty($data)) {
             return;
         }
 
         $courseid = \mod_customcert\element_helper::get_courseid($this->id);
 
         // Decode the information stored in the database.
-        $dateinfo = json_decode($this->element->data);
+        $dateinfo = json_decode($data);
         $dateitem = $dateinfo->dateitem;
         $dateformat = $dateinfo->dateformat;
 
@@ -113,7 +134,7 @@ class element extends \mod_customcert\element {
             $date = time();
         } else {
             // Get the page.
-            $page = $DB->get_record('customcert_pages', array('id' => $this->element->pageid), '*', MUST_EXIST);
+            $page = $DB->get_record('customcert_pages', array('id' => $this->get_pageid()), '*', MUST_EXIST);
             // Get the customcert this page belongs to.
             $customcert = $DB->get_record('customcert', array('templateid' => $page->templateid), '*', MUST_EXIST);
             // Now we can get the issue for this user.
@@ -123,7 +144,7 @@ class element extends \mod_customcert\element {
             if ($dateitem == CUSTOMCERT_DATE_ISSUE) {
                 $date = $issue->timecreated;
             } else if ($dateitem == CUSTOMCERT_DATE_COMPLETION) {
-                // Get the enrolment end date.
+                // Get the last completion date.
                 $sql = "SELECT MAX(c.timecompleted) as timecompleted
                           FROM {course_completions} c
                          WHERE c.userid = :userid
@@ -133,14 +154,35 @@ class element extends \mod_customcert\element {
                         $date = $timecompleted->timecompleted;
                     }
                 }
+            } else if ($dateitem == CUSTOMCERT_DATE_COURSE_START) {
+                $date = $DB->get_field('course', 'startdate', array('id' => $courseid));
+            } else if ($dateitem == CUSTOMCERT_DATE_COURSE_END) {
+                $date = $DB->get_field('course', 'enddate', array('id' => $courseid));
             } else {
-                $gradeitem = new \stdClass();
-                $gradeitem->gradeitem = $dateitem;
-                $gradeitem->gradeformat = GRADE_DISPLAY_TYPE_PERCENTAGE;
-                if ($modinfo = \customcertelement_grade\element::get_grade($gradeitem, $issue->userid, $courseid)) {
-                    if (!empty($modinfo->dategraded)) {
-                        $date = $modinfo->dategraded;
-                    }
+                if ($dateitem == CUSTOMCERT_DATE_COURSE_GRADE) {
+                    $grade = \mod_customcert\element_helper::get_course_grade_info(
+                        $courseid,
+                        GRADE_DISPLAY_TYPE_DEFAULT,
+                        $user->id
+                    );
+                } else if (strpos($dateitem, 'gradeitem:') === 0) {
+                    $gradeitemid = substr($dateitem, 10);
+                    $grade = \mod_customcert\element_helper::get_grade_item_info(
+                        $gradeitemid,
+                        $dateitem,
+                        $user->id
+                    );
+                } else {
+                    $grade = \mod_customcert\element_helper::get_mod_grade_info(
+                        $dateitem,
+                        GRADE_DISPLAY_TYPE_DEFAULT,
+                        $user->id
+                    );
+                }
+
+                $dategraded = $grade->get_dategraded();
+                if ($grade && !empty($dategraded)) {
+                    $date = $dategraded;
                 }
             }
         }
@@ -161,12 +203,13 @@ class element extends \mod_customcert\element {
      */
     public function render_html() {
         // If there is no element data, we have nothing to display.
-        if (empty($this->element->data)) {
-            return;
+        $data = $this->get_data();
+        if (empty($data)) {
+            return '';
         }
 
         // Decode the information stored in the database.
-        $dateinfo = json_decode($this->element->data);
+        $dateinfo = json_decode($data);
         $dateformat = $dateinfo->dateformat;
 
         return \mod_customcert\element_helper::render_html_content($this, $this->get_date_format_string(time(), $dateformat));
@@ -179,10 +222,15 @@ class element extends \mod_customcert\element {
      */
     public function definition_after_data($mform) {
         // Set the item and format for this element.
-        if (!empty($this->element->data)) {
-            $dateinfo = json_decode($this->element->data);
-            $this->element->dateitem = $dateinfo->dateitem;
-            $this->element->dateformat = $dateinfo->dateformat;
+        $data = $this->get_data();
+        if (!empty($data)) {
+            $dateinfo = json_decode($data);
+
+            $element = $mform->getElement('dateitem');
+            $element->setValue($dateinfo->dateitem);
+
+            $element = $mform->getElement('dateformat');
+            $element->setValue($dateinfo->dateformat);
         }
 
         parent::definition_after_data($mform);
@@ -199,10 +247,10 @@ class element extends \mod_customcert\element {
     public function after_restore($restore) {
         global $DB;
 
-        $dateinfo = json_decode($this->element->data);
+        $dateinfo = json_decode($this->get_data());
         if ($newitem = \restore_dbops::get_backup_ids_record($restore->get_restoreid(), 'course_module', $dateinfo->dateitem)) {
             $dateinfo->dateitem = $newitem->newitemid;
-            $DB->set_field('customcert_elements', 'data', self::save_unique_data($dateinfo), array('id' => $this->element->id));
+            $DB->set_field('customcert_elements', 'data', $this->save_unique_data($dateinfo), array('id' => $this->get_id()));
         }
     }
 
@@ -212,12 +260,27 @@ class element extends \mod_customcert\element {
      * @return array the list of date formats
      */
     public static function get_date_formats() {
-        $dateformats = array();
-        $dateformats[1] = 'January 1, 2000';
-        $dateformats[2] = 'January 1st, 2000';
-        $dateformats[3] = '1 January 2000';
-        $dateformats[4] = 'January 2000';
-        $dateformats[5] = get_string('userdateformat', 'customcertelement_date');
+        $date = time();
+
+        $suffix = self::get_ordinal_number_suffix(userdate($date, '%d'));
+
+        $dateformats = array(
+            1 => userdate($date, '%B %d, %Y'),
+            2 => userdate($date, '%B %d' . $suffix . ', %Y'),
+            'strftimedate' => userdate($date, get_string('strftimedate', 'langconfig')),
+            'strftimedatefullshort' => userdate($date, get_string('strftimedatefullshort', 'langconfig')),
+            'strftimedateshort' => userdate($date, get_string('strftimedateshort', 'langconfig')),
+            'strftimedatetime' => userdate($date, get_string('strftimedatetime', 'langconfig')),
+            'strftimedatetimeshort' => userdate($date, get_string('strftimedatetimeshort', 'langconfig')),
+            'strftimedaydate' => userdate($date, get_string('strftimedaydate', 'langconfig')),
+            'strftimedaydatetime' => userdate($date, get_string('strftimedaydatetime', 'langconfig')),
+            'strftimedayshort' => userdate($date, get_string('strftimedayshort', 'langconfig')),
+            'strftimedaytime' => userdate($date, get_string('strftimedaytime', 'langconfig')),
+            'strftimemonthyear' => userdate($date, get_string('strftimemonthyear', 'langconfig')),
+            'strftimerecent' => userdate($date, get_string('strftimerecent', 'langconfig')),
+            'strftimerecentfull' => userdate($date, get_string('strftimerecentfull', 'langconfig')),
+            'strftimetime' => userdate($date, get_string('strftimetime', 'langconfig'))
+        );
 
         return $dateformats;
     }
@@ -230,22 +293,30 @@ class element extends \mod_customcert\element {
      * @return string
      */
     protected function get_date_format_string($date, $dateformat) {
-        switch ($dateformat) {
-            case 1:
-                $certificatedate = userdate($date, '%B %d, %Y');
-                break;
-            case 2:
-                $suffix = $this->get_ordinal_number_suffix(userdate($date, '%d'));
-                $certificatedate = userdate($date, '%B %d' . $suffix . ', %Y');
-                break;
-            case 3:
-                $certificatedate = userdate($date, '%d %B %Y');
-                break;
-            case 4:
-                $certificatedate = userdate($date, '%B %Y');
-                break;
-            default:
-                $certificatedate = userdate($date, get_string('strftimedate', 'langconfig'));
+        // Keeping for backwards compatibility.
+        if (is_number($dateformat)) {
+            switch ($dateformat) {
+                case 1:
+                    $certificatedate = userdate($date, '%B %d, %Y');
+                    break;
+                case 2:
+                    $suffix = self::get_ordinal_number_suffix(userdate($date, '%d'));
+                    $certificatedate = userdate($date, '%B %d' . $suffix . ', %Y');
+                    break;
+                case 3:
+                    $certificatedate = userdate($date, '%d %B %Y');
+                    break;
+                case 4:
+                    $certificatedate = userdate($date, '%B %Y');
+                    break;
+                default:
+                    $certificatedate = userdate($date, get_string('strftimedate', 'langconfig'));
+            }
+        }
+
+        // Ok, so we must have been passed the actual format in the lang file.
+        if (!isset($certificatedate)) {
+            $certificatedate = userdate($date, get_string($dateformat, 'langconfig'));
         }
 
         return $certificatedate;
@@ -258,7 +329,7 @@ class element extends \mod_customcert\element {
      * @param int $day the day of the month
      * @return string the suffix.
      */
-    protected function get_ordinal_number_suffix($day) {
+    protected static function get_ordinal_number_suffix($day) {
         if (!in_array(($day % 100), array(11, 12, 13))) {
             switch ($day % 10) {
                 // Handle 1st, 2nd, 3rd.

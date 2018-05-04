@@ -14,4 +14,5 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$string['pluginname'] = 'WIRIS plugin for TinyMCE - Maths';
+$string['pluginname'] = 'MathType by WIRIS';
+$string['error_connection'] = 'An error occurred while loading MathType for TinyMCE';

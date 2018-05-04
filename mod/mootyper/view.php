@@ -34,6 +34,9 @@ global $USER, $CFG, $THEME;
 
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n = optional_param('n', 0, PARAM_INT); // Mootyper instance ID - it should be named as the first character of the module.
+// Get the current "thisdirection" string from the langconfig.php file, so that
+// the status bar and any dual keyboard layouts render correctly.
+$directionality = get_string('thisdirection', 'langconfig');
 $userpassword = optional_param('userpassword', '', PARAM_RAW);
 $backtocourse = optional_param('backtocourse', false, PARAM_RAW);
 
@@ -64,6 +67,70 @@ $mootyperoutput = $PAGE->get_renderer('mod_mootyper');
 // Output starts here.
 echo $mootyperoutput->header($mootyper, $cm);
 echo '<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>';
+
+// Get the color and text alignment configuration settings and use them in the MooTyper activity.
+$color1 = $mootyper->statsbgc;
+$color2 = $mootyper->keytopbgc;
+$color3 = $mootyper->keybdbgc;
+$color4 = $mootyper->cursorcolor;
+$color5 = $mootyper->textbgc;
+$color6 = $mootyper->texterrorcolor;
+$mistakessetting = $mootyper->countmistakes;
+
+$gettextalign = $mootyper->textalign;
+$aligns = array(get_string('defaulttextalign_left', 'mod_mootyper'),
+              get_string('defaulttextalign_center', 'mod_mootyper'),
+              get_string('defaulttextalign_right', 'mod_mootyper'));
+foreach ($aligns as $akey => $aval) {
+    if ($akey == $gettextalign) {
+        $textalign = $aval;
+    }
+}
+// Apply colors and text alignment to current MooTyper.
+echo '<style>
+    .keyboardback {
+        background-color: '.$color3.';
+        box-shadow:
+            0 1px 0 #aaa,
+            0 4px 0 #bbb,
+            0 5px 0px #ddd;
+    }
+    .normal {
+        background: '.$color2.'
+    }
+    div#statsLDiv {
+        background: '.$color1.'
+    }
+    div#statsMDiv {
+        background: '.$color1.'
+    }
+    div#statsRDiv {
+        background: '.$color1.'
+    }
+    #texttoenter {
+        text-align: '.$textalign.';
+        line-height: 1.2;
+        background-color: '.$color5.';
+        padding:0px 10px 0px 10px;
+        border: 1px solid black;
+        box-shadow:
+            0 1px 0 #aaa,
+            0 4px 0 #bbb,
+            0 5px 0px #ddd;
+        border-top-left-radius: 10px ;
+        border-bottom-left-radius: 10px ;
+    }
+    .tb1 {
+        text-align: '.$textalign.'
+    }
+    .txtBlue {
+        background-color: '.$color4.'
+    }
+    .txtRed {
+        background-color: '.$color6.'
+    }
+    </style>';
+
 
 if ($mootyper->intro) {
     echo $OUTPUT->box(format_module_intro('mootyper', $mootyper, $cm->id) , 'generalbox mod_introbox', 'mootyperintro');
@@ -162,47 +229,8 @@ if ($mootyper->lesson != null) {
         }
         ?>
 </h4>
-<br />
-<div style="float: left; padding-bottom: 10px;" id="texttoenter"></div><br />
-        <?php
 
-        if ($mootyper->showkeyboard) {
-            $displaynone = false;
-        } else {
-            $displaynone = true;
-        }
-        $keyboard = get_instance_layout_file($mootyper->layout);
-        include($keyboard);
-        ?>
-<br />
-    <textarea name="tb1" wrap="off" id="tb1" class="tb1" onfocus="return focusSet(event)"  
-            onpaste="return false" onselectstart="return false"
-            onCopy="return false" onCut="return false" 
-            onDrag="return false" onDrop="return false" autocomplete="off">
-            <?php
-            echo get_string('chere', 'mootyper') . '...';
-            ?>
-    </textarea>
-                         
-</div>
-<div id="reportDiv" style="float: right; /*position: relative; right: 90px; top: 35px;*/">
-        <?php
-        if (has_capability('mod/mootyper:viewgrades', context_module::instance($cm->id))) {
-            $jlnk4 = $CFG->wwwroot . '/mod/mootyper/gview.php?id=' . $id . '&n=' . $mootyper->id;;
-            echo '<a href="' . $jlnk4 . '">' . get_string('viewgrades', 'mootyper') . '</a><br /><br />';
-        }
-
-        if (has_capability('mod/mootyper:aftersetup', context_module::instance($cm->id))) {
-            $jlnk6 = $CFG->wwwroot . "/mod/mootyper/mod_setup.php?n=" . $mootyper->id . "&e=1";
-            echo '<a href="' . $jlnk6 . '">' . get_string('fsettings', 'mootyper') . '</a><br /><br />';
-        }
-
-        if (has_capability('mod/mootyper:viewmygrades', context_module::instance($cm->id))) {
-            $jlnk7 = $CFG->wwwroot . "/mod/mootyper/owngrades.php?id=" . $id . "&n=" . $mootyper->id;
-            echo '<a href="' . $jlnk7 . '">' . get_string('viewmygrades', 'mootyper') . '</a><br /><br />';
-        }
-
-        ?>
+<div id="reportDiv">
 <input name='rpCourseId' type='hidden' value='<?php
         echo $course->id; ?>'>
 <input name='rpSityperId' type='hidden' value='<?php
@@ -224,25 +252,92 @@ if ($mootyper->lesson != null) {
     <input name='rpMistakesInput' type='hidden'>
     <input name='rpAccInput' type='hidden'>
     <input name='rpSpeedInput' type='hidden'>
-<div id="rdDiv2">
-<strong><?php
-        echo get_string('rtime', 'mootyper'); ?></strong> <span id="jsTime">0</span> s<br />
-<strong><?php
-        echo get_string('rprogress', 'mootyper'); ?></strong> <span id="jsProgress"> 0</span><br />
-<strong><?php
-        echo get_string('rmistakes', 'mootyper'); ?></strong> <span id="jsMistakes">0</span><br />
-<strong><?php
-        echo get_string('rprecision', 'mootyper'); ?></strong> <span id="jsAcc"> 0</span>%<br />
-<strong><?php
-        echo get_string('rhitspermin', 'mootyper'); ?></strong> <span id="jsSpeed">0</span><br />
-<strong><?php
-        echo get_string('wpm', 'mootyper'); ?></strong>: <span id="jsWpm">0</span>
-<br />
-</div>
-<br /><input style="visibility: hidden;" id="btnContinue" name='btnContinue' type="submit" value=<?php
-        echo "'" . get_string('fcontinue', 'mootyper') . "'"; ?>> 
-</div>
 
+        <?php
+
+        // Set the status bar CSS based on direction of language currently in use.
+        if ($directionality == 'rtl' && ($CFG->branch > 31)) {
+            $stats1 = "'statsRDiv'";
+            $stats2 = "'statsLDiv'";
+        } else {
+            $stats1 = "'statsLDiv'";
+            $stats2 = "'statsRDiv'";
+        }
+        if (has_capability('mod/mootyper:viewgrades', context_module::instance($cm->id))) {
+            $jlnk4 = $CFG->wwwroot . '/mod/mootyper/gview.php?id=' . $id . '&n=' . $mootyper->id;;
+            echo '<a href="' . $jlnk4 . '">' . get_string('viewgrades', 'mootyper') . '</a>&nbsp;&nbsp;|&nbsp;&nbsp;';
+        }
+        if (has_capability('mod/mootyper:aftersetup', context_module::instance($cm->id))) {
+            $jlnk6 = $CFG->wwwroot . "/mod/mootyper/mod_setup.php?n=" . $mootyper->id . "&e=1";
+            echo '<a href="' . $jlnk6 . '">' . get_string('fsettings', 'mootyper') . '</a>&nbsp;&nbsp;|&nbsp;&nbsp;';
+        }
+        if (has_capability('mod/mootyper:viewmygrades', context_module::instance($cm->id))) {
+            $jlnk7 = $CFG->wwwroot . "/mod/mootyper/owngrades.php?id=" . $id . "&n=" . $mootyper->id;
+            echo '<a href="' . $jlnk7 . '">' . get_string('viewmygrades', 'mootyper') . '</a>';
+        }
+        ?>
+
+<input style="visibility: hidden;" id="btnContinue" name='btnContinue' type="submit" value=<?php
+        echo "'" . get_string('fcontinue', 'mootyper') . "'"; ?>> 
+
+    <div id='wrapStats'>
+                    <div id=<?php echo $stats1; ?> style='text-align: center; float: left; width:100px;'>
+                        <div id="timerText" class="statsText">
+                            <?php echo get_string('rtime', 'mootyper'); ?></div>
+                        <div id='timer'><span id="jsTime2">00:00</span></div>
+                    </div>
+
+                    <div id='statsMDiv' style='text-align: center; float: left; width:100px;'>
+                        <div id='progressText' class="statsText">
+                            <?php echo get_string('rprogress', 'mootyper'); ?></div>
+                        <div id='progressValue'><span id="jsProgress2">0/0</span></div>
+                    </div>
+
+                    <div id='statsMDiv' style='text-align: center; float: left; width:100px;'>
+                        <div id='mistakesText' class="statsText">
+                            <?php echo get_string('rmistakes', 'mootyper'); ?></div>
+                        <div id='mistakesValue'><span id="jsMistakes2">0</span></div>
+                    </div>
+
+                    <div id='statsMDiv' style='text-align: center; float: left; width:100px;'>
+                        <div id='precisionText' class="statsText">
+                            <?php echo get_string('rprecision', 'mootyper'); ?></div>
+                        <div id='precisionValue'><span id="jsAcc2">0</span><span> %</span></div>
+                    </div>
+
+                    <div id='statsMDiv' style='text-align: center; float: left; width:120px;'>
+                        <div id='speedText' class="statsText">
+                            <?php echo get_string('rhitspermin', 'mootyper'); ?></div>
+                        <div id='speedValue'><span id="jsSpeed2">0</span></div>
+                    </div>
+
+                    <div id=<?php echo $stats2; ?> style='text-align: center; float: left; width:100px;'>
+                        <div id='wpmText' class="statsText">
+                            <?php echo get_string('wpm', 'mootyper'); ?></div>
+                        <div id='wpmValue'><span id="jsWpm2">0</span></div>
+                    </div>
+    </div>
+</div>
+<br>
+<textarea name="tb1" wrap="off" id="tb1" class="tb1" onfocus="return focusSet(event)"  
+    onpaste="return false" onselectstart="return false"
+    onCopy="return false" onCut="return false" 
+    onDrag="return false" onDrop="return false" autocomplete="off">
+    <?php
+        echo get_string('chere', 'mootyper') . '...';
+    ?>
+</textarea>
+<div style="float: left; padding-bottom: 10px;" id="texttoenter"></div><br />
+        <?php
+        if ($mootyper->showkeyboard) {
+            $displaynone = false;
+        } else {
+            $displaynone = true;
+        }
+        $keyboard = get_instance_layout_file($mootyper->layout);
+        include($keyboard);
+        ?>
+</div>
 </form>
 </div>
         <?php
@@ -262,11 +357,13 @@ if ($mootyper->lesson != null) {
         $record = get_last_check($mootyper->id);
         if (is_null($record)) {
             echo '<script type="text/javascript">inittexttoenter("' . $texttoinit . '", 0, 0, 0, 0, 0, "' .
-                $CFG->wwwroot . '", ' . $mootyper->showkeyboard . ', ' . $mootyper->continuoustype . ');</script>';
+                $CFG->wwwroot . '", ' . $mootyper->showkeyboard . ', ' . $mootyper->continuoustype .
+                ', '. $mootyper->countmistypedspaces . ', '. $mootyper->countmistakes . ');</script>';
         } else {
             echo '<script type="text/javascript">inittexttoenter("' . $texttoinit . '", 1, ' . $record->mistakes . ', ' .
                 $record->hits . ', ' . $record->timetaken . ', ' . $record->attemptid . ', "' . $CFG->wwwroot . '", ' .
-                $mootyper->showkeyboard . ', ' . $mootyper->continuoustype . ');</script>';
+                $mootyper->showkeyboard . ', ' . $mootyper->continuoustype .', '. $mootyper->countmistypedspaces .
+                ', '. $mootyper->countmistakes . ');</script>';
         }
     } else {
         echo get_string('endlesson', 'mootyper');

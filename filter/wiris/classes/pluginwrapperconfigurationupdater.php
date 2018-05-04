@@ -21,7 +21,7 @@
  *
  * @package    filter
  * @subpackage wiris
- * @copyright  Maths for More S.L. <info@wiris.com>
+ * @copyright  WIRIS Europe (Maths for more S.L)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -44,10 +44,6 @@ class filter_wiris_pluginwrapperconfigurationupdater implements com_wiris_plugin
             foreach ($this->customconfig as $key => $value) {
                 $configuration[$key] = $value;
             }
-        }
-
-        if ($configuration['wirisimageformat'] == 'png') {
-            $configuration['wirispluginperformance'] = 'false';
         }
 
     }

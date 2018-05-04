@@ -123,12 +123,21 @@ class block_mootivated_renderer extends plugin_renderer_base {
      * @return string
      */
     public function wallet(manager $manager) {
-        $coins = $manager->get_coins();
-        $icon = $this->pix_url('coin', 'block_mootivated');
+        $coins = $manager->get_coins_for_session();
+        $icon = $this->pix_url('coins', 'block_mootivated');
         $o = '';
         $o .= html_writer::start_div('mootivated-wallet');
+        $o .= html_writer::start_div('pic');
         $o .= html_writer::empty_tag('img', ['src' => $icon, 'alt' => get_string('coin', 'block_mootivated')]);
+        $o .= html_writer::end_div();
+        $o .= html_writer::start_div('coins');
+        $o .= html_writer::start_div('amount');
         $o .= get_string('ncoins', 'block_mootivated', $coins);
+        $o .= html_writer::end_div();
+        $o .= html_writer::start_div('legend');
+        $o .= get_string('earnedthissession', 'block_mootivated');
+        $o .= html_writer::end_div();
+        $o .= html_writer::end_div();
         $o .= html_writer::end_div();
         return $o;
     }

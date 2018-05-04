@@ -146,6 +146,7 @@ class ajax_controller extends controller_abstract
         global $DB;
         $regionId = required_param('regionId', PARAM_INT);
         $sql = "SELECT * FROM Municipalities WHERE regionId = " . $regionId;
+        $sql .= " ORDER BY NAME;";
         $municipalitiesDb = $DB->get_records_sql($sql);
 
         return json_encode($municipalitiesDb);
@@ -155,6 +156,8 @@ class ajax_controller extends controller_abstract
         global $DB;
         $municipalityId = required_param('municipalityId', PARAM_INT);
         $sql = "SELECT * FROM Cities WHERE municipalityId = " . $municipalityId;
+        $sql .= " AND ID IN (SELECT DISTINCT cityId FROM schools)";
+        $sql .= " ORDER BY name";
         $cities = $DB->get_records_sql($sql);
 
         return json_encode($cities);
@@ -163,7 +166,7 @@ class ajax_controller extends controller_abstract
     public function get_schools_action(){
         global $DB;
         $cityId = required_param('cityId', PARAM_INT);
-        $sql = "SELECT * FROM schools WHERE cityId = " . $cityId;
+        $sql = "SELECT * FROM schools WHERE cityId = " . $cityId. " ORDER BY name";
         $schools = $DB->get_records_sql($sql);
 
         return json_encode($schools);

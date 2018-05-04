@@ -225,5 +225,61 @@ function xmldb_local_mootivated_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2017051902, 'local', 'mootivated');
     }
 
+    if ($oldversion < 2017081100) {
+
+        // Define field modcompletionrules to be added to local_mootivated_school.
+        $table = new xmldb_table('local_mootivated_school');
+        $field = new xmldb_field('modcompletionrules', XMLDB_TYPE_TEXT, null, null, null, null, null, 'rewardmethod');
+
+        // Conditionally launch add field modcompletionrules.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Mootivated savepoint reached.
+        upgrade_plugin_savepoint(true, 2017081100, 'local', 'mootivated');
+    }
+
+    if ($oldversion < 2017121403) {
+
+        // Sites upgrading from a lower version will have this turned on by default.
+        set_config('usesections', 1, 'local_mootivated');
+
+        // Mootivated savepoint reached.
+        upgrade_plugin_savepoint(true, 2017121403, 'local', 'mootivated');
+    }
+
+    if ($oldversion < 2017121900) {
+
+        // Copy of helper::ROLE_SHORTNAME constant.
+        $roleshortname = 'mootivateduser';
+        $role = $DB->get_record('role', ['shortname' => $roleshortname]);
+        if ($role) {
+            // Set default new permission in mootivated user role, this permission was not part of
+            // the role yet at this point, and the role doesn't use an archetype so we rely on this to
+            // set the permission. On new install the role will have to be created by the admin, and
+            // this permission will be set then.
+            assign_capability('local/mootivated:login', CAP_ALLOW, $role->id, context_system::instance()->id, true);
+        }
+
+        // Mootivated savepoint reached.
+        upgrade_plugin_savepoint(true, 2017121900, 'local', 'mootivated');
+    }
+
+    if ($oldversion < 2018032301) {
+
+        // Define field coursecompletionreward to be added to local_mootivated_school.
+        $table = new xmldb_table('local_mootivated_school');
+        $field = new xmldb_field('coursecompletionreward', XMLDB_TYPE_INTEGER, '10', null, null, null, '30', 'modcompletionrules');
+
+        // Conditionally launch add field coursecompletionreward.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Mootivated savepoint reached.
+        upgrade_plugin_savepoint(true, 2018032301, 'local', 'mootivated');
+    }
+
     return true;
 }

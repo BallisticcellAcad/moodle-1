@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Cache definition for WIRIS plugin.
+ * Cache definition for MathType.
  *
  * @package    filter
  * @subpackage wiris
- * @copyright  Maths for More S.L. <info@wiris.com>
+ * @copyright  WIRIS Europe (Maths for more S.L)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,6 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 
 $definitions = array(
     'images' => array(
+        'mode' => cache_store::MODE_APPLICATION
+    ),
+    'formulas' => array(
         'mode' => cache_store::MODE_APPLICATION
     )
 );

@@ -55,6 +55,9 @@ class obf_client {
      * @var bool Store raw response?
      */
     private $enablerawresponse = false;
+    
+    const RETRIEVE_ALL = 'all';
+    const RETRIEVE_LOCAL = 'local';
 
     /**
      * Returns the id of the client stored in Moodle's config.
@@ -434,16 +437,23 @@ class obf_client {
                                     array_filter(explode("\n", $output))) . ']';
                         });
     }
+    public function is_only_local_events_enabled() {
+        return get_config('local_obf', 'apidataretrieve') == self::RETRIEVE_LOCAL;
+    }
 
     /**
      * Get badge assertions from the API.
      *
      * @param string $badgeid The id of the badge.
      * @param string $email The email address of the recipient.
+     * @param array $params Optional extra params for the query.
      * @return array The event data.
      */
-    public function get_assertions($badgeid = null, $email = null) {
-        $params = array('api_consumer_id' => OBF_API_CONSUMER_ID);
+    public function get_assertions($badgeid = null, $email = null, $params = array()) {
+        if ($this->is_only_local_events_enabled()) {
+            $params = array_merge($params, array('api_consumer_id' => OBF_API_CONSUMER_ID));
+        }
+        
 
         $this->require_client_id();
 
@@ -642,8 +652,9 @@ class obf_client {
         // Codes 2xx should be ok.
         if (is_numeric($this->httpcode) && ($this->httpcode < 200 || $this->httpcode >= 300)) {
             $this->error = isset($response['error']) ? $response['error'] : '';
+            $appendtoerror = defined('PHPUNIT_TEST') && PHPUNIT_TEST ? ' ' . $method . ' ' . $url : '';
             throw new Exception(get_string('apierror' . $this->httpcode, 'local_obf',
-                    $this->error), $this->httpcode);
+                    $this->error) . $appendtoerror, $this->httpcode);
         }
 
         return $response;

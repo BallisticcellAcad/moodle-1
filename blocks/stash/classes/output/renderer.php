@@ -101,6 +101,21 @@ class renderer extends plugin_renderer_base {
     }
 
     /**
+     * Explanation on what a trade drop/location is.
+     *
+     * @return string
+     */
+    public function tradedrop_whats_that() {
+        $o = '';
+        $o .= html_writer::start_div('alert alert-info');
+        $o .= html_writer::tag('strong', get_string('whatsthis', 'block_stash'));
+        $o .= ' ';
+        $o .= get_string('whatisatradedrophelp', 'block_stash');
+        $o .= html_writer::end_div();
+        return $o;
+    }
+
+    /**
      * Describes what drops are.
      *
      * @return string
@@ -139,6 +154,13 @@ class renderer extends plugin_renderer_base {
                 );
             }
 
+            // I want to hide this depending on the block filter being enabled and there being at least one item defined.
+            $tabs[] = new tabobject(
+                'trade',
+                new moodle_url('/blocks/stash/trade.php', ['courseid' => $courseid]),
+                get_string('navtrade', 'block_stash')
+            );
+
             $tabs[] = new tabobject(
                 'report',
                 new moodle_url('/blocks/stash/report.php', ['courseid' => $courseid]),
@@ -174,6 +196,11 @@ class renderer extends plugin_renderer_base {
         return parent::render_from_template('block_stash/item_xsmall', $data);
     }
 
+    public function render_trade(renderable $renderable) {
+        $data = $renderable->export_for_template($this);
+        return parent::render_from_template('block_stash/trade', $data);
+    }
+
     public function render_settings_page(renderable $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('block_stash/settings', $data);
@@ -182,6 +209,11 @@ class renderer extends plugin_renderer_base {
     public function render_user_inventory(renderable $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('block_stash/user_inventory', $data);
+    }
+
+    public function render_trade_form(renderable $page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('block_stash/trade_form', $data);
     }
 
 }

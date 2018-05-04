@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * When you finish an exercise, this file puts the results where they need to go.
+ * This file adds grade and performance info to mdl_mootyper_grades after an exercise.
  *
  * @package    mod_mootyper
  * @copyright  2012 Jaka Luthar (jaka.luthar@gmail.com)
@@ -29,26 +29,30 @@ require_once(dirname(__FILE__).'/locallib.php');
 global $DB;
 
 require_login(0, true, null, false);
-if ($_POST['rpAccInput'] >= $_POST['rpGoal']) {
+if (optional_param('rpAccInput', '', PARAM_FLOAT) >= optional_param('rpGoal', '', PARAM_FLOAT)) {
     $passfield = 1;
 } else {
     $passfield = 0;
 }
-$record = new stdClass();
-$record->mootyper = $_POST['rpSityperId'];
-$record->userid = $_POST['rpUser'];
-$record->grade = 0;
-$record->mistakes = $_POST['rpMistakesInput'];
-$record->timeinseconds = $_POST['rpTimeInput'];
-$record->hitsperminute = $_POST['rpSpeedInput'];
-$record->fullhits = $_POST['rpFullHits'];
-$record->precisionfield = $_POST['rpAccInput'];
-$record->timetaken = time();
-$record->exercise = $_POST['rpExercise'];
-$record->pass = $passfield;
-$record->attemptid = $_POST['rpAttId'];
-$record->wpm = (max(0, (($record->hitsperminute / 5) - $record->mistakes)));
-$DB->insert_record('mootyper_grades', $record, false);
-$webdir = $CFG->wwwroot . '/mod/mootyper/view.php?n='.$_POST['rpSityperId'];
-echo '<script type="text/javascript">window.location="'.$webdir.'";</script>';
 
+$record = new stdClass();
+$record->mootyper = optional_param('rpSityperId', '', PARAM_INT);
+$record->userid = optional_param('rpUser', '', PARAM_INT);
+// Gradebook entry has not been implemented, 10/10/17.
+$record->grade = 0;
+$record->mistakes = optional_param('rpMistakesInput', '', PARAM_INT);
+$record->timeinseconds = optional_param('rpTimeInput', '', PARAM_INT);
+$record->hitsperminute = optional_param('rpSpeedInput', '', PARAM_FLOAT);
+$record->fullhits = optional_param('rpFullHits', '', PARAM_INT);
+$record->precisionfield = optional_param('rpAccInput', '', PARAM_FLOAT);
+$record->timetaken = time();
+$record->exercise = optional_param('rpExercise', '', PARAM_INT);
+$record->pass = $passfield;
+$record->attemptid = optional_param('rpAttId', '', PARAM_INT);
+// Modification needed to prevent negative WPM entries for exercises.
+$record->wpm = (max(0, (($record->hitsperminute / 5) - $record->mistakes)));
+
+$DB->insert_record('mootyper_grades', $record, false);
+
+$webdir = $CFG->wwwroot . '/mod/mootyper/view.php?n='.$record->mootyper;
+echo '<script type="text/javascript">window.location="'.$webdir.'";</script>';

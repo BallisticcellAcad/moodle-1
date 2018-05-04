@@ -51,5 +51,30 @@ $functions = [
         // TODO Add capability name here.
         'capabilities'  => '',
         'ajax'          => true
-    ]
+    ],
+    'block_stash_get_items' => [
+        'classname'     => 'block_stash\\external',
+        'methodname'    => 'get_items',
+        'description'   => 'Get all items.',
+        'type'          => 'read',
+        // TODO Add capability name here.
+        'capabilities'  => '',
+        'ajax'          => true
+    ],
+    'block_stash_get_trade_items' => [
+        'classname'    => 'block_stash\\external',
+        'methodname'   => 'get_trade_items',
+        'description'  => 'Get all trade items for the trade widget',
+        'type'         => 'read',
+        'capabilities' => '',
+        'ajax'         => true
+    ],
+    'block_stash_complete_trade' => [
+        'classname'    => 'block_stash\\external',
+        'methodname'   => 'complete_trade',
+        'description'  => 'Complete a trade with a user',
+        'type'         => 'write',
+        'capabilities' => '',
+        'ajax'         => true
+    ],
 ];

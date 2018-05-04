@@ -39,7 +39,8 @@ function block_grade_me_array2str($array) {
  * @return string $query
  */
 function block_grade_me_query_prefix() {
-    $query = 'SELECT bgm.courseid, bgm.coursename, bgm.itemmodule, bgm.iteminstance, bgm.itemname, bgm.coursemoduleid, bgm.itemsortorder';
+    $query = 'SELECT bgm.courseid, bgm.coursename, bgm.itemmodule, bgm.iteminstance, bgm.itemname, ' .
+        'bgm.coursemoduleid, bgm.itemsortorder';
     return $query;
 }
 
@@ -65,7 +66,7 @@ function block_grade_me_enabled_plugins() {
     $plugins = get_list_of_plugins('blocks/grade_me/plugins');
     foreach ($plugins as $plugin) {
         if (file_exists($CFG->dirroot.'/blocks/grade_me/plugins/'.$plugin.'/'.$plugin.'_plugin.php')
-            and $CFG->{'block_grade_me_enable'.$plugin} == true) {
+            && ($CFG->{'block_grade_me_enable'.$plugin} == true)) {
             include_once($CFG->dirroot.'/blocks/grade_me/plugins/'.$plugin.'/'.$plugin.'_plugin.php');
             if (function_exists('block_grade_me_required_capability_'.$plugin)) {
                 $requiredcapability = 'block_grade_me_required_capability_'.$plugin;
@@ -104,11 +105,11 @@ function block_grade_me_array($gradeables, $r) {
 function block_grade_me_tree($course) {
     global $CFG, $DB, $OUTPUT, $SESSION;
 
-    // get time format string
+    // Get time format string.
     $datetimestring = get_string('datetime', 'block_grade_me', array());
-    // Grading image
+    // Grading image.
     $gradeimg = $CFG->wwwroot.'/blocks/grade_me/pix/check_mark.png';
-    // Define text variable
+    // Define text variable.
     $text = '';
 
     $courseid = $course['meta']['courseid'];
@@ -132,8 +133,7 @@ function block_grade_me_tree($course) {
 
     ksort($course);
 
-    foreach ($course as $l2 => $item) {
-        $iteminstance = $item['meta']['iteminstance'];
+    foreach ($course as $item) {
         $itemmodule = $item['meta']['itemmodule'];
         $itemname = $item['meta']['itemname'];
         $coursemoduleid = $item['meta']['coursemoduleid'];
@@ -148,11 +148,10 @@ function block_grade_me_tree($course) {
         } else {
             $gradelink = $modulelink;
         }
-        $moduleimgtitle = get_string('link_mod_img', 'block_grade_me', array('mod_name' => $itemmodule));
         $moduletitle = get_string('link_mod', 'block_grade_me', array('mod_name' => $itemmodule));
         $moduleicon = $OUTPUT->pix_icon('icon', $moduletitle, $itemmodule, array('class' => 'gm_icon'));
 
-        $text .= '<dd id="cmid'.$coursemoduleid.'" class="module">'."\n";  // open module
+        $text .= '<dd id="cmid'.$coursemoduleid.'" class="module">'."\n";  // Open module.
         $text .= '<div class="toggle" onclick="$(\'dd#cmid'.$coursemoduleid.
             ' > div.toggle\').toggleClass(\'open\');$(\'dd#cmid'.$coursemoduleid.
             ' > ul\').toggleClass(\'block_grade_me_hide\');"></div>'."\n";
@@ -163,7 +162,7 @@ function block_grade_me_tree($course) {
 
         ksort($item);
 
-        // Assign module needs to have a rownum and useridlist
+        // Assign module needs to have a rownum and useridlist.
         $rownum = 0;
         $useridlistid = $coursemoduleid.time();
         $useridlist = array();
@@ -175,7 +174,8 @@ function block_grade_me_tree($course) {
 
             $submissionlink = $CFG->wwwroot;
             if ($itemmodule == 'assignment') {
-                $submissionlink .= '/mod/assignment/submissions.php?id='.$coursemoduleid.'&amp;userid='.$userid.'&amp;mode=single&amp;filter=0&amp;offset=0';
+                $submissionlink .= '/mod/assignment/submissions.php?id='.$coursemoduleid.'&amp;userid=' . $userid .
+                    '&amp;mode=single&amp;filter=0&amp;offset=0';
             } else if ($itemmodule == 'assign') {
                 $submissionlink .= "/mod/assign/view.php?id=$coursemoduleid&action=grade&rownum=$rownum&useridlistid=$useridlistid";
                 $rownum++;
@@ -202,14 +202,14 @@ function block_grade_me_tree($course) {
             $userfirstlast = $user->firstname.' '.$user->lastname;
             $userprofiletitle = get_string('link_user_profile', 'block_grade_me', array('first_name' => $userfirst));
 
-            $text .= '<li class="gradable">';  // open gradable
+            $text .= '<li class="gradable">';  // Open gradable.
             $text .= '<a href="'.$submissionlink.'" title="'.$submissiontitle.'"><img src="'.$gradeimg.
-                '" class="gm_icon" alt="'.$altmark.'" /></a>';  // grade icon
+                '" class="gm_icon" alt="'.$altmark.'" /></a>';  // Grade icon.
             $text .= $OUTPUT->user_picture($user, array('size' => 16, 'courseid' => $courseid, 'link' => true));
             $text .= '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$userid.'&amp;course='.
-                $courseid.'" title="'.$userprofiletitle.'">'.$userfirstlast.'</a>';  // user name and profile link
-            $text .= '<br />'.userdate($timesubmitted, $datetimestring);  // output submission date
-            $text .= '</li>'."\n";  // end gradable
+                $courseid.'" title="'.$userprofiletitle.'">'.$userfirstlast.'</a>';  // User name and profile link.
+            $text .= '<br />'.userdate($timesubmitted, $datetimestring);  // Output submission date.
+            $text .= '</li>'."\n";  // End gradable.
         }
 
         if ($itemmodule == 'assign') {
@@ -218,9 +218,116 @@ function block_grade_me_tree($course) {
         }
 
         $text .= '</ul>'."\n";
-        $text .= '</dd>'."\n";  // close module
+        $text .= '</dd>'."\n";  // Close module.
     }
     $text .= '</div>';
 
     return $text;
+}
+// Reset table cron function.
+function block_grade_me_cache_reset() {
+    global $CFG, $DB;
+    $DB->delete_records('block_grade_me');
+    $DB->delete_records('block_grade_me_quiz_ngrade');
+    block_grade_me_cache_grade_data();
+    \block_grade_me\quiz_util::update_quiz_ngrade();
+    set_config('cachedatalast', time(), 'reset_block');
+}
+// Main cron function.
+function block_grade_me_cache_grade_data() {
+    global $CFG, $DB;
+    $lastrun = $DB->get_field('task_scheduled', 'lastruntime', array('classname' => 'cache_grade_data'));
+    $params = array();
+    $params['itemtype'] = 'mod';
+    $enabledplugins = array_keys(block_grade_me_enabled_plugins());
+    // Get the id for each plugin name.
+    $enabledpluginsid = array();
+    foreach ($enabledplugins as $plugin) {
+        $enabledpluginsid[] = $DB->get_field('modules', 'id', array('name' => $plugin));
+    }
+    $timedif = time() - $lastrun;
+    // Check the size of the grade me table. If its 0, then ignore time stamp.
+    $tablesize = $DB->count_records('block_grade_me');
+    if ($tablesize == '0') {
+        $lastrun = '0';
+    }
+    // Get the list of all active courses in the database.
+    $activeselect = "visible = 1";
+    $courselist = $DB->get_records_select('course', $activeselect);
+    foreach ($courselist as $actcourse) {
+        $cid = $actcourse->id;
+        $coursemod = $actcourse->timemodified;
+        if ($lastrun == '0') {
+            $coursemod = '0';
+        } else {
+            if ($coursemod > $lastrun) {
+                // This handles the case if the course was hidden and made visible.
+                $coursemod = '0';
+            } else {
+                $coursemod = $lastrun;
+            }
+        }
+        // Validate the course has active users.
+        $sqlcourse = "SELECT count(enrol.id)
+                      FROM {user_enrolments} enrol
+                      LEFT JOIN {user} user ON enrol.userid = user.id
+                      LEFT JOIN {enrol} en ON enrol.enrolid = en.id
+                      WHERE en.courseid = ?
+                      AND user.deleted = 0";
+        $validcourse = $DB->count_records_sql($sqlcourse, array('courseid' => $cid));
+        if ($validcourse > '0') {
+            $paramscourse =array();
+            $paramscourse['itemtype'] = 'mod';
+
+            $paramscourse['id'] = $cid;
+            $paramscourse['timemodified'] = $coursemod;
+            list($insql, $inparams) = $DB->get_in_or_equal($enabledpluginsid);
+            $sql = "SELECT gi.id itemid, gi.itemname itemname, gi.itemtype itemtype,
+                           gi.itemmodule itemmodule, gi.iteminstance iteminstance,
+                           gi.sortorder itemsortorder, c.id courseid, c.shortname coursename,
+                           cm.id coursemoduleid
+                    FROM {grade_items} gi
+               LEFT JOIN {course} c ON gi.courseid = c.id
+               LEFT JOIN {modules} m ON m.name = gi.itemmodule
+                    JOIN {course_modules} cm ON cm.course = c.id AND cm.module = m.id AND cm.instance = gi.iteminstance
+                    WHERE gi.itemtype = ?
+                          AND c.id = ?
+                          AND gi.timemodified > ?
+                          AND m.id $insql";
+            $paramscourse = array_merge($paramscourse, $inparams);
+            $rs = $DB->get_recordset_sql($sql, $paramscourse);
+            foreach ($rs as $rec) {
+                $values = array(
+                    'itemtype'      => $rec->itemtype,
+                    'itemmodule'    => $rec->itemmodule,
+                    'iteminstance'  => $rec->iteminstance,
+                    'courseid'      => $rec->courseid
+                );
+                $fragment = 'itemtype = :itemtype AND itemmodule = :itemmodule AND '.
+                            'iteminstance = :iteminstance AND courseid = :courseid';
+                $params = array(
+                    'itemname' => $rec->itemname,
+                    'itemtype' => $rec->itemtype,
+                    'itemmodule' => $rec->itemmodule,
+                    'iteminstance' => $rec->iteminstance,
+                    'itemsortorder' => $rec->itemsortorder,
+                    'courseid' => $rec->courseid,
+                    'coursename' => $rec->coursename,
+                    'coursemoduleid' => $rec->coursemoduleid,
+                 );
+
+                // Note: We use get_fieldset_select because duplicates may already exist.
+
+                $ids = $DB->get_fieldset_select('block_grade_me', 'id', $fragment, $values);
+                if (empty($ids)) {
+                    $DB->insert_record('block_grade_me', $params);
+                } else {
+                    $params['id'] = reset($ids);
+                    $DB->update_record('block_grade_me', $params);
+                }
+            }
+        }
+    }
+    set_config('cachedatalast', time(), 'block_grade_me');
+    return true;
 }

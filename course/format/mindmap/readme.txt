@@ -26,9 +26,16 @@
 Mindmap Course Format - displays course content as interactive,
 personalized midmap.
 
-It uses Freeplane Java Applet to display map in browser.
+It uses m3 Mobile Mind Mapper to display map in browser.
 
 Changelog:
+
+2.0.1
+Unnecessary files and folders removed
+
+2.0
+Interface used to display maps is switched from Freeplane Java Applet to 
+m3 Mobile Mind Mapper
 
 1.1.5.2
 Compatibility with Moodle 3.0

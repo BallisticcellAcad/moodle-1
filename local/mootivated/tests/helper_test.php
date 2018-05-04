@@ -72,4 +72,36 @@ class local_mootivated_helper_testcase extends advanced_testcase {
         $this->assertEquals(5, $DB->count_records('local_mootivated_log', []));
         $this->assertEquals(0, $DB->count_records_select('local_mootivated_log', 'timecreated < :t', ['t' => $now - DAYSECS]));
     }
+
+    /**
+     * Test can redeem store items.
+     */
+    public function test_can_redeem_store_items() {
+        $dg = $this->getDataGenerator();
+
+        $u1 = $dg->create_user();
+        $u2 = $dg->create_user();
+        $u3 = $dg->create_user();
+        $u4 = $dg->create_user();
+        $c1 = $dg->create_course();
+        $roleid = $dg->create_role();
+
+        assign_capability('local/mootivated:redeem_store_items', CAP_ALLOW, $roleid, context_system::instance()->id);
+        accesslib_clear_all_caches_for_unit_testing();
+
+        $this->assertFalse(helper::can_redeem_store_items($u1));
+        $this->assertFalse(helper::can_redeem_store_items($u2));
+        $this->assertFalse(helper::can_redeem_store_items($u3));
+        $this->assertFalse(helper::can_redeem_store_items($u4));
+
+        role_assign($roleid, $u1->id, context_system::instance()->id);
+        role_assign($roleid, $u2->id, context_user::instance($u2->id)->id);
+        $dg->enrol_user($u3->id, $c1->id, 'editingteacher');
+        accesslib_clear_all_caches_for_unit_testing();
+
+        $this->assertTrue(helper::can_redeem_store_items($u1));
+        $this->assertTrue(helper::can_redeem_store_items($u2));
+        $this->assertTrue(helper::can_redeem_store_items($u3));
+        $this->assertFalse(helper::can_redeem_store_items($u4));
+    }
 }

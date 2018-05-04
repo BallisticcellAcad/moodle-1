@@ -46,7 +46,8 @@ class observer {
      * @return void
      */
     public static function coins_earned(\local_mootivated\event\coins_earned $event) {
-        $manager = new manager($event->relateduserid, context_system::instance());
+        $manager = new manager($event->relateduserid, context_system::instance(),
+            \local_mootivated\helper::get_school_resolver());
         $manager->add_locally_earned_coins($event->other['amount']);
     }
 

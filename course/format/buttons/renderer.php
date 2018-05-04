@@ -48,7 +48,7 @@ class format_buttons_renderer extends format_topics_renderer {
         if (isset($course->{$name})) {
             $color = str_replace('#', '', $course->{$name});
             $color = substr($color, 0, 6);
-            if (is_numeric('0x'.$color)) {
+            if (preg_match('/^#?[a-f0-9]{6}$/i', $color)) {
                 $return = '#'.$color;
             }
         }
@@ -143,7 +143,7 @@ class format_buttons_renderer extends format_topics_renderer {
             $html .= html_writer::tag('div', $name, array('id' => $id, 'class' => $class, 'onclick' => $onclick));
             $count++;
         }
-        $html = html_writer::tag('div', $html, array('id' => 'buttonsectioncontainer'));
+        $html = html_writer::tag('div', $html, array('id' => 'buttonsectioncontainer', 'class' => 'square'));
         if ($PAGE->user_is_editing()) {
             $buttonsectionediting = html_writer::tag('div', get_string('editing', 'format_buttons'),
             array('id' => 'buttonsectionediting'));
@@ -238,8 +238,10 @@ class format_buttons_renderer extends format_topics_renderer {
             }
         }
         $o .= html_writer::start_tag('li', array('id' => 'section-'.$section->section,
-        'class' => 'section main clearfix'.$sectionstyle, 'role' => 'region', 'aria-label' => get_section_name($course, $section)));
-        $o .= html_writer::tag('span', $this->section_title($section, $course), array('class' => 'hidden sectionname'));
+        'class' => 'section main clearfix'.$sectionstyle,
+        'role' => 'region', 'aria-label' => get_section_name($course, $section)));
+        $o .= html_writer::tag('span', $this->section_title($section, $course),
+        array('class' => 'hidden sectionname'));
         $leftcontent = $this->section_left_content($section, $course, $onsectionpage);
         $o .= html_writer::tag('div', $leftcontent, array('class' => 'left side'));
         $rightcontent = $this->section_right_content($section, $course, $onsectionpage);
@@ -257,9 +259,17 @@ class format_buttons_renderer extends format_topics_renderer {
         }
         $o .= html_writer::start_tag('div', array('class' => 'summary'));
         $o .= $this->format_summary_text($section);
-        $o .= html_writer::end_tag('div');
         $context = context_course::instance($course->id);
-        $o .= $this->section_availability_message($section, has_capability('moodle/course:viewhiddensections', $context));
+        if ($PAGE->user_is_editing() && has_capability('moodle/course:update', $context)) {
+            $url = new moodle_url('/course/editsection.php', array('id' => $section->id, 'sr' => $sectionreturn));
+            $o .= html_writer::link($url,
+                html_writer::empty_tag('img', array('src' => $this->output->pix_url('i/settings'),
+                'class' => 'edit', 'alt' => get_string('edit'))),
+                array('title' => get_string('editsummary')));
+        }
+        $o .= html_writer::end_tag('div');
+        $o .= $this->section_availability_message($section,
+        has_capability('moodle/course:viewhiddensections', $context));
         return $o;
     }
 
@@ -357,7 +367,8 @@ class format_buttons_renderer extends format_topics_renderer {
                 $url = new moodle_url('/course/changenumsections.php', array('courseid' => $course->id,
                     'increase' => false, 'sesskey' => sesskey()));
                 $icon = $this->output->pix_icon('t/switch_minus', $strremovesection);
-                echo html_writer::link($url, $icon.get_accesshide($strremovesection), array('class' => 'reduce-sections'));
+                echo html_writer::link($url, $icon.get_accesshide($strremovesection),
+                array('class' => 'reduce-sections'));
             }
             echo html_writer::end_tag('div');
         } else {

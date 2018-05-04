@@ -50,7 +50,7 @@ class block_grade_me_testcase extends advanced_testcase {
         $dataset = $this->createXMLDataSet(__DIR__.'/fixtures/'.$file);
         $names = array_flip($dataset->getTableNames());
 
-        // Generate Data
+        // Generate Data.
         $generator = $this->getDataGenerator();
         $users = array($generator->create_user(), $generator->create_user());
         $courses = array($generator->create_course());
@@ -63,20 +63,19 @@ class block_grade_me_testcase extends advanced_testcase {
                 $pgen = $generator->get_plugin_generator("mod_{$gradeable}");
                 $table = $dataset->getTable($gradeable);
                 $rows = $table->getRowCount();
-                $items = array();
                 for ($row = 0; $row < $rows; $row += 1) {
                     $fields = $table->getRow($row);
                     unset($fields['id']);
                     $fields['course'] = $courses[$fields['course']]->id;
                     $instance = $pgen->create_instance($fields);
                     $context = context_module::instance($instance->cmid);
-                    $plugins[] = (object) array('id' => $instance->id, 'cmid' => $instance->cmid, 'contextid' => $context->id);
+                    $plugins[] = (object)array('id' => $instance->id, 'cmid' => $instance->cmid, 'contextid' => $context->id);
                 }
             }
             $excludes[] = $gradeable;
         }
 
-        // Known overrides (compact form)
+        // Known overrides (compact form).
         $overrides = array(
             'assignment'   => array(
                 'values' => 'plugins',
@@ -146,7 +145,7 @@ class block_grade_me_testcase extends advanced_testcase {
         $tables = array();
         foreach ($overrides as $field => $override) {
             foreach ($override['tables'] as $tablename) {
-                // Skip tables that aren't in the dataset
+                // Skip tables that aren't in the dataset.
                 if (array_key_exists($tablename, $names)) {
                     if (!array_key_exists($tablename, $tables)) {
                         $tables[$tablename] = array($field => array());
@@ -156,7 +155,7 @@ class block_grade_me_testcase extends advanced_testcase {
             }
         }
 
-        // Perform the overrides
+        // Perform the overrides.
         foreach ($tables as $tablename => $translations) {
             $table = $dataset->getTable($tablename);
             $rows = $table->getRowCount();
@@ -172,12 +171,12 @@ class block_grade_me_testcase extends advanced_testcase {
             }
         }
 
-        // Load the data
+        // Load the data.
         $filtered = new PHPUnit_Extensions_Database_DataSet_DataSetFilter($dataset);
         $filtered->addExcludeTables($excludes);
         $this->loadDataSet($filtered);
 
-        // Return the generated users and courses because the tests often need them for result calculations
+        // Return the generated users and courses because the tests often need them for result calculations.
         return array($users, $courses, $plugins);
     }
 
@@ -197,7 +196,7 @@ class block_grade_me_testcase extends advanced_testcase {
     public function provider_get_content_multiple_user() {
         $data = array();
 
-        // New assign test
+        // New assign test.
         $plugin = 'assign';
         $matches = array(
             1 => '/Go to assign/',
@@ -209,7 +208,7 @@ class block_grade_me_testcase extends advanced_testcase {
         );
         $data['assign'] = array($plugin, $matches);
 
-        // Legacy assignment test
+        // Legacy assignment test.
         $plugin = 'assignment';
         $matches = array(
             1 => '/Go to assignment/',
@@ -221,7 +220,7 @@ class block_grade_me_testcase extends advanced_testcase {
         );
         $data['assignment'] = array($plugin, $matches);
 
-        // Quiz test
+        // Quiz test.
         $plugin = 'quiz';
         $matches = array(
             1 => '/Go to quiz/',
@@ -247,7 +246,7 @@ class block_grade_me_testcase extends advanced_testcase {
     public function provider_get_content_single_user() {
         $data = array();
 
-        // New assign test
+        // New assign test.
         $plugin = 'assign';
         $matches = array(
             1 => '/Go to assign/',
@@ -258,7 +257,7 @@ class block_grade_me_testcase extends advanced_testcase {
         );
         $data['assign'] = array($plugin, $matches);
 
-        // Legacy assignment test
+        // Legacy assignment test.
         $plugin = 'assignment';
         $matches = array(
             1 => '/Go to assignment/',
@@ -471,6 +470,8 @@ class block_grade_me_testcase extends advanced_testcase {
         $rec->submissionid = '2';
         $rec->userid = $users[0]->id;
         $rec->timesubmitted = '2';
+        $rec->attemptnumber = '1';
+        $rec->maxattempts = '-1';
 
         $rec2 = new stdClass();
         $rec2->id = $plugins[3]->id;
@@ -478,16 +479,30 @@ class block_grade_me_testcase extends advanced_testcase {
         $rec2->submissionid = '3';
         $rec2->userid = $users[0]->id;
         $rec2->timesubmitted = '3';
+        $rec2->attemptnumber = '1';
+        $rec2->maxattempts = '-1';
 
-        // Tests resubmission
+        // Tests resubmission.
         $rec3 = new stdClass();
         $rec3->id = $plugins[4]->id;
         $rec3->courseid = $courses[0]->id;
         $rec3->submissionid = '7';
         $rec3->userid = $users[0]->id;
         $rec3->timesubmitted = '6';
+        $rec3->attemptnumber = '1';
+        $rec3->maxattempts = '-1';
 
-        $expected = array($rec->id => $rec, $rec2->id => $rec2, $rec3->id => $rec3);
+        $rec4 = new stdClass();
+        $rec4->id = $plugins[1]->id;
+        $rec4->courseid = $courses[0]->id;
+        $rec4->submissionid = '1';
+        $rec4->userid = $users[0]->id;
+        $rec4->timesubmitted = '1';
+        $rec4->attemptnumber = '1';
+        $rec4->maxattempts = '-1';
+
+
+        $expected = array($rec->id => $rec, $rec2->id => $rec2, $rec3->id => $rec3, $rec4->id => $rec4);
         $actual = $DB->get_records_sql($sql, $insqlparams);
         $this->assertEquals($expected, $actual);
         $this->assertFalse(block_grade_me_query_assign(array()));
@@ -497,7 +512,8 @@ class block_grade_me_testcase extends advanced_testcase {
      * Test the block_grade_me_query_prefix function
      */
     public function test_query_prefix() {
-        $expected = "SELECT bgm.courseid, bgm.coursename, bgm.itemmodule, bgm.iteminstance, bgm.itemname, bgm.coursemoduleid, bgm.itemsortorder";
+        $expected = "SELECT bgm.courseid, bgm.coursename, bgm.itemmodule, bgm.iteminstance, bgm.itemname, " .
+            "bgm.coursemoduleid, bgm.itemsortorder";
         $this->assertEquals($expected, block_grade_me_query_prefix());
     }
 
@@ -508,95 +524,6 @@ class block_grade_me_testcase extends advanced_testcase {
         $expected = " AND bgm.courseid = ?
  AND bgm.itemmodule = 'assign'";
         $this->assertEquals($expected, block_grade_me_query_suffix('assign'));
-    }
-
-    /**
-     * Dataprovider for testing the cron
-     *
-     * @return array Grade item data
-     */
-    public function provider_cron() {
-        $item2 = new StdClass();
-        $item2->id = 2;
-        $item2->itemname = 'testassignment2';
-        $item2->itemtype = 'mod';
-        $item2->itemmodule = 'assign';
-
-        $item3 = new StdClass();
-        $item3->id = 3;
-        $item3->itemname = 'testassignment3';
-        $item3->itemtype = 'mod';
-        $item3->itemmodule = 'assign';
-
-        $item4 = new StdClass();
-        $item4->id = 4;
-        $item4->itemname = 'testassignment4';
-        $item4->itemtype = 'mod';
-        $item4->itemmodule = 'assign';
-
-        $item5 = new StdClass();
-        $item5->id = 5;
-        $item5->itemname = 'testassignment6';
-        $item5->itemtype = 'mod';
-        $item5->itemmodule = 'assignment';
-
-        // Represents updated record.
-        $item6 = new StdClass();
-        $item6->id = 6;
-        $item6->itemname = 'testassignment7_UPDATED';
-        $item6->itemtype = 'mod';
-        $item6->itemmodule = 'assignment';
-
-        $item7 = new StdClass();
-        $item7->id = 7;
-        $item7->itemname = 'testassignment5';
-        $item7->itemtype = 'mod';
-        $item7->itemmodule = 'assign';
-
-        $item8 = new StdClass();
-        $item8->id = 8;
-        $item8->itemname = 'test_forum';
-        $item8->itemtype = 'mod';
-        $item8->itemmodule = 'forum';
-
-        $data = array(
-                array(
-                    array(
-                        '2' => $item2,
-                        '3' => $item3,
-                        '4' => $item4,
-                        '5' => $item5,
-                        '6' => $item6,
-                        '7' => $item7,
-                        '8' => $item8
-                    )
-                )
-        );
-
-        return $data;
-
-    }
-
-    /**
-     * Test the cron
-     *
-     * @param array $expected The expected data
-     * @dataProvider provider_cron
-     * @depends test_load_db
-     */
-    public function test_cron($expected) {
-        global $DB, $CFG;
-        $this->resetAfterTest(true);
-        $this->create_grade_me_data('block_grade_me.xml');
-        $user = $this->getDataGenerator()->create_user();
-        $this->setUser($user);
-        $course = $this->getDataGenerator()->create_course();
-
-        $grademe = new block_grade_me();
-        $grademe->cron();
-        $this->expectOutputRegex('/Updated block_grade_me cache in/');
-        $actual = $DB->get_records('block_grade_me', array(), '', 'id, itemname, itemtype, itemmodule');
-        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -615,7 +542,8 @@ class block_grade_me_testcase extends advanced_testcase {
         $this->update_quiz_ngrade();
 
         list($sql, $params) = block_grade_me_query_quiz(array($users[0]->id));
-        $sql = block_grade_me_query_prefix().$sql.block_grade_me_query_suffix('quiz');
+        $sql = block_grade_me_query_prefix().$sql.block_grade_me_query_suffix('quiz') .
+            ' ORDER BY submissionid ASC';
 
         $actual = array();
         $result = $DB->get_recordset_sql($sql, array($params[0], $courses[0]->id));
@@ -623,7 +551,7 @@ class block_grade_me_testcase extends advanced_testcase {
             $actual[] = (array)$rec;
         }
 
-        // Set proper values for the results
+        // Set proper values for the results.
         foreach ($expected as $key => $row) {
             $row['coursemoduleid'] = $plugins[$row['coursemoduleid']]->cmid;
             $row['coursename'] = $courses[$row['courseid']]->fullname;
@@ -661,14 +589,14 @@ class block_grade_me_testcase extends advanced_testcase {
      * Generic test that can be run by standard modules.
      */
     public function standard_query_tests($datafile, $expected, $suffix) {
-        global $USER, $DB;
+        global $DB;
 
         $this->resetAfterTest(true);
         list($users, $courses, $plugins) = $this->create_grade_me_data($datafile);
 
         $dbfunction = 'block_grade_me_query_'.$suffix;
         list($sql, $params) = $dbfunction(array($users[0]->id));
-        $sql = block_grade_me_query_prefix().$sql.block_grade_me_query_suffix($suffix).
+        $sql = block_grade_me_query_prefix().$sql.block_grade_me_query_suffix($suffix) .
             ' ORDER BY submissionid ASC';
 
         $actual = array();
@@ -677,7 +605,7 @@ class block_grade_me_testcase extends advanced_testcase {
             $actual[] = (array)$rec;
         }
 
-        // Set proper values for the results
+        // Set proper values for the results.
         foreach ($expected as $key => $row) {
             $row['coursemoduleid'] = $plugins[$row['coursemoduleid']]->cmid;
             $row['coursename'] = $courses[$row['courseid']]->fullname;
@@ -749,12 +677,12 @@ class block_grade_me_testcase extends advanced_testcase {
      * @depends test_load_db
      */
     public function test_get_content_single_user($plugin, $expectedvalues) {
-        global $CFG, $DB, $USER;
+        global $CFG, $DB;
 
         $this->resetAfterTest(true);
         list($users, $courses) = $this->create_grade_me_data('block_grade_me.xml');
 
-        // Make sure that the plugin being tested has been enabled
+        // Make sure that the plugin being tested has been enabled.
         if (!$CFG->{'block_grade_me_enable'.$plugin} == true) {
             set_config('block_grade_me_enable'.$plugin, true);
         }
@@ -765,9 +693,9 @@ class block_grade_me_testcase extends advanced_testcase {
 
         $this->setUser($users[0]);
         $this->setAdminUser($users[1]);
-        $course = $this->getDataGenerator()->create_course();
+        $this->getDataGenerator()->create_course();
 
-        // Set up gradebook role
+        // Set up gradebook role.
         $context = context_course::instance($courses[0]->id);
         $roleid = create_role('role', 'role', 'grade me block');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
@@ -808,7 +736,7 @@ class block_grade_me_testcase extends advanced_testcase {
      * @depends test_load_db
      */
     public function test_get_content_multiple_user($plugin, $expectedvalues) {
-        global $CFG, $DB, $USER;
+        global $CFG, $DB;
         $this->resetAfterTest(true);
         if ($plugin !== 'quiz') {
             // Create data for assignements.
@@ -820,7 +748,7 @@ class block_grade_me_testcase extends advanced_testcase {
             $this->update_quiz_ngrade();
         }
 
-        // Make sure that the plugin being tested has been enabled
+        // Make sure that the plugin being tested has been enabled.
         if (!$CFG->{'block_grade_me_enable'.$plugin} == true) {
             set_config('block_grade_me_enable'.$plugin, true);
         }
@@ -829,13 +757,13 @@ class block_grade_me_testcase extends advanced_testcase {
             set_config('block_grade_me_enableadminviewall', true);
         }
 
-        // When testing with multiple users
-        // Need multiple gradebookroles and timemodified needs to be different on submission
+        // When testing with multiple users,
+        // need multiple gradebookroles and timemodified needs to be different on submission.
         $this->setUser($users[0]);
         $adminuser = $this->getDataGenerator()->create_user();
         $this->setAdminUser($adminuser);
 
-        // Set up gradebook roles
+        // Set up gradebook roles.
         $context = context_course::instance($courses[0]->id);
         $roleid = create_role('role', 'role', 'grade me block');
         $roleid2 = create_role('role2', 'role2', 'grade me block');

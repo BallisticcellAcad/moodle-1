@@ -59,7 +59,7 @@ class lesson_exported extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' exported a mootyper lesson/category while in the course with id
-            '$this->contextinstanceid'";
+            '$this->contextinstanceid'.";
     }
 
     /**

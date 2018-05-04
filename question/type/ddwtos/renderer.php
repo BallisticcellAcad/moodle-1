@@ -65,16 +65,16 @@ class qtype_ddwtos_renderer extends qtype_elements_embedded_in_question_text_ren
     }
 
     protected function post_qtext_elements(question_attempt $qa,
-            question_display_options $options) {
+            question_display_options $options) {    
         $result = '';
         $question = $qa->get_question();
-
         $dragboxs = '';
+        
         foreach ($question->choices as $group => $choices) {
             $dragboxs .= $this->drag_boxes($qa, $group,
                     $question->get_ordered_choices($group), $options);
         }
-
+        
         $classes = array('answercontainer');
         if (!$options->readonly) {
             $classes[] = 'notreadonly';

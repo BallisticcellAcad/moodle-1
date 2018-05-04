@@ -31,7 +31,7 @@ if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/mootyper/locallib.php');
 
     // Availability settings.
-    $settings->add(new admin_setting_heading('mod_lesson/availibility', get_string('availability'), ''));
+    $settings->add(new admin_setting_heading('mod_mootyper/availibility', get_string('availability'), ''));
 
     // Recent activity setting.
     $name = new lang_string('showrecentactivity', 'mootyper');
@@ -53,16 +53,50 @@ if ($ADMIN->fulltree) {
     for ($i = 0; $i <= 100; $i++) {
         $precs[] = $i;
     }
-    $settings->add(new admin_setting_configselect(
-    'mod_mootyper/defaultprecision',
-        get_string('defaultprecision', 'mootyper'),
-        '', 97, $precs)
-    );
+    $settings->add(new admin_setting_configselect('mod_mootyper/defaultprecision',
+        get_string('defaultprecision', 'mootyper'), '', 97, $precs));
+
+    // Default text alignment while typing an exercise.
+    $settings->add(new admin_setting_configselect('mod_mootyper/defaulttextalign',
+        get_string('defaulttextalign', 'mod_mootyper'),
+        get_string('defaulttextalign_help', 'mod_mootyper'), 0,
+        array(get_string('defaulttextalign_left', 'mod_mootyper'),
+              get_string('defaulttextalign_center', 'mod_mootyper'),
+              get_string('defaulttextalign_right', 'mod_mootyper'))));
+
+    // Default text alignment while editing or creating an exercise.
+    $settings->add(new admin_setting_configselect('mod_mootyper/defaulteditalign',
+        get_string('defaulteditalign', 'mod_mootyper'),
+        get_string('defaulteditalign_help', 'mod_mootyper'), 0,
+        array(get_string('defaulttextalign_left', 'mod_mootyper'),
+              get_string('defaulttextalign_center', 'mod_mootyper'),
+              get_string('defaulttextalign_right', 'mod_mootyper'))));
 
     // Default continuous typing setting.
-        $settings->add(new admin_setting_configcheckbox_with_advanced('mod_mootyper/continuoustype',
+    $settings->add(new admin_setting_configcheckbox_with_advanced('mod_mootyper/continuoustype',
         get_string('continuoustype', 'mootyper'), get_string('continuoustype_help', 'mootyper'),
-        array('value' => 0, 'adv' => true)));
+        array('value' => 0, 'adv' => false)));
+
+    // Default count space as a mistake typing setting.
+    $settings->add(new admin_setting_configcheckbox_with_advanced('mod_mootyper/countmistypedspaces',
+        get_string('countmistypedspaces', 'mootyper'), get_string('countmistypedspaces_help', 'mootyper'),
+        array('value' => 0, 'adv' => false)));
+
+    // Default count each wrong keystroke as a mistake setting.
+    $settings->add(new admin_setting_configcheckbox_with_advanced('mod_mootyper/countmistakes',
+        get_string('countmistakes', 'mootyper'), get_string('countmistakes_help', 'mootyper'),
+        array('value' => 0, 'adv' => false)));
+
+    // Default show keyboard setting.
+    $settings->add(new admin_setting_configcheckbox_with_advanced('mod_mootyper/showkeyboard',
+        get_string('showkeyboard', 'mootyper'), get_string('showkeyboard_help', 'mootyper'),
+        array('value' => 1, 'adv' => false)));
+
+    // Default keyboard layout.
+    $layouts = get_keyboard_layouts_db();
+    $settings->add(new admin_setting_configselect('mod_mootyper/defaultlayout',
+        get_string('defaultlayout', 'mootyper'), '', 3, $layouts));
+
 
     // Lesson export settings.
     $settings->add(new admin_setting_heading('mod_mootyper/lesson_export', get_string('lesson_export', 'mootyper'), ''));
@@ -78,21 +112,13 @@ if ($ADMIN->fulltree) {
     // Appearance settings.
     $settings->add(new admin_setting_heading('mod_mootyper/appearance', get_string('appearance'), ''));
 
-    // Default keyboard layout.
-    $layouts = get_keyboard_layouts_db();
-    $settings->add(new admin_setting_configselect(
-    'mod_mootyper/defaultlayout',
-        get_string('defaultlayout', 'mootyper'),
-        '', 1, $layouts)
-    );
-
 
 
     // Date format setting.
     $settings->add(new admin_setting_configtext(
         'mod_mootyper/dateformat',
-        new lang_string('dateformat', 'mootyper'),
-        new lang_string('configdateformat', 'mootyper'),
+        get_string('dateformat', 'mootyper'),
+        get_string('configdateformat', 'mootyper'),
         'M d, Y G:i', PARAM_TEXT, 15)
     );
 
@@ -123,6 +149,15 @@ if ($ADMIN->fulltree) {
         null)
     );
 
+    // Statistics bar colour setting.
+    $name = 'mod_mootyper/statscolor';
+    $title = get_string('statscolor_title', 'mootyper');
+    $description = get_string('statscolor_descr', 'mootyper');
+    $default = get_string('statscolor_colour', 'mootyper');
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
     // Key top colour setting.
     $name = 'mod_mootyper/normalkeytops';
     $title = get_string('normalkeytops_title', 'mootyper');
@@ -141,15 +176,30 @@ if ($ADMIN->fulltree) {
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
-    // Load css template, change settings, save as styles.css to implement color changes.
-    // Css template is needed to guarantee correct settings are easily found and changed.
-    $old1 = '[[setting:normalkeytops]]';
-    $new1 = get_config('mod_mootyper', 'normalkeytops');
-    $old2 = '[[setting:keyboardbgc]]';
-    $new2 = get_config('mod_mootyper', 'keyboardbgc');
-    $data = file_get_contents($CFG->dirroot.'/mod/mootyper/template.css');
-    $data = str_replace($old1, $new1, $data);
-    $data = str_replace($old2, $new2, $data);
-    file_put_contents($CFG->dirroot.'/mod/mootyper/styles.css', $data);
+    // Cursor colour setting.
+    $name = 'mod_mootyper/cursorcolor';
+    $title = get_string('cursorcolor_title', 'mootyper');
+    $description = get_string('cursorcolor_descr', 'mootyper');
+    $default = get_string('cursorcolor_colour', 'mootyper');
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
 
+    // Text background colour setting.
+    $name = 'mod_mootyper/textbgc';
+    $title = get_string('textbgc_title', 'mootyper');
+    $description = get_string('textbgc_descr', 'mootyper');
+    $default = get_string('textbgc_colour', 'mootyper');
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    // Text error background colour setting.
+    $name = 'mod_mootyper/texterrorcolor';
+    $title = get_string('texterrorcolor_title', 'mootyper');
+    $description = get_string('texterrorcolor_descr', 'mootyper');
+    $default = get_string('texterrorcolor_colour', 'mootyper');
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
 }

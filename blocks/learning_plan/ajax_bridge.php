@@ -70,18 +70,19 @@ if ($lp_id && $t_id) {
 
         if ($g_id != 0) {
             $attributes3 = $DB->get_records_sql_menu('SELECT u.id, CONCAT(firstname," ", lastname) as name FROM {user} as u inner join  {groups_members} gm on u.id= gm.userid
-                                                   where u.firstname != "Guest User" AND  gm.groupid=?', array($g_id), $limitfrom = 0, $limitnum = 0);
+                                                   where u.firstname != "Guest User" AND u.suspended <> 1 AND u.deleted <> 1  AND  gm.groupid=?', array($g_id), $limitfrom = 0, $limitnum = 0);
         } else {
-            $attributes3 = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname) as name FROM {user} where firstname != "Guest User"', null, $limitfrom = 0, $limitnum = 0);
+            $attributes3 = $DB->get_records_sql_menu('SELECT id, CONCAT(firstname," ", lastname) as name FROM {user} where firstname != "Guest User" AND suspended <> 1 AND deleted <> 1 ', null, $limitfrom = 0, $limitnum = 0);
         }
 
 
-        $attributes4 = $DB->get_records_sql_menu('SELECT u_id as id, (SELECT concat(firstname," ", lastname) FROM {user} WHERE id = u_id) as name FROM {learning_user_learningplan}
+        $attributes4 = $DB->get_records_sql_menu('SELECT u_id as id, (SELECT concat(firstname," ", lastname) FROM {user} WHERE id = u_id  ) as name FROM {learning_user_learningplan}
                                                    where lp_id = ?', array($lp_id), $limitfrom = 0, $limitnum = 0);
         $attributes = array_diff($attributes3, $attributes4);
     } else if ($lp_id) {
-        $attributes = $DB->get_records_sql_menu('SELECT u.u_id as id, (SELECT  CONCAT(firstname," ", lastname)FROM {user} where username!="guest" AND id = u. u_id) as name FROM
-                                                 {learning_user_learningplan} as u where lp_id= ?', array($lp_id), $limitfrom = 0, $limitnum = 0);
+        $attributes = $DB->get_records_sql_menu('SELECT lu.u_id as id , CONCAT(firstname," ", lastname) as name '
+                . 'FROM {user} as u, {learning_user_learningplan} as lu '
+                . 'where u.username!="guest" AND u.suspended <> 1 AND u.deleted <> 1  AND u.id = lu.u_id AND lu.lp_id= ?', array($lp_id), $limitfrom = 0, $limitnum = 0);
     }
     $data = "";
     foreach ($attributes as $key => $attrib) {
@@ -89,3 +90,14 @@ if ($lp_id && $t_id) {
     }
     return print_r($data);
 }
+
+
+/*
+SELECT u.u_id as id, (SELECT CONCAT(firstname, " ", lastname)FROM {
+    user
+} where username != "guest" AND suspended <> 1 AND deleted <> 1 AND id = u. u_id) as name FROM {
+    learning_user_learningplan
+} as u where lp_id= ?
+ * 
+ * 
+ */

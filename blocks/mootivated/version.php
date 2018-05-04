@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2017060800;
+$plugin->version      = 2018032200;
 $plugin->requires     = 2014051200;   // Moodle 2.7.0.
 $plugin->component    = 'block_mootivated';
 $plugin->maturity     = MATURITY_STABLE;
-$plugin->release      = '1.0.1';
+$plugin->release      = '1.2.0';
 $plugin->dependencies = [
-    'local_mootivated' => 2017060800
+    'local_mootivated' => 2017121901
 ];

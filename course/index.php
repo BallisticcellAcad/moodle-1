@@ -27,6 +27,10 @@ require_once("../config.php");
 require_once($CFG->dirroot. '/course/lib.php');
 require_once($CFG->libdir. '/coursecatlib.php');
 
+//if ($USER->id > 0 && !is_siteadmin()) {
+//    redirect("/my");     
+//}
+
 $categoryid = optional_param('categoryid', 0, PARAM_INT); // Category id
 $site = get_site();
 

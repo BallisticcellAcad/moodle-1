@@ -103,8 +103,8 @@ abstract class block_xp_rule_base extends block_xp_rule {
      */
     protected function get_compare_select($basename) {
         return html_writer::select(array(
-                block_xp_rule_base::CT => get_string('rule:' . block_xp_rule_base::CT, 'block_xp'),
-                block_xp_rule_base::EQ => get_string('rule:' . block_xp_rule_base::EQ, 'block_xp')
+                self::CT => get_string('rule:' . self::CT, 'block_xp'),
+                self::EQ => get_string('rule:' . self::EQ, 'block_xp')
             ), $basename . '[compare]', $this->compare, '', array('id' => '', 'class' => ''));
     }
 
@@ -148,7 +148,7 @@ abstract class block_xp_rule_base extends block_xp_rule {
     /**
      * Contains match.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */
@@ -159,7 +159,7 @@ abstract class block_xp_rule_base extends block_xp_rule {
     /**
      * Equal match.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */
@@ -170,7 +170,7 @@ abstract class block_xp_rule_base extends block_xp_rule {
     /**
      * Equal strict match.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */
@@ -181,7 +181,7 @@ abstract class block_xp_rule_base extends block_xp_rule {
     /**
      * Greather than match.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */
@@ -192,7 +192,7 @@ abstract class block_xp_rule_base extends block_xp_rule {
     /**
      * Greater than or equal match.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */
@@ -203,7 +203,7 @@ abstract class block_xp_rule_base extends block_xp_rule {
     /**
      * Lower than.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */
@@ -214,7 +214,7 @@ abstract class block_xp_rule_base extends block_xp_rule {
     /**
      * Lower than or equal.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */
@@ -223,9 +223,9 @@ abstract class block_xp_rule_base extends block_xp_rule {
     }
 
     /**
-     * Equal match.
+     * Regex match.
      *
-     * @param mixed $subject The subject value.
+     * @param mixed $subj The subject value.
      * @param mixed $value The value to compare with.
      * @return bool Whether or not it matches.
      */

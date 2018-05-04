@@ -26,6 +26,9 @@
 namespace local_mootivated;
 defined('MOODLE_INTERNAL') || die();
 
+use context_system;
+use moodle_exception;
+
 require_once($CFG->dirroot . '/cohort/lib.php');
 
 /**
@@ -50,6 +53,84 @@ class observer {
         global $DB;
         $sql = 'UPDATE {local_mootivated_school} SET cohortid = 0 WHERE cohortid = :id';
         $DB->execute($sql, ['id' => $event->objectid]);
+    }
+
+    /**
+     * Observes when a member is added to a cohort.
+     *
+     * @param \core\event\cohort_member_added $event The event.
+     * @return void
+     */
+    public static function cohort_member_added(\core\event\cohort_member_added $event) {
+        global $DB;
+        if (!helper::uses_sections() || !helper::allow_automatic_role_assignment()) {
+            return;
+        }
+
+        // Check if cohort is used in a school.
+        if (!$DB->record_exists('local_mootivated_school', ['cohortid' => $event->objectid])) {
+            return;
+        }
+
+        // Assign the role, and catch exceptions in case the role doesn't exist or something.
+        try {
+            $role = helper::get_mootivated_role();
+            role_assign($role->id, $event->relateduserid, context_system::instance()->id);
+        } catch (moodle_exception $e) {
+            debugging('Unexpected exception: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
+     * Observes when a member is removed from a cohort.
+     *
+     * @param \core\event\cohort_member_removed $event The event.
+     * @return void
+     */
+    public static function cohort_member_removed(\core\event\cohort_member_removed $event) {
+        global $DB;
+        if (!helper::uses_sections() || !helper::allow_automatic_role_assignment()) {
+            return;
+        }
+
+        // Check if cohort is used in a school.
+        if (!$DB->record_exists('local_mootivated_school', ['cohortid' => $event->objectid])) {
+            return;
+        }
+
+        // Check if user part of any other school, if yes bail.
+        $resolver = helper::get_school_resolver();
+        if ($resolver->get_by_member($event->relateduserid) !== null) {
+            return;
+        }
+
+        // Assign the role, and catch exceptions in case the role doesn't exist or something.
+        try {
+            $role = helper::get_mootivated_role();
+            role_unassign($role->id, $event->relateduserid, context_system::instance()->id);
+        } catch (moodle_exception $e) {
+            debugging('Unexpected exception: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
+     * Observe when a user is created.
+     *
+     * @param \core\event\user_created $event [description]
+     * @return void
+     */
+    public static function user_created(\core\event\user_created $event) {
+        if (helper::uses_sections() || !helper::allow_automatic_role_assignment()) {
+            return;
+        }
+
+        // Assign the role, and catch exceptions in case the role doesn't exist or something.
+        try {
+            $role = helper::get_mootivated_role();
+            role_assign($role->id, $event->relateduserid, context_system::instance()->id);
+        } catch (moodle_exception $e) {
+            debugging('Unexpected exception: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
     }
 
 }

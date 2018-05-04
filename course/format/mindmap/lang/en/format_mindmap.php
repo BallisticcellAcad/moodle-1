@@ -24,8 +24,12 @@
   */
 
 $string['currentsection'] = 'This topic';
+$string['editsection'] = 'Edit topic';
+$string['editsectionname'] = 'Edit topic name';
+$string['deletesection'] = 'Delete topic';
+$string['newsectionname'] = 'New name for topic {$a}';
 $string['sectionname'] = 'Topic';
-$string['pluginname'] = 'MindMap format';
+$string['pluginname'] = 'Mindmap format';
 $string['section0name'] = 'General';
 $string['page-course-view-topics'] = 'Any course main page in topics format';
 $string['page-course-view-topics-x'] = 'Any course page in topics format';
@@ -42,3 +46,4 @@ $string['hours'] = ' hours';
 $string['minutes'] = ' minutes left';
 $string['deadlinehaspassed'] = 'Deadline has passed';
 $string['downloadmapfile'] = 'Download map file';
+
